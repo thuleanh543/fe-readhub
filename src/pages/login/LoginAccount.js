@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { images } from '../constants'
+import { images } from '../../constants'
 
 function LoginAccount() {
   const width = useRef(window.innerWidth).current
@@ -36,69 +36,53 @@ function LoginAccount() {
     color: '#6d6d6d',
     fontSize: '13px',
   }
-  const [isHovered1, setIsHovered1] = useState(false)
 
-  const handleMouseEnter1 = () => {
-    setIsHovered1(true)
-  }
 
-  const handleMouseLeave1 = () => {
-    setIsHovered1(false)
-  }
 
-  const [isHovered2, setIsHovered2] = useState(false)
 
-  const handleMouseEnter2 = () => {
-    setIsHovered2(true)
-  }
-
-  const handleMouseLeave2 = () => {
-    setIsHovered2(false)
-  }
 
   return (
     <div
-      style={{
-        backgroundColor: '#141518',
-      }}
+    style={{
+      backgroundColor: '#141518',
+
+      margin: 0,
+      padding: 0,
+      display: 'flex',
+          flex: 1
+    }}
     >
       <div
-        style={{
-          display: 'flex',
-          height: height * 0.08,
-          flexDirection: 'row',
-        }}
-      >
-        <div
-          style={{
-            marginTop: height * 0.013,
-            marginLeft: width * 0.005,
-            height: height * 0.065,
-            display: 'flex',
-            flexDirection: 'row',
-          }}
-        >
-          <img
-            src={images.thu}
-            style={{
-              height: 26,
-              marginLeft: 5,
-              alignSelf: 'center',
-            }}
-          />
-          <span
-            style={{
-              marginLeft: 3,
-              marginRight: 8,
-              fontSize: 14,
-              fontWeight: '500',
-              alignSelf: 'center',
-              color: '#e5ffbc',
-            }}
-          >
-            Back to T&C
-          </span>
-        </div>
+    style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    display: 'flex',
+    height: height * 0.08,
+    flexDirection: 'row',
+    alignItems: 'center', // Giúp căn giữa nội dung theo chiều dọc
+    paddingLeft: width * 0.005, // Khoảng cách từ trái
+  }}
+>
+  <img
+    src={images.thu}
+    style={{
+      height: 26,
+      marginLeft: 5,
+    }}
+  />
+  <span
+    style={{
+      marginLeft: 3,
+      marginRight: 8,
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#e5ffbc',
+    }}
+  >
+    Back to T&C
+  </span>
       </div>
       <div
         style={{
@@ -111,8 +95,7 @@ function LoginAccount() {
         }}
       >
         <img
-          src={'https://i.imgur.com/hPbfzZ2.png'}
-          alt="Logo image T&C"
+          src={images.imgOpenBook}
           style={{
             height: height * 0.09,
           }}
@@ -137,156 +120,6 @@ function LoginAccount() {
             alignItems: 'center',
           }}
         >
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: '400',
-              color: '#eaeaea',
-              marginTop: 6,
-              marginBottom: 7,
-            }}
-          >
-            Sign In with
-          </span>
-
-          <div
-            style={{
-              height: height * 0.09,
-              width: width * 0.228,
-              backgroundColor: '#2c2f34',
-              borderRadius: 6,
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                width: width * 0.05,
-                height: height * 0.055,
-                backgroundColor: '#212121',
-                marginRight: 8,
-                borderRadius: 6,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  borderTopLeftRadius: 6,
-                  borderTopRightRadius: 6,
-                  backgroundColor: isHovered1 ? '#3588e8' : '',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onMouseEnter={handleMouseEnter1}
-                onMouseLeave={handleMouseLeave1}
-              >
-                <img
-                  src={images.facebook}
-                  style={{
-                    height: height * 0.03,
-                    filter: 'invert(100%)',
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  width: width * 0.05,
-                  height: height * 0.007,
-                  backgroundColor: '#3588e8',
-                  borderBottomRightRadius: 6,
-                  borderBottomLeftRadius: 6,
-                }}
-              ></div>
-            </div>
-            <div
-              style={{
-                width: width * 0.05,
-                height: height * 0.055,
-                backgroundColor: '#212121',
-                marginLeft: 8,
-                borderRadius: 6,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  borderTopLeftRadius: 6,
-                  borderTopRightRadius: 6,
-                  backgroundColor: isHovered2 ? '#bf3989' : '',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onMouseEnter={handleMouseEnter2}
-                onMouseLeave={handleMouseLeave2}
-              >
-                <img
-                  src={images.google}
-                  style={{
-                    height: height * 0.03,
-                    filter: 'invert(100%)',
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  width: width * 0.05,
-                  height: height * 0.007,
-                  backgroundColor: '#bf3989',
-                  borderBottomRightRadius: 6,
-                  borderBottomLeftRadius: 6,
-                }}
-              ></div>
-            </div>
-          </div>
-          <div
-            style={{
-              marginTop: 7,
-              marginBottom: 7,
-              width: width * 0.228,
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                marginLeft: 25,
-                marginRight: 8,
-                height: 0.3,
-                backgroundColor: '#4b4d54',
-                flex: 1,
-                opacity: 0.5,
-              }}
-            ></div>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: '400',
-                color: '#eaeaea',
-              }}
-            >
-              or With T&C
-            </span>
-            <div
-              style={{
-                marginLeft: 8,
-                marginRight: 25,
-                height: 0.5,
-                backgroundColor: '#4b4d54',
-                flex: 1,
-                opacity: 0.5,
-              }}
-            ></div>
-          </div>
           <div
             style={{
               height: height * 0.142,
@@ -359,7 +192,7 @@ function LoginAccount() {
           </div>
           <div
             style={{
-              width: width * 0.228,
+              width: width * 0.22,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',

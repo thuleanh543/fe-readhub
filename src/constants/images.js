@@ -11,9 +11,8 @@ export default {
   videotogit: require('../assets/videotogit.png'),
   close: require('../assets/close.png'),
   thu: require('../assets/thu.png'),
-  facebook: require('../assets/facebook.png'),
-  google: require('../assets/google.png'),
   eyes: require('../assets/eyes.png'),
   love: require('../assets/love.png'),
   chat: require('../assets/chat.png'),
+  imgOpenBook: require('../assets/img_open_book.png'),
 }
