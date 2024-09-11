@@ -1,0 +1,21 @@
+[debug] [2024-09-11T11:14:46.958Z] ----------------------------------------------------------------------
+[debug] [2024-09-11T11:14:46.970Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\thule\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2024-09-11T11:14:46.971Z] CLI Version:   13.16.0
+[debug] [2024-09-11T11:14:46.972Z] Platform:      win32
+[debug] [2024-09-11T11:14:46.973Z] Node Version:  v20.11.1
+[debug] [2024-09-11T11:14:46.974Z] Time:          Wed Sep 11 2024 18:14:46 GMT+0700 (Indochina Time)
+[debug] [2024-09-11T11:14:46.976Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-09-11T11:14:47.015Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-09-11T11:14:47.017Z] > authorizing via signed-in user (thuleanh543@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  T:\Hoc\fe-readhub
+
