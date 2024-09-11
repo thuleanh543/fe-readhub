@@ -4,11 +4,22 @@ import { toast } from 'react-toastify';
 
 export class AuthAPI extends BaseApi {
 
-    async register ( email, password ) {
+    // Register method to match API
+    async register ( email, username, password ) {
         try
         {
-            await createUserWithEmailAndPassword( auth, email, password );
-            toast.success( 'Đăng ký thành công!' );
+            const response = await this.post( '/register', { email, username, password } );
+
+            if ( response.success )
+            {
+                toast.success( 'Đăng ký thành công!' );
+            } else if ( response.message === 'Email đã tồn tại' )
+            { // Replace with your actual validation message
+                toast.error( 'Đăng ký thất bại. Email đã tồn tại.' );
+            } else
+            {
+                toast.error( 'Đăng ký thất bại. ' + response.message );
+            }
         } catch ( error )
         {
             toast.error( 'Đăng ký thất bại. ' + error.message );
@@ -16,19 +27,22 @@ export class AuthAPI extends BaseApi {
         }
     }
 
+    // Login method to match API
     async login ( email, password ) {
         try
         {
-            const userCredential = await signInWithEmailAndPassword( auth, email, password );
-            const user = userCredential.user;
+            // Call your backend API for login
+            const response = await this.post( '/login', { email, password } );
 
-            // Lấy token từ user
-            const token = await user.getIdToken();
-
-            // Lưu token vào local storage
-            localStorage.setItem( 'authToken', token );
-
-            toast.success( 'Đăng nhập thành công!' );
+            if ( response.success )
+            {
+                // Save token to local storage
+                localStorage.setItem( 'authToken', response.token );
+                toast.success( 'Đăng nhập thành công!' );
+            } else
+            {
+                toast.error( 'Đăng nhập thất bại. ' + response.message );
+            }
         } catch ( error )
         {
             toast.error( 'Đăng nhập thất bại. ' + error.message );
@@ -41,7 +55,7 @@ export class AuthAPI extends BaseApi {
         {
             await signOut( auth );
 
-            // Xóa token từ local storage
+            // Remove token from local storage
             localStorage.removeItem( 'authToken' );
             toast.success( 'Đăng xuất thành công!' );
         } catch ( error )

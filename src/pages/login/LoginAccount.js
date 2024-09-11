@@ -1,339 +1,215 @@
 import { useRef, useState } from 'react'
 import { images } from '../../constants'
+import { isValidEmail, isValidPassword } from '../../utils/Validatations'
+import { Button } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { light } from '@mui/material/styles/createPalette';
+import { Link } from 'react-router-dom';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
 function LoginAccount () {
-  const width = useRef( window.innerWidth ).current
-  const height = useRef( window.innerHeight ).current
+  const width = useRef( window.innerWidth ).current;
+  const height = useRef( window.innerHeight ).current;
+  const [ isShowPassword, setIsShowPassword ] = useState( false );
 
-  const [ isFocused1, setIsFocused1 ] = useState( false )
+  const [ isFocused1, setIsFocused1 ] = useState( false );
+  const [ isFocused2, setIsFocused2 ] = useState( false );
+
+  const [ email, setEmail ] = useState( '' );
+  const [ password, setPassword ] = useState( '' );
+
+  const [ emailError, setEmailError ] = useState( '' );
+  const [ passwordError, setPasswordError ] = useState( '' );
 
   const handleFocus1 = () => {
-    setIsFocused1( true )
-  }
+    setIsFocused1( true );
+  };
 
   const handleBlur1 = () => {
-    setIsFocused1( false )
-  }
-
-  const placeholderStyle1 = {
-    fontWeight: '300',
-    color: '#6d6d6d',
-    fontSize: '13px',
-  }
-
-  const [ isFocused2, setIsFocused2 ] = useState( false )
+    setIsFocused1( false );
+    if ( !isValidEmail( email ) )
+    {
+      setEmailError( 'Invalid email address' );
+    } else
+    {
+      setEmailError( '' );
+    }
+  };
 
   const handleFocus2 = () => {
-    setIsFocused2( true )
-  }
+    setIsFocused2( true );
+  };
 
   const handleBlur2 = () => {
-    setIsFocused2( false )
-  }
+    setIsFocused2( false );
+    if ( !isValidPassword( password ) || password.length < 6 )
+    {
+      setPasswordError( 'Password must be at least 6 characters long' );
+    } else
+    {
+      setPasswordError( '' );
+    }
+  };
 
-  const placeholderStyle2 = {
-    fontWeight: '300',
-    color: '#6d6d6d',
-    fontSize: '13px',
-  }
+  const handleChangeEmail = ( e ) => {
+    setEmail( e.target.value );
+    if ( emailError ) setEmailError( '' ); // Clear error when typing
+  };
 
-
-
-
+  const handleChangePassword = ( e ) => {
+    setPassword( e.target.value );
+    if ( passwordError ) setPasswordError( '' ); // Clear error when typing
+  };
 
   return (
-    <div
-      style={ {
-        backgroundColor: '#141518',
-
-        margin: 0,
-        padding: 0,
-        display: 'flex',
-        flex: 1
-      } }
-    >
-      <div
-        style={ {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          height: height * 0.08,
-          flexDirection: 'row',
-          alignItems: 'center', // Giúp căn giữa nội dung theo chiều dọc
-          paddingLeft: width * 0.005, // Khoảng cách từ trái
-        } }
-      >
-        <img
-          src={ images.thu }
-          style={ {
-            height: 26,
-            marginLeft: 5,
-          } }
-        />
-        <span
-          style={ {
-            marginLeft: 3,
-            marginRight: 8,
-            fontSize: 14,
-            fontWeight: '500',
-            color: '#e5ffbc',
-          } }
-        >
-          Back to T&C
-        </span>
-      </div>
-      <div
-        style={ {
-          marginTop: 10,
-          height: height * 0.18,
-          width: width,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        } }
-      >
-        <img
-          src={ images.imgOpenBook }
-          style={ {
-            height: height * 0.09,
-          } }
-        />
-      </div>
-      <div
-        style={ {
-          marginTop: 20,
-          height: height * 0.58,
-          width: width,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        } }
-      >
+    <ThemeProvider theme={ theme } >
+      <div className="bg-[#141518] " style={ { height: height } }>
         <div
-          style={ {
-            height: height * 0.51,
-            width: width * 0.26,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          } }
+          className=" top-0 left-0 right-0 flex h-[8vh] items-center ml-5"
+        >
+          <img
+            src={ images.thu }
+            className="h-6 ml-1"
+          />
+          <Link to="/">
+            <span className="ml-1 mr-2 text-sm font-medium text-[#e5ffbc]">
+              Back to T&C
+            </span>
+          </Link>
+        </div>
+        <div
+          className="mt-2.5 h-[7vh] w-full flex justify-center items-center"
+        >
+          <img
+            src={ images.imgOpenBook }
+            className="h-[9vh]"
+          />
+        </div>
+        <div
+          className="mt-5 h-[58vh] w-full flex items-center justify-center"
         >
           <div
-            style={ {
-              height: height * 0.142,
-              width: width * 0.228,
-              backgroundColor: '#2c2f34',
-              borderRadius: 6,
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              flexDirection: 'column',
-            } }
+            className="w-[26vw] flex flex-col items-center justify-center bg-[#2c2f34] rounded-lg"
           >
+            <span className="text-3xl font-bold text-[#f2f2f2] mt-7">
+              LOGIN
+            </span>
             <input
               type="text"
-              placeholder={ 'Username or Email' }
+              placeholder="Username or Email"
               onFocus={ handleFocus1 }
+              onChange={ handleChangeEmail }
               onBlur={ handleBlur1 }
-              style={ {
-                marginTop: 10,
-                backgroundColor: '#191919',
-                color: '#fff',
-                border: isFocused1
-                  ? '1px solid #4ce09b'
-                  : '1px solid transparent',
-                outline: 'none',
-                padding: 8,
-                width: width * 0.197,
-                borderRadius: 5,
-                textAlign: 'left',
-                justifyContent: 'center',
-                paddingLeft: 10,
-              } }
+              className={ `mt-7 bg-[#191919] text-white border ${ isFocused1 ? 'border-[#4ce09b]' : 'border-transparent'
+                } outline-none p-2.5 w-[19.7vw] rounded-md text-left pl-2` }
             />
+            { emailError &&
+              <div className=" flex w-[19.7vw] justify-start mt-1">
+                <span className="text-red-500 text-sm">{ emailError }</span>
+              </div>
+            }
 
-            <style>{ `input::placeholder {
-            color: ${ placeholderStyle1.color };
-            font-weight: ${ placeholderStyle1.fontWeight };
-            fontSize: ${ placeholderStyle1.fontSize };
-
-            }`}</style>
-
-            <input
-              type="password"
-              placeholder={ 'Password' }
-              onFocus={ handleFocus2 }
-              onBlur={ handleBlur2 }
-              style={ {
-                marginBottom: 10,
-                backgroundColor: '#191919',
-                color: '#fff',
-                border: isFocused2
-                  ? '1px solid #4ce09b'
-                  : '1px solid transparent',
-                outline: 'none',
-                padding: 8,
-                width: width * 0.197,
-                borderRadius: 5,
-                textAlign: 'left',
-                justifyContent: 'center',
-                paddingLeft: 10,
-              } }
-            />
-
-            <style>{ `input::placeholder {
-            color: ${ placeholderStyle2.color };
-            font-weight: ${ placeholderStyle2.fontWeight };
-            fontSize: ${ placeholderStyle2.fontSize };
-
-            }`}</style>
-          </div>
-          <div
-            style={ {
-              width: width * 0.22,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            } }
-          >
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: '300',
-                color: '#67eab1',
-                marginTop: 3,
-              } }
-            >
-              Forgot Password?
-            </span>
-          </div>
-          <div
-            style={ {
-              marginTop: 10,
-              width: width * 0.228,
-              height: height * 0.065,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              flexDirection: 'row',
-            } }
-          >
-            <div
-              style={ {
-                display: 'flex',
-                height: height * 0.065,
-                justifyContent: 'center',
-                alignItems: 'center',
-              } }
-            >
-              <span
-                style={ {
-                  fontWeight: '500',
-                  fontSize: 15,
-                  color: '#f2f2f2',
-                  marginLeft: 5,
-                  marginRight: 8,
-                } }
+            <div className="relative mt-3 w-[19.7vw] ">
+              <input
+                type={ isShowPassword ? 'text' : 'password' }
+                placeholder="Password"
+                onFocus={ handleFocus2 }
+                onBlur={ handleBlur2 }
+                onChange={ handleChangePassword }
+                className={ `bg-[#191919] text-white border ${ isFocused2 ? 'border-[#4ce09b]' : 'border-transparent'
+                  } outline-none p-2.5 w-full rounded-md text-left pl-2` }
+              />
+              {/* Toggle password visibility */ }
+              <button
+                type="button"
+                onClick={ () => setIsShowPassword( !isShowPassword ) }
+                className="absolute inset-y-0 right-2 flex items-center text-sm text-[#67eab1]"
               >
-                Need an account?
+                { isShowPassword ? <VisibilityOutlinedIcon /> : <VisibilityOffOutlinedIcon />
+                }
+              </button>
+            </div>
+            { passwordError &&
+              <div className=" flex w-[19.7vw] justify-start mt-1">
+                <span className="text-red-500 text-sm">{ passwordError }</span>
+              </div>
+            }
+
+
+            <div
+              className=" flex w-[19.7vw] justify-end mt-1"
+            >
+              <span className="text-s font-light text-[#67eab1] mt-1 mb-3">
+                Forgot Password?
               </span>
             </div>
+            <Button variant="contained" className=" w-[19.7vw] h-[6.5vh] text-white font-bold" color="buttonLogin">
+              LOGIN
+            </Button>
+
             <div
-              style={ {
-                width: width * 0.058,
-                height: height * 0.065,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              } }
+              className="mt-2.5 w-[22.8vw] h-[6.5vh] flex justify-end items-center mb-5"
             >
               <div
-                style={ {
-                  height: height * 0.055,
-                  width: width * 0.05,
-                  border: '3px solid #00e0d8',
-                  borderRadius: 5,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                } }
+                className="flex h-[6.5vh] items-center justify-center"
               >
-                <span
-                  style={ {
-                    fontWeight: '400',
-                    fontSize: 15,
-                    color: '#0fc6c6',
-                  } }
-                >
-                  Sign in
+                <span className="font-medium text-lg text-[#f2f2f2] mx-1.5">
+                  Need an account?
                 </span>
+              </div>
+              <div
+                className="w-[5.8vw] h-[6.5vh] flex justify-center items-center"
+              >
+                <div
+                  className="h-[5.5vh] w-[5vw] border-3 border-[#00e0d8] rounded-md flex justify-center items-center"
+                >
+                  <Link to="/register">
+                    <span className="font-normal text-lg text-[#0fc6c6]">
+                      Sign in
+                    </span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div
-        style={ {
-          height: height * 0.16 - 30,
-          width: width,
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'flex-end',
-        } }
-      >
         <div
-          style={ {
-            height: height * 0.08,
-            width: width * 0.18,
-            alignItems: 'center',
-            display: 'flex',
-            flexDirection: 'row',
-          } }
+          className="h-[16vh] flex flex-row items-end w-full justify-center"
         >
           <div
-            style={ {
-              height: height * 0.05,
-              width: width * 0.038,
-              marginLeft: 20,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            } }
+            className="h-[8vh]  flex flex-row items-center gap-5"
           >
-            <span
-              style={ {
-                fontSize: 15,
-                color: '#dbdbdb',
-                fontWeight: '400',
-              } }
+            <div
+              className="h-[5vh] ml-5 flex justify-center items-center"
             >
-              terms
-            </span>
-          </div>
-          <div
-            style={ {
-              height: height * 0.05,
-              width: width * 0.038,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            } }
-          >
-            <span
-              style={ {
-                fontSize: 15,
-                color: '#dbdbdb',
-                fontWeight: '400',
-              } }
+              <span className="text-base text-[#dbdbdb] font-normal">
+                terms
+              </span>
+            </div>
+            <div
+              className="h-[5vh] flex justify-center items-center"
             >
-              privacy
-            </span>
+              <span className="text-base text-[#dbdbdb] font-normal">
+                privacy
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </ThemeProvider>
   )
 }
+
+const theme = createTheme( {
+  palette: {
+    buttonLogin: {
+      main: '#51bd8e',
+      light: '#67eab1',
+      dark: '#4ce09b',
+      contrastText: '#ffffff',
+    },
+  },
+} );
 
 export default LoginAccount
