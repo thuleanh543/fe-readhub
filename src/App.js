@@ -3,15 +3,15 @@ import './App.css'
 import { images } from './constants'
 import { useRef, useState } from 'react'
 
-function App() {
+function App () {
   const placeholderStyle = {
     color: '#d0d0e2',
   }
 
-  const width = useRef(window.innerWidth).current
-  const height = useRef(window.innerHeight).current
+  const width = useRef( window.innerWidth ).current
+  const height = useRef( window.innerHeight ).current
 
-  const [listOptions, setListOptions] = useState([
+  const [ listOptions, setListOptions ] = useState( [
     {
       id: 1,
       url: 'https://i.imgur.com/JJ3tmg6.jpg',
@@ -83,12 +83,12 @@ function App() {
       title: 'Food',
       quantity: '300',
     },
-  ])
+  ] )
 
   return (
     <div className="App">
       <div
-        style={{
+        style={ {
           display: 'flex',
           height: height * 0.09,
           width: width - 15,
@@ -99,22 +99,22 @@ function App() {
           top: 0,
           zIndex: 1,
           boxShadow: '0px 5px 5px rgba(0, 0, 0, 0.2)',
-        }}
+        } }
       >
         <img
-          src={'https://i.imgur.com/hPbfzZ2.png'}
+          src={ 'https://i.imgur.com/hPbfzZ2.png' }
           alt="Logo image T&C"
-          style={{
+          style={ {
             height: height * 0.09 - 32,
             marginTop: 13,
             marginBottom: 13,
             marginLeft: 10,
             marginRight: 13,
-          }}
+          } }
         />
-        <Link to="/PushImage" style={{ textDecoration: 'none' }}>
+        <Link to="/PushImage" style={ { textDecoration: 'none' } }>
           <div
-            style={{
+            style={ {
               display: 'flex',
               flexDirection: 'row',
               height: height * 0.09 - 32,
@@ -125,24 +125,24 @@ function App() {
               marginLeft: 15,
               borderRadius: 3,
               boxShadow: '0px 2px 6px rgba(1,1,1, 0.3)',
-            }}
+            } }
           >
             <img
-              src={images.add_new_image}
-              style={{
+              src={ images.add_new_image }
+              style={ {
                 marginLeft: 5,
                 height: height * 0.09 - 36,
                 alignSelf: 'center',
-              }}
+              } }
             />
             <span
-              style={{
+              style={ {
                 fontSize: 13,
                 color: '#fff',
                 fontWeight: '500',
                 alignSelf: 'center',
                 marginLeft: 5,
-              }}
+              } }
             >
               Push Image
             </span>
@@ -150,24 +150,24 @@ function App() {
         </Link>
 
         <div
-          style={{
+          style={ {
             flex: 1,
             height: height * 0.09,
-          }}
+          } }
         >
           <form action="/search">
             <div
-              style={{
+              style={ {
                 height: height * 0.09 - 6,
                 alignItems: 'center',
                 justifyContent: 'center',
                 display: 'flex',
-              }}
+              } }
             >
               <input
                 type="text"
                 placeholder="Images, #tags, @users oh my!"
-                style={{
+                style={ {
                   height: height * 0.09 - 33,
                   width: width * 0.32,
                   backgroundColor: '#454469',
@@ -182,26 +182,26 @@ function App() {
                   color: '#fff',
                   textShadow: 'inherit',
                   boxShadow: '0px 2px 6px rgba(32,32,32, 0.3)',
-                }}
+                } }
               />
-              <style>{`input::placeholder {
-            color: ${placeholderStyle.color};
-            padding: ${placeholderStyle.padding}; }`}</style>
+              <style>{ `input::placeholder {
+            color: ${ placeholderStyle.color };
+            padding: ${ placeholderStyle.padding }; }` }</style>
 
               <img
-                src={images.search}
-                style={{
+                src={ images.search }
+                style={ {
                   height: height * 0.09 - 45,
                   filter: 'invert(100%)',
                   padding: 10,
-                }}
+                } }
               />
             </div>
           </form>
         </div>
-        <Link to="/LoginAccount" style={{ textDecoration: 'none' }}>
+        <Link to="/LoginAccount" style={ { textDecoration: 'none' } }>
           <div
-            style={{
+            style={ {
               width: width * 0.163,
               display: 'flex',
               flexDirection: 'row',
@@ -209,37 +209,37 @@ function App() {
               alignItems: 'center',
 
               marginBottom: 3,
-            }}
+            } }
           >
             <img
-              src={images.login}
-              style={{
+              src={ images.login }
+              style={ {
                 height: height * 0.09 - 41,
                 paddingLeft: 10,
                 paddingRight: 10,
                 filter: 'invert(100%)',
-              }}
+              } }
             />
 
             <img
-              src={images.bell}
-              style={{
+              src={ images.bell }
+              style={ {
                 height: height * 0.09 - 41,
                 paddingLeft: 10,
                 paddingRight: 10,
                 filter: 'invert(100%)',
-              }}
+              } }
             />
             <div
-              style={{
+              style={ {
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'flex-end',
-              }}
+              } }
             >
               <p
-                style={{
+                style={ {
                   alignSelf: 'center',
                   fontSize: 15,
                   color: '#f7f6f6',
@@ -247,44 +247,44 @@ function App() {
                   marginLeft: 10,
                   marginRight: 10,
                   fontFamily: 'roboto',
-                }}
+                } }
               >
                 the joker
               </p>
               <img
-                src={images.user}
-                style={{
+                src={ images.user }
+                style={ {
                   height: height * 0.09 - 31,
                   alignSelf: 'center',
                   marginRight: 15,
                   boxShadow: '0px 2px 6px rgba(1,1,1, 0.4)',
-                }}
+                } }
               />
             </div>
           </div>
         </Link>
       </div>
       <div
-        style={{
+        style={ {
           height: height * 0.1,
           backgroundColor: '#171544',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-        }}
+        } }
       >
         <p
-          style={{
+          style={ {
             color: '#acd7ea',
             fontWeight: 'bold',
             fontSize: 20,
-          }}
+          } }
         >
           The only sensible way to live in this world is without rules.
         </p>
       </div>
       <div
-        style={{
+        style={ {
           backgroundColor: '#171544',
           height: height * 0.26,
           paddingLeft: width * 0.05,
@@ -292,83 +292,83 @@ function App() {
           paddingRight: 25,
           display: 'flex',
           flexDirection: 'column',
-        }}
+        } }
       >
         <span
-          style={{
+          style={ {
             float: 'left',
             color: '#8e8cbb',
             textTransform: 'uppercase',
             alignSelf: 'flex-start',
-          }}
+          } }
         >
           EXPLORE TAGS
         </span>
         <div
-          style={{
+          style={ {
             height: height * 0.22,
             width: width * 0.91,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-          }}
+          } }
         >
-          {listOptions.map((item, index) => (
+          { listOptions.map( ( item, index ) => (
             <div
-              style={{
+              style={ {
                 height: height * 0.2,
                 width: item.id == 1 ? width * 0.16 : width * 0.075,
                 borderRadius: 3,
-                backgroundImage: `url(${item.url})`,
+                backgroundImage: `url(${ item.url })`,
                 backgroundSize: 'cover',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-end',
-              }}
+              } }
             >
               <div
-                style={{
+                style={ {
                   height: height * 0.08,
                   width: item.id == 1 ? width * 0.16 : width * 0.075,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
-                  backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
+                  backgroundColor: `${ item.backgroundColor || '#9b9b9b' }`,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                }}
+                } }
               >
                 <span
-                  style={{
+                  style={ {
                     marginTop: 1,
                     marginBottom: 2,
                     fontSize: 15,
                     fontWeight: 'Bold',
                     color: '#fff',
                     fontFamily: 'roboto',
-                  }}
+                  } }
                 >
-                  ${item.title}
+                  ${ item.title }
                 </span>
                 <span
-                  style={{
+                  style={ {
                     fontSize: 12,
                     fontWeight: 'normal',
                     color: '#fff',
                     fontFamily: 'cursive',
-                  }}
+                  } }
                 >
-                  ${item.quantity} ports
+                  ${ item.quantity } ports
                 </span>
               </div>
             </div>
-          ))}
+          ) ) }
         </div>
       </div>
       <div
-        style={{
+        style={ {
           backgroundColor: '#060d13',
           display: 'flex',
           height: height * 0.85,
@@ -378,10 +378,10 @@ function App() {
           paddingRight: width * 0.01,
           justifyContent: 'center',
           alignItems: 'center',
-        }}
+        } }
       >
         <div
-          style={{
+          style={ {
             height: height * 0.7,
             width: width * 0.2,
             backgroundImage: `url('https://i.imgur.com/fU2d8Pl.jpg')`,
@@ -396,10 +396,10 @@ function App() {
             alignItems: 'flex-end',
             justifyContent: 'space-evenly',
             display: 'flex',
-          }}
+          } }
         >
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -412,22 +412,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.love} style={{ height: height * 0.02 }} />
+            <img src={ images.love } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ff7b94',
                 marginLeft: 3,
-              }}
+              } }
             >
               53
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -440,22 +440,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.chat} style={{ height: height * 0.02 }} />
+            <img src={ images.chat } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#4370ff',
                 marginLeft: 3,
-              }}
+              } }
             >
               33
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -468,23 +468,23 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.eyes} style={{ height: height * 0.02 }} />
+            <img src={ images.eyes } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ffe0d1',
                 marginLeft: 3,
-              }}
+              } }
             >
               115
             </span>
           </div>
         </div>
         <div
-          style={{
+          style={ {
             height: height * 0.66,
             width: width * 0.2,
             backgroundImage: `url('https://i.imgur.com/3yRmJrO.jpg')`,
@@ -499,10 +499,10 @@ function App() {
             alignItems: 'flex-end',
             justifyContent: 'space-evenly',
             display: 'flex',
-          }}
+          } }
         >
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -515,22 +515,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.love} style={{ height: height * 0.02 }} />
+            <img src={ images.love } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ff7b94',
                 marginLeft: 3,
-              }}
+              } }
             >
               53
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -543,22 +543,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.chat} style={{ height: height * 0.02 }} />
+            <img src={ images.chat } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#4370ff',
                 marginLeft: 3,
-              }}
+              } }
             >
               33
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -571,23 +571,23 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.eyes} style={{ height: height * 0.02 }} />
+            <img src={ images.eyes } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ffe0d1',
                 marginLeft: 3,
-              }}
+              } }
             >
               115
             </span>
           </div>
         </div>
         <div
-          style={{
+          style={ {
             height: height * 0.6,
             width: width * 0.2,
             backgroundImage: `url('https://i.imgur.com/v3MFM7B.jpg')`,
@@ -599,10 +599,10 @@ function App() {
             alignItems: 'flex-end',
             justifyContent: 'space-evenly',
             display: 'flex',
-          }}
+          } }
         >
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -615,22 +615,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.love} style={{ height: height * 0.02 }} />
+            <img src={ images.love } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ff7b94',
                 marginLeft: 3,
-              }}
+              } }
             >
               53
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -643,22 +643,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.chat} style={{ height: height * 0.02 }} />
+            <img src={ images.chat } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#4370ff',
                 marginLeft: 3,
-              }}
+              } }
             >
               33
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -671,23 +671,23 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.eyes} style={{ height: height * 0.02 }} />
+            <img src={ images.eyes } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ffe0d1',
                 marginLeft: 3,
-              }}
+              } }
             >
               115
             </span>
           </div>
         </div>
         <div
-          style={{
+          style={ {
             height: height * 0.55,
             width: width * 0.2,
             backgroundImage: `url('https://i.imgur.com/WXa6UyW.jpg')`,
@@ -699,10 +699,10 @@ function App() {
             alignItems: 'flex-end',
             justifyContent: 'space-evenly',
             display: 'flex',
-          }}
+          } }
         >
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -715,22 +715,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.love} style={{ height: height * 0.02 }} />
+            <img src={ images.love } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ff7b94',
                 marginLeft: 3,
-              }}
+              } }
             >
               53
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -743,22 +743,22 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.chat} style={{ height: height * 0.02 }} />
+            <img src={ images.chat } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#4370ff',
                 marginLeft: 3,
-              }}
+              } }
             >
               33
             </span>
           </div>
           <div
-            style={{
+            style={ {
               marginBottom: -height * 0.028,
               paddingLeft: 9,
               paddingRight: 9,
@@ -771,16 +771,16 @@ function App() {
               justifyContent: 'center',
               alignItems: 'center',
               flexDirection: 'row',
-            }}
+            } }
           >
-            <img src={images.eyes} style={{ height: height * 0.02 }} />
+            <img src={ images.eyes } style={ { height: height * 0.02 } } />
             <span
-              style={{
+              style={ {
                 fontSize: 12,
                 fontWeight: 'bold',
                 color: '#ffe0d1',
                 marginLeft: 3,
-              }}
+              } }
             >
               115
             </span>
