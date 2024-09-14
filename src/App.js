@@ -112,42 +112,7 @@ function App () {
             marginRight: 13,
           } }
         />
-        <Link to="/PushImage" style={ { textDecoration: 'none' } }>
-          <div
-            style={ {
-              display: 'flex',
-              flexDirection: 'row',
-              height: height * 0.09 - 32,
-              width: width * 0.076,
-              marginTop: 13,
-              marginBottom: 13,
-              backgroundColor: '#1bb76e',
-              marginLeft: 15,
-              borderRadius: 3,
-              boxShadow: '0px 2px 6px rgba(1,1,1, 0.3)',
-            } }
-          >
-            <img
-              src={ images.add_new_image }
-              style={ {
-                marginLeft: 5,
-                height: height * 0.09 - 36,
-                alignSelf: 'center',
-              } }
-            />
-            <span
-              style={ {
-                fontSize: 13,
-                color: '#fff',
-                fontWeight: '500',
-                alignSelf: 'center',
-                marginLeft: 5,
-              } }
-            >
-              Push Image
-            </span>
-          </div>
-        </Link>
+
 
         <div
           style={ {
