@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import './App.css'
 import { images, colors } from './constants'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function App () {
 
@@ -13,7 +13,7 @@ function App () {
       id: 1,
       url: 'https://i.imgur.com/JJ3tmg6.jpg',
       backgroundColor: '#9a84e9',
-      title: 'Abstract',
+      title: 'Viễn tưởng',
       quantity: '1.200',
     },
 
@@ -21,66 +21,75 @@ function App () {
       id: 2,
       url: 'https://i.imgur.com/6Ebubdn.jpg',
       backgroundColor: '#02fb62',
-      title: 'Nature',
+      title: 'Khoa học viễn tưởng',
       quantity: '300',
     },
     {
       id: 3,
       url: 'https://i.imgur.com/W1tDyVO.jpg',
       backgroundColor: '#02eefb',
-      title: 'Music',
+      title: 'Tưởng tượng',
       quantity: '881',
     },
     {
       id: 4,
       url: 'https://i.imgur.com/aqfzW8f.jpg',
       backgroundColor: '#ec9cbf',
-      title: 'Love',
+      title: 'Lịch sử',
       quantity: '3.300',
     },
     {
       id: 5,
       url: 'https://i.imgur.com/7tbj9o1.jpg',
       backgroundColor: '#4b27a5',
-      title: 'Gaming',
+      title: 'Khoa học',
       quantity: '558',
     },
     {
       id: 6,
       url: 'https://i.imgur.com/sdyyEH3.jpg',
       backgroundColor: '#791aae',
-      title: 'Fashion',
+      title: 'Cuộc phiêu lưu',
       quantity: '200',
     },
     {
       id: 7,
       url: 'https://i.imgur.com/VmNBNyt.png',
-      backgroundColor: '#ffebd3',
-      title: 'Technology',
+      backgroundColor: '#010059',
+      title: 'Tiểu sử',
       quantity: '1.132',
     },
     {
       id: 8,
       url: 'https://i.imgur.com/DnjIfbk.jpg',
       backgroundColor: '#db98bb',
-      title: 'Art',
+      title: 'Triết học',
       quantity: '159',
     },
     {
       id: 9,
       url: 'https://i.imgur.com/KFwJx7P.jpg',
       backgroundColor: '#121818',
-      title: 'Travel',
+      title: 'Thơ',
       quantity: '599',
     },
     {
       id: 10,
       url: 'https://i.imgur.com/9O6LHZ5.jpg',
       backgroundColor: '#9f82bd',
-      title: 'Food',
+      title: 'Kịch',
       quantity: '300',
     },
   ] )
+
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    fetch('https://gutendex.com/books/?page=1')
+      .then((response) => response.json())
+      .then((data) => setBooks(data.results))
+      .catch((error) => console.error('Error fetching data:', error));
+  }, []);
 
   return (
     <div className="App">
@@ -100,13 +109,13 @@ function App () {
       >
         <img
           src={images.imgOpenBook}
-          alt="Logo image T&C"
+          alt="Logo Open Book"
           style={ {
             height: height * 0.09 - 32,
             marginTop: 13,
             marginBottom: 13,
-            marginLeft: 10,
-            marginRight: 13,
+            marginLeft: 15,
+            marginRight: 15,
           } }
         />
           <form  style={ {
@@ -120,8 +129,10 @@ function App () {
                 alignItems: 'center',
                 justifyContent: 'center',
                 display: 'flex',
+                flexDirection: 'row',
               } }
             >
+
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tên sách"
@@ -141,19 +152,19 @@ function App () {
                   textShadow: 'inherit',
                   boxShadow: '0px 2px 6px rgba(32,32,32, 0.3)',
                 } }
-              />
+              /><img
+              src={ images.search }
+              style={ {
+                height: height * 0.09 - 41,
+                paddingLeft: 10,
+                paddingRight: 10,
+                filter: 'invert(100%)',
+              } }
+            />
               <style>{ `input::placeholder {
             color: ${ colors.black232323FF};
             padding: ${ 15 }; }` }</style>
 
-              <img
-                src={ images.search }
-                style={ {
-                  height: height * 0.09 - 45,
-                  filter: 'invert(100%)',
-                  padding: 10,
-                } }
-              />
             </div>
           </form>
 
@@ -210,25 +221,7 @@ function App () {
           </div>
         </Link>
       </div>
-      <div
-        style={ {
-          height: height * 0.1,
-          backgroundColor: '#171544',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        } }
-      >
-        <p
-          style={ {
-            color: '#acd7ea',
-            fontWeight: 'bold',
-            fontSize: 20,
-          } }
-        >
-          The only sensible way to live in this world is without rules.
-        </p>
-      </div>
+
       <div
         style={ {
           backgroundColor: '#171544',
@@ -238,6 +231,7 @@ function App () {
           paddingRight: 25,
           display: 'flex',
           flexDirection: 'column',
+          marginTop: height * 0.11,
         } }
       >
         <span
@@ -275,7 +269,7 @@ function App () {
             >
               <div
                 style={ {
-                  height: height * 0.08,
+                  height: height * 0.083,
                   width: item.id == 1 ? width * 0.16 : width * 0.075,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
@@ -294,9 +288,10 @@ function App () {
                     fontWeight: 'Bold',
                     color: '#fff',
                     fontFamily: 'roboto',
+                    lineHeight: 1,
                   } }
                 >
-                  ${ item.title }
+                  { item.title }
                 </span>
                 <span
                   style={ {
@@ -306,7 +301,7 @@ function App () {
                     fontFamily: 'cursive',
                   } }
                 >
-                  ${ item.quantity } ports
+                  { item.quantity } views
                 </span>
               </div>
             </div>
@@ -317,421 +312,66 @@ function App () {
         style={ {
           backgroundColor: '#060d13',
           display: 'flex',
-          height: height * 0.85,
           width: width,
           flexDirection: 'row',
-          paddingLeft: width * 0.01,
-          paddingRight: width * 0.01,
-          justifyContent: 'center',
-          alignItems: 'center',
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingTop: 20,
+          justifyContent: 'start',
+          alignItems: 'start',
+          flexWrap: 'wrap',
         } }
       >
-        <div
-          style={ {
-            height: height * 0.7,
-            width: width * 0.2,
-            backgroundImage: `url('https://i.imgur.com/fU2d8Pl.jpg')`,
-            borderRadius: 8,
-            backgroundSize: 'cover',
-            marginRight: 10,
-            marginLeft: 10,
-            borderWidth: 3,
-            borderColor: '#474a51',
-            borderStyle: 'solid',
-            boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
-            alignItems: 'flex-end',
-            justifyContent: 'space-evenly',
-            display: 'flex',
-          } }
-        >
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ff7b94',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.love } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ff7b94',
-                marginLeft: 3,
-              } }
-            >
-              53
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #4370ff',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.chat } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#4370ff',
-                marginLeft: 3,
-              } }
-            >
-              33
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ffe0d1',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.eyes } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ffe0d1',
-                marginLeft: 3,
-              } }
-            >
-              115
-            </span>
-          </div>
-        </div>
-        <div
-          style={ {
-            height: height * 0.66,
-            width: width * 0.2,
-            backgroundImage: `url('https://i.imgur.com/3yRmJrO.jpg')`,
-            borderRadius: 8,
-            backgroundSize: 'cover',
-            marginRight: 10,
-            marginLeft: 10,
-            borderWidth: 1,
-            borderColor: '#9e4f48',
-            borderStyle: 'solid',
-            boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
-            alignItems: 'flex-end',
-            justifyContent: 'space-evenly',
-            display: 'flex',
-          } }
-        >
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ff7b94',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.love } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ff7b94',
-                marginLeft: 3,
-              } }
-            >
-              53
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #4370ff',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.chat } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#4370ff',
-                marginLeft: 3,
-              } }
-            >
-              33
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ffe0d1',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.eyes } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ffe0d1',
-                marginLeft: 3,
-              } }
-            >
-              115
-            </span>
-          </div>
-        </div>
-        <div
-          style={ {
-            height: height * 0.6,
-            width: width * 0.2,
-            backgroundImage: `url('https://i.imgur.com/v3MFM7B.jpg')`,
-            backgroundSize: 'cover',
-            marginRight: 10,
-            marginLeft: 10,
-            borderRadius: 8,
-            boxShadow: '5px 5px 10px rgba(255, 255, 255,0.3)',
-            alignItems: 'flex-end',
-            justifyContent: 'space-evenly',
-            display: 'flex',
-          } }
-        >
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ff7b94',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.love } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ff7b94',
-                marginLeft: 3,
-              } }
-            >
-              53
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #4370ff',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.chat } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#4370ff',
-                marginLeft: 3,
-              } }
-            >
-              33
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ffe0d1',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.eyes } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ffe0d1',
-                marginLeft: 3,
-              } }
-            >
-              115
-            </span>
-          </div>
-        </div>
-        <div
-          style={ {
-            height: height * 0.55,
-            width: width * 0.2,
-            backgroundImage: `url('https://i.imgur.com/WXa6UyW.jpg')`,
-            borderRadius: 8,
-            backgroundSize: 'cover',
-            marginRight: 10,
-            marginLeft: 10,
-            boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
-            alignItems: 'flex-end',
-            justifyContent: 'space-evenly',
-            display: 'flex',
-          } }
-        >
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ff7b94',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.love } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ff7b94',
-                marginLeft: 3,
-              } }
-            >
-              53
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #4370ff',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.chat } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#4370ff',
-                marginLeft: 3,
-              } }
-            >
-              33
-            </span>
-          </div>
-          <div
-            style={ {
-              marginBottom: -height * 0.028,
-              paddingLeft: 9,
-              paddingRight: 9,
-              paddingTop: 5,
-              paddingBottom: 5,
-              backgroundColor: '#09060f',
-              borderRadius: height * 0.04,
-              boxShadow: '0 0 10px #ffe0d1',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-            } }
-          >
-            <img src={ images.eyes } style={ { height: height * 0.02 } } />
-            <span
-              style={ {
-                fontSize: 12,
-                fontWeight: 'bold',
-                color: '#ffe0d1',
-                marginLeft: 3,
-              } }
-            >
-              115
-            </span>
-          </div>
-        </div>
+        {books.map((book) => (
+      <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      >
+ <div
+            key={book.id}
+            style={{
+              height: height * 0.3,
+              width: width * 0.12,
+              backgroundImage: `url('${book.formats['image/jpeg']}')`,
+              borderRadius: 8,
+              backgroundSize: 'cover',
+              marginTop: 10,
+              marginRight: 10,
+              marginLeft: 10,
+              borderWidth: 3,
+              borderColor: '#474a51',
+              borderStyle: 'solid',
+              boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
+              alignItems: 'flex-end',
+              justifyContent: 'space-evenly',
+
+            }}
+          ></div>
+
+              <span
+              key={book.id}
+              style={{
+                marginTop: 15,
+                marginTop: 10,
+              width: width * 0.12,
+              height: height * 0.1,
+              fontWeight: 'bold',
+              fontSize: '14px',
+              color: colors.white,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              WebkitLineClamp: 2,
+              height: '100%',
+              textAlign: 'center',
+              }}>
+                {book.title}
+              </span>
+            </div>
+        ))}
       </div>
     </div>
   )
