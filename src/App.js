@@ -1,12 +1,9 @@
 import { Link } from 'react-router-dom'
 import './App.css'
-import { images } from './constants'
+import { images, colors } from './constants'
 import { useRef, useState } from 'react'
 
 function App () {
-  const placeholderStyle = {
-    color: '#d0d0e2',
-  }
 
   const width = useRef( window.innerWidth ).current
   const height = useRef( window.innerHeight ).current
@@ -92,7 +89,7 @@ function App () {
           display: 'flex',
           height: height * 0.09,
           width: width - 15,
-          backgroundColor: '#171544',
+          backgroundColor: colors.colorB5D2D7FF,
           flexDirection: 'row',
           paddingTop: 5,
           position: 'fixed',
@@ -102,7 +99,7 @@ function App () {
         } }
       >
         <img
-          src={ 'https://i.imgur.com/hPbfzZ2.png' }
+          src={images.imgOpenBook}
           alt="Logo image T&C"
           style={ {
             height: height * 0.09 - 32,
@@ -112,15 +109,11 @@ function App () {
             marginRight: 13,
           } }
         />
-
-
-        <div
-          style={ {
+          <form  style={ {
             flex: 1,
             height: height * 0.09,
           } }
-        >
-          <form action="/search">
+          action="/search">
             <div
               style={ {
                 height: height * 0.09 - 6,
@@ -131,11 +124,11 @@ function App () {
             >
               <input
                 type="text"
-                placeholder="Images, #tags, @users oh my!"
+                placeholder="Tìm kiếm theo tên sách"
                 style={ {
-                  height: height * 0.09 - 33,
+                  height: height * 0.09 - 25,
                   width: width * 0.32,
-                  backgroundColor: '#454469',
+                  backgroundColor: colors.white,
                   padding: '0px  0px 0px 10px',
                   border: '1px solid transparent',
                   borderRadius: '3px',
@@ -144,14 +137,14 @@ function App () {
                   fontSize: '15px',
                   fontWeight: '400',
                   letterSpacing: '0.4px',
-                  color: '#fff',
+                  color: colors.black,
                   textShadow: 'inherit',
                   boxShadow: '0px 2px 6px rgba(32,32,32, 0.3)',
                 } }
               />
               <style>{ `input::placeholder {
-            color: ${ placeholderStyle.color };
-            padding: ${ placeholderStyle.padding }; }` }</style>
+            color: ${ colors.black232323FF};
+            padding: ${ 15 }; }` }</style>
 
               <img
                 src={ images.search }
@@ -163,29 +156,18 @@ function App () {
               />
             </div>
           </form>
-        </div>
+
         <Link to="/LoginAccount" style={ { textDecoration: 'none' } }>
           <div
             style={ {
-              width: width * 0.163,
+              width: width * 0.1,
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-
               marginBottom: 3,
             } }
           >
-            <img
-              src={ images.login }
-              style={ {
-                height: height * 0.09 - 41,
-                paddingLeft: 10,
-                paddingRight: 10,
-                filter: 'invert(100%)',
-              } }
-            />
-
             <img
               src={ images.bell }
               style={ {
@@ -222,7 +204,6 @@ function App () {
                   height: height * 0.09 - 31,
                   alignSelf: 'center',
                   marginRight: 15,
-                  boxShadow: '0px 2px 6px rgba(1,1,1, 0.4)',
                 } }
               />
             </div>
@@ -267,7 +248,7 @@ function App () {
             alignSelf: 'flex-start',
           } }
         >
-          EXPLORE TAGS
+          Thể loại phổ biến
         </span>
         <div
           style={ {
