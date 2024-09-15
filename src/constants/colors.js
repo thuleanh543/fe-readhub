@@ -10,6 +10,7 @@ export default {
     warning: '#FFA500',
     success: '#008000',
     info: '#00FFFF',
+    textColor: '#FFFFFFFF',
   },
   themeLight: {
     primary: '#1E1E1E',
@@ -20,6 +21,7 @@ export default {
     warning: '#FFA500',
     success: '#008000',
     info: '#00FFFF',
+    textColor: '#000000FF',
   },
 
 }

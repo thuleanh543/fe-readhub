@@ -1,3 +1,5 @@
 import LoginAccount from './login/LoginAccount'
+import Register from './register/Register'
+import ReadBookScreen from './read_book/views/ReadBookScreen'
 
-export {LoginAccount }
+export {LoginAccount , Register, ReadBookScreen}

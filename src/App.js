@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import './App.css'
 import { images, colors } from './constants'
 import { useEffect, useRef, useState } from 'react'
@@ -90,6 +90,12 @@ function App () {
       .then((data) => setBooks(data.results))
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
+
+  const navigate = useNavigate();
+
+  const handleBookClick = (bookId) => {
+    navigate(`/ReadBookScreen`, { state: { bookId } });
+  };
 
   return (
     <div className="App">
@@ -327,8 +333,11 @@ function App () {
         display: 'flex',
         flexDirection: 'column',
       }}
+      onClick={()=>{
+        handleBookClick(book.id)
+      }}
       >
- <div
+      <div
             key={book.id}
             style={{
               height: height * 0.3,
@@ -348,7 +357,6 @@ function App () {
 
             }}
           ></div>
-
               <span
               key={book.id}
               style={{
@@ -358,7 +366,7 @@ function App () {
               height: height * 0.1,
               fontWeight: 'bold',
               fontSize: '14px',
-              color: colors.white,
+              color: colors.themeDark.textColor,
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
