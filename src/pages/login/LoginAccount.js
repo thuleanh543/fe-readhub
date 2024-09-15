@@ -30,7 +30,18 @@ function LoginAccount () {
   const [ password, setPassword ] = useState( '' );
   const [ emailError, setEmailError ] = useState( '' );
   const [ passwordError, setPasswordError ] = useState( '' );
+  const [ buttonDisabled, setButtonDisabled ] = useState( true );
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    if ( isValidEmail( email ) && isValidPassword( password ) )
+    {
+      setButtonDisabled( false );
+    } else
+    {
+      setButtonDisabled( true );
+    }
+  };
 
   const handleFocus1 = () => {
     setIsFocused1( true );
@@ -45,6 +56,7 @@ function LoginAccount () {
     {
       setEmailError( '' );
     }
+    validateForm();
   };
 
   const handleFocus2 = () => {
@@ -53,35 +65,50 @@ function LoginAccount () {
 
   const handleBlur2 = () => {
     setIsFocused2( false );
-    if ( !isValidPassword( password ) || password.length < 6 )
+    if ( !isValidPassword( password ) )
     {
       setPasswordError( 'Password must be at least 6 characters long' );
     } else
     {
       setPasswordError( '' );
     }
+    validateForm();
   };
 
   const handleChangeEmail = ( e ) => {
     setEmail( e.target.value );
     if ( emailError ) setEmailError( '' );
+    validateForm();
   };
 
   const handleChangePassword = ( e ) => {
     setPassword( e.target.value );
     if ( passwordError ) setPasswordError( '' );
+    validateForm();
   };
 
   const handleLogin = async () => {
-    await axios.post( `http://localhost:8080/api/v1/authen/login?email=${ email }&password=${ password }` ).then( ( response ) => {
-      localStorage.setItem( 'token', response.data.token );
-      localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
-      toast.success( response.data.message );
-      navigate( '/' );
-    } ).catch( ( response ) => {
-      toast.error( "Email hoặc mật khẩu không đúng!" );
-    } );
-  }
+    if ( !isValidEmail( email ) )
+    {
+      setEmailError( 'Invalid email address' );
+    } else if ( !isValidPassword( password ) )
+    {
+      setPasswordError( 'Password must be at least 6 characters long' );
+    } else
+    {
+      await axios
+        .post( `http://localhost:8080/api/v1/authen/login?email=${ email }&password=${ password }` )
+        .then( ( response ) => {
+          localStorage.setItem( 'token', response.data.token );
+          localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
+          toast.success( response.data.message );
+          navigate( '/' );
+        } )
+        .catch( () => {
+          toast.error( 'Email hoặc mật khẩu không đúng!' );
+        } );
+    }
+  };
 
   return (
     <ThemeProvider theme={ theme }>
@@ -105,7 +132,8 @@ function LoginAccount () {
               onChange={ handleChangeEmail }
               onBlur={ handleBlur1 }
               value={ email }
-              className={ `mt-7 bg-[#191919] text-white border ${ isFocused1 ? 'border-[#4ce09b]' : 'border-transparent' } outline-none p-2.5 w-[19.7vw] rounded-md text-left pl-2` }
+              className={ `mt-7 bg-[#191919] text-white border ${ isFocused1 ? 'border-[#4ce09b]' : 'border-transparent'
+                } outline-none p-2.5 w-[19.7vw] rounded-md text-left pl-2` }
             />
             { emailError && (
               <div className="flex w-[19.7vw] justify-start mt-1">
@@ -121,7 +149,8 @@ function LoginAccount () {
                 onBlur={ handleBlur2 }
                 onChange={ handleChangePassword }
                 value={ password }
-                className={ `bg-[#191919] text-white border ${ isFocused2 ? 'border-[#4ce09b]' : 'border-transparent' } outline-none p-2.5 w-full rounded-md text-left pl-2` }
+                className={ `bg-[#191919] text-white border ${ isFocused2 ? 'border-[#4ce09b]' : 'border-transparent'
+                  } outline-none p-2.5 w-full rounded-md text-left pl-2` }
               />
               <button
                 type="button"
@@ -145,6 +174,7 @@ function LoginAccount () {
               className="w-[19.7vw] h-[6.5vh] text-white font-bold"
               color="buttonLogin"
               onClick={ handleLogin }
+              disabled={ buttonDisabled }
             >
               LOGIN
             </Button>
