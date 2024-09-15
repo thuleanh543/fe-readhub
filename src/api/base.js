@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthAPI } from './authAPI';
-
-toast.configure();
 
 export class BaseApi {
     constructor () {
@@ -16,9 +13,15 @@ export class BaseApi {
     }
 
     async get ( endpoint, config = {} ) {
+        if ( Date.now() >= localStorage.getItem( 'tokenExpiration' ) )
+        {
+            this.toastError( 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!' );
+            return;
+        }
+
         try
         {
-            const token = new AuthAPI().getToken(); // Lấy token
+            const token = localStorage.getItem( 'token' );
             const response = await this.axios.get( endpoint, {
                 ...config,
                 headers: {
@@ -34,9 +37,15 @@ export class BaseApi {
     }
 
     async post ( endpoint, data = {}, config = {} ) {
+        if ( Date.now() >= localStorage.getItem( 'tokenExpiration' ) && localStorage.getItem( 'tokenExpiration' ) !== null )
+        {
+            this.toastError( 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!' );
+            return;
+        }
+
         try
         {
-            const token = new AuthAPI().getToken(); // Lấy token
+            const token = localStorage.getItem( 'token' );
             const response = await this.axios.post( endpoint, data, {
                 ...config,
                 headers: {
@@ -52,9 +61,15 @@ export class BaseApi {
     }
 
     async put ( endpoint, data = {} ) {
+        if ( Date.now() >= localStorage.getItem( 'tokenExpiration' ) )
+        {
+            this.toastError( 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!' );
+            return;
+        }
+
         try
         {
-            const token = new AuthAPI().getToken(); // Lấy token
+            const token = localStorage.getItem( 'token' );
             const response = await this.axios.put( endpoint, data, {
                 headers: {
                     Authorization: `Bearer ${ token }`,
@@ -68,9 +83,15 @@ export class BaseApi {
     }
 
     async delete ( endpoint, data = {} ) {
+        if ( Date.now() >= localStorage.getItem( 'tokenExpiration' ) )
+        {
+            this.toastError( 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!' );
+            return;
+        }
+
         try
         {
-            const token = new AuthAPI().getToken(); // Lấy token
+            const token = localStorage.getItem( 'token' );
             const response = await this.axios.delete( endpoint, {
                 data,
                 headers: {
@@ -102,6 +123,7 @@ export class BaseApi {
             if ( response && response.status === 403 )
             {
                 // Xử lý khi gặp lỗi 403, ví dụ như chuyển hướng người dùng
+                toast.error( 'Bạn không có quyền truy cập.' );
             }
         } else
         {
