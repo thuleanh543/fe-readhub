@@ -1,9 +1,7 @@
 export default {
-  add_new_image: require('../assets/add_new_image.png'),
   search: require('../assets/search.png'),
   gojobg: require('../assets/gojobg.jpg'),
   bell: require('../assets/bell.png'),
-  login: require('../assets/login.png'),
   user: require('../assets/user.png'),
   choseimage: require('../assets/choseimage.png'),
   meme: require('../assets/meme.png'),
