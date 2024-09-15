@@ -98,7 +98,6 @@ function App () {
           display: 'flex',
           height: height * 0.09,
           width: width - 15,
-          backgroundColor: colors.black,
           flexDirection: 'row',
           paddingTop: 5,
           position: 'fixed',
@@ -224,7 +223,7 @@ function App () {
 
       <div
         style={ {
-          backgroundColor: '#171544',
+          backgroundColor: colors.themeDark.primary,
           height: height * 0.37,
           paddingLeft: width * 0.05,
           fontWeight: 'bold',
@@ -310,7 +309,7 @@ function App () {
       </div>
       <div
         style={ {
-          backgroundColor: '#060d13',
+          backgroundColor: colors.themeDark.color060d13,
           display: 'flex',
           width: width,
           flexDirection: 'row',

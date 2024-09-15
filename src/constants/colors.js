@@ -2,6 +2,7 @@ export default {
 
   themeDark: {
     primary: '#1E1E1E',
+    color060d13: '#060d13',
     secondary: '#2E2E2E',
     tertiary: '#333333',
     accent: '#FFD700',
