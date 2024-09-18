@@ -1,3 +1,4 @@
 import LoginAccount from './login/LoginAccount'
-
-export {LoginAccount }
+import VerifyRegister from './register/VerifyRegister'
+import Register from './register/Register'
+export { LoginAccount, VerifyRegister, Register }

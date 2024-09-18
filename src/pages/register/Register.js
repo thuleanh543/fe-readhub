@@ -1,30 +1,40 @@
 import { Button, createTheme, IconButton, ThemeProvider } from '@mui/material';
 import React, { useRef, useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { images } from '../../constants';
 import { isValidEmail, isValidPassword } from '../../utils/Validatations';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function Register () {
+    const navigate = useNavigate();
     const width = useRef( window.innerWidth ).current;
     const height = useRef( window.innerHeight ).current;
-
     const [ isFocused1, setIsFocused1 ] = useState( false );
     const [ isFocused2, setIsFocused2 ] = useState( false );
     const [ isFocused3, setIsFocused3 ] = useState( false );
-    const [ isShowButton, setIsShowButton ] = useState( false );
-
     const [ email, setEmail ] = useState( '' );
     const [ password, setPassword ] = useState( '' );
-
     const [ emailError, setEmailError ] = useState( '' );
     const [ passwordError, setPasswordError ] = useState( '' );
-
     const [ username, setUsername ] = useState( '' );
-
+    const [ usernameError, setUsernameError ] = useState( '' );
     const [ isShowPassword, setIsShowPassword ] = useState( false );
+    const [ buttonDisabled, setButtonDisabled ] = useState( true );
+
+    const validateForm = ( u, e, p ) => {
+        if ( isValidEmail( e ) && isValidPassword( p ) && u.length >= 6 )
+        {
+            setButtonDisabled( false );
+        } else
+        {
+            setButtonDisabled( true );
+        }
+    };
 
     const handleFocus1 = () => {
         setIsFocused1( true );
@@ -32,13 +42,6 @@ function Register () {
 
     const handleBlur1 = () => {
         setIsFocused1( false );
-        if ( !isValidEmail( email ) )
-        {
-            setEmailError( 'Invalid email address' );
-        } else
-        {
-            setEmailError( '' );
-        }
     };
 
     const handleFocus2 = () => {
@@ -47,13 +50,6 @@ function Register () {
 
     const handleBlur2 = () => {
         setIsFocused2( false );
-        if ( !isValidPassword( password ) || password.length < 6 )
-        {
-            setPasswordError( 'Password must be at least 6 characters long' );
-        } else
-        {
-            setPasswordError( '' );
-        }
     };
     const handleFocus3 = () => {
         setIsFocused3( true );
@@ -63,20 +59,46 @@ function Register () {
         setIsFocused3( false );
     };
 
+    const handleChangeUsername = ( e ) => {
+        setUsername( e.target.value );
+        if ( e.target.value === '' ) usernameError( 'Username is required' )
+        else if ( e.target.value.length < 6 ) setUsernameError( 'Username must be at least 6 characters long' )
+        else usernameError( '' );
+        validateForm( e.target.value, email, password );
+    };
 
     const handleChangeEmail = ( e ) => {
-        setEmail( e.target.value );
-        if ( emailError ) setEmailError( '' ); // Clear error when typing
+        setEmail( e.target.value )
+        if ( e.target.value === '' ) setEmailError( 'Email is required' )
+        else if ( !isValidEmail( e.target.value ) ) setEmailError( 'Invalid email address' )
+        else setEmailError( '' );
+        validateForm( username, e.target.value, password );
+
     };
 
     const handleChangePassword = ( e ) => {
         setPassword( e.target.value );
-        if ( passwordError ) setPasswordError( '' ); // Clear error when typing
+        if ( e.target.value === '' ) setPasswordError( 'Password is required' )
+        else if ( !isValidPassword( e.target.value ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' )
+        else setPasswordError( '' );
+        validateForm( username, email, e.target.value );
     };
 
-    const handleChangeUsername = ( e ) => {
-        setUsername( e.target.value );
-    };
+    const handleRegister = async () => {
+        await axios.post( `http://localhost:8080/api/v1/authen/register?email=${ email }&username=${ username }&password=${ password }&otp=0fec5b` ).then( ( response ) => {
+            localStorage.setItem( 'token', response.data.token );
+            localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
+            toast.success( response.data.message );
+            navigate( '/VerifyRegister', {
+                state: {
+                    username: username, email: email, password: password
+                }
+            } );
+        } )
+            .catch( () => {
+                toast.error( 'Email hoặc mật khẩu không đúng!' );
+            } );
+    }
 
     return (
         <ThemeProvider theme={ theme } >
@@ -114,19 +136,24 @@ function Register () {
                         <input
                             type="text"
                             placeholder="Username"
-                            onFocus={ handleFocus3 }
-                            onBlur={ handleBlur3 }
+                            onFocus={ handleFocus1 }
+                            onBlur={ handleBlur1 }
                             onChange={ handleChangeUsername }
-                            className={ `mt-7 bg-[#191919] text-white border ${ isFocused3 ? 'border-[#4ce09b]' : 'border-transparent'
+                            className={ `mt-7 bg-[#191919] text-white border ${ isFocused1 ? 'border-[#4ce09b]' : 'border-transparent'
                                 } outline-none p-2.5 w-[19.7vw] rounded-md text-left pl-2` }
                         />
+                        { usernameError &&
+                            <div className=" flex w-[19.7vw] justify-start mt-1">
+                                <span className="text-red-500 text-sm">{ usernameError }</span>
+                            </div>
+                        }
                         <input
                             type="text"
                             placeholder="Username or Email"
-                            onFocus={ handleFocus1 }
+                            onFocus={ handleFocus2 }
                             onChange={ handleChangeEmail }
-                            onBlur={ handleBlur1 }
-                            className={ `mt-3 bg-[#191919] text-white border ${ isFocused1 ? 'border-[#4ce09b]' : 'border-transparent'
+                            onBlur={ handleBlur2 }
+                            className={ `mt-3 bg-[#191919] text-white border ${ isFocused2 ? 'border-[#4ce09b]' : 'border-transparent'
                                 } outline-none p-2.5 w-[19.7vw] rounded-md text-left pl-2` }
                         />
                         { emailError &&
@@ -139,10 +166,10 @@ function Register () {
                             <input
                                 type={ isShowPassword ? 'text' : 'password' }
                                 placeholder="Password"
-                                onFocus={ handleFocus2 }
-                                onBlur={ handleBlur2 }
+                                onFocus={ handleFocus3 }
+                                onBlur={ handleBlur3 }
                                 onChange={ handleChangePassword }
-                                className={ `bg-[#191919] text-white border ${ isFocused2 ? 'border-[#4ce09b]' : 'border-transparent'
+                                className={ `bg-[#191919] text-white border ${ isFocused3 ? 'border-[#4ce09b]' : 'border-transparent'
                                     } outline-none p-2.5 w-full rounded-md text-left pl-2` }
                             />
                             {/* Toggle password visibility */ }
@@ -162,8 +189,13 @@ function Register () {
                         }
 
                         <div className='mt-5'>
-                            <Button variant="contained" className=" w-[19.7vw] h-[6.5vh] text-white font-bold" color="buttonLogin">
-                                LOGIN
+                            <Button variant="contained"
+                                className=" w-[19.7vw] h-[6.5vh] text-white font-bold"
+                                color="buttonRegister"
+                                onClick={ handleRegister }
+                                disabled={ buttonDisabled }
+                            >
+                                REGISTER
                             </Button>
                         </div>
 
@@ -222,7 +254,7 @@ function Register () {
 
 const theme = createTheme( {
     palette: {
-        buttonLogin: {
+        buttonRegister: {
             main: '#51bd8e',
             light: '#67eab1',
             dark: '#4ce09b',
