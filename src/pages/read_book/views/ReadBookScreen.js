@@ -9,8 +9,6 @@ function ReadBookScreen() {
 
   const [bookData, setBookData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showHeader, setShowHeader] = useState(true);
-  const iframeRef = useRef(null);
 
   useEffect(() => {
     console.log('bookId:', bookId);
@@ -28,31 +26,6 @@ function ReadBookScreen() {
     }
   }, [bookId]);
 
-  useEffect(() => {
-    const iframe = iframeRef.current;
-
-    const handleIframeScroll = () => {
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.addEventListener('scroll', () => {
-          if (iframe.contentWindow.scrollY > 50) {
-            setShowHeader(false);
-          } else {
-            setShowHeader(true);
-          }
-        });
-      }
-    };
-
-    if (iframe) {
-      iframe.addEventListener('load', handleIframeScroll);
-    }
-
-    return () => {
-      if (iframe) {
-        iframe.removeEventListener('load', handleIframeScroll);
-      }
-    };
-  }, [iframeRef]);
 
   if (loading) {
     return (
@@ -70,14 +43,13 @@ function ReadBookScreen() {
 
   return (
     <div>
-      <div style={{ ...styles.header, opacity: showHeader ? 1 : 0 }}>
+      <div style={{ ...styles.header }}>
         <h1>{title}</h1>
         <p>
           <strong>Author:</strong> {authors.map((author) => author.name).join(', ')}
         </p>
       </div>
       <iframe
-        ref={iframeRef}
         src={formats['text/plain'] || formats['text/html']}
         style={styles.bookContent}
         title="Book Content"
