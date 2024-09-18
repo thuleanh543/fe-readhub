@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import { images } from '../../../constants';
 
 function ReadBookScreen() {
   const location = useLocation();
@@ -54,11 +55,43 @@ function ReadBookScreen() {
         style={styles.bookContent}
         title="Book Content"
       />
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        height: '9vh', width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.0)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        }}>
+      <button onClick={()=>{}} style={styles.button}>
+        <img src={images.icLeftArrow}
+          alt="Back" style={styles.icon} />
+        </button>
+      <span style={styles.chapterLabel}>Chương 1</span>
+      <button
+      onClick={()=>{}} style={styles.button}>
+        <img src={images.icRightArrow}
+          alt="Next" style={styles.icon} />
+      </button>
+      </div>
     </div>
   );
 }
 
 const styles = {
+  icon: {
+    width: '30px',
+    height: '30px',
+  },
+  button: {
+    padding: '10px 20px',
+    cursor: 'pointer',
+  },
+  chapterLabel: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+  },
   header: {
     position: 'fixed',
     top: 0,
