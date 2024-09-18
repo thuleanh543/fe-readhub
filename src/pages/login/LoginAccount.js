@@ -49,13 +49,10 @@ function LoginAccount () {
 
   const handleBlur1 = () => {
     setIsFocused1( false );
-    if ( !isValidEmail( email ) )
-    {
-      setEmailError( 'Invalid email address' );
-    } else
-    {
-      setEmailError( '' );
-    }
+    if ( email === '' ) setEmailError( 'Email is required' );
+    else if ( !isValidEmail( email ) ) setEmailError( 'Invalid email address' );
+    else setEmailError( '' );
+
     validateForm();
   };
 
@@ -65,45 +62,42 @@ function LoginAccount () {
 
   const handleBlur2 = () => {
     setIsFocused2( false );
-    if ( !isValidPassword( password ) )
-    {
-      setPasswordError( 'Password must be at least 6 characters long' );
-    } else
-    {
-      setPasswordError( '' );
-    }
+    if ( password === '' ) setPasswordError( 'Password is required' );
+    else if ( !isValidPassword( password ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' );
+    else setPasswordError( '' );
     validateForm();
   };
 
   const handleChangeEmail = ( e ) => {
-    setEmail( e.target.value );
-    if ( emailError ) setEmailError( '' );
+    setEmail( e.target.value )
+    if ( email === '' ) setEmailError( 'Email is required' )
+    else if ( !isValidEmail( email ) ) setEmailError( 'Invalid email address' )
+    else setEmailError( '' );
+
     validateForm();
   };
 
   const handleChangePassword = ( e ) => {
     setPassword( e.target.value );
-    if ( passwordError ) setPasswordError( '' );
+    if ( password === '' ) setPasswordError( 'Password is required' )
+    else if ( !isValidPassword( password ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' )
+    else setPasswordError( '' );
     validateForm();
   };
 
   const handleLogin = async () => {
-    if ( !isValidEmail( email ) )
+    if ( email === '' ) setEmailError( 'Email is required' );
+    else if ( password === '' ) setPasswordError( 'Password is required' );
+    else if ( !isValidEmail( email ) ) setEmailError( 'Invalid email address' );
+    else if ( !isValidPassword( password ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' );
+    else
     {
-      setEmailError( 'Invalid email address' );
-    } else if ( !isValidPassword( password ) )
-    {
-      setPasswordError( 'Password must be at least 6 characters long' );
-    } else
-    {
-      await axios
-        .post( `http://localhost:8080/api/v1/authen/login?email=${ email }&password=${ password }` )
-        .then( ( response ) => {
-          localStorage.setItem( 'token', response.data.token );
-          localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
-          toast.success( response.data.message );
-          navigate( '/' );
-        } )
+      await axios.post( `http://localhost:8080/api/v1/authen/login?email=${ email }&password=${ password }` ).then( ( response ) => {
+        localStorage.setItem( 'token', response.data.token );
+        localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
+        toast.success( response.data.message );
+        navigate( '/' );
+      } )
         .catch( () => {
           toast.error( 'Email hoặc mật khẩu không đúng!' );
         } );
@@ -179,14 +173,16 @@ function LoginAccount () {
               LOGIN
             </Button>
 
-            <div className="mt-2.5 w-[22.8vw] h-[6.5vh] flex justify-end items-center mb-5">
-              <div className="flex h-[6.5vh] items-center justify-center">
+            <div className="mt-2.5 w-full h-[6.5vh] flex justify-end mr-20 mb-5">
+              <div className="flex items-center justify-center">
                 <span className="font-medium text-lg text-[#f2f2f2] mx-1.5">Need an account?</span>
               </div>
-              <div className="w-[5.8vw] h-[6.5vh] flex justify-center items-center">
+              <div className=" h-[6.5vh] flex justify-center items-center">
                 <div className="h-[5.5vh] w-[5vw] border-3 border-[#00e0d8] rounded-md flex justify-center items-center">
                   <Link to="/register">
-                    <span className="font-normal text-lg text-[#0fc6c6]">Sign in</span>
+                    <Button >
+                      <span className="font-normal text-lg text-[#0fc6c6] normal-case ">Sign in</span>
+                    </Button>
                   </Link>
                 </div>
               </div>
