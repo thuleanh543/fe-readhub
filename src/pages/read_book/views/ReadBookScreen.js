@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { width } from '@mui/system';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 function ReadBookScreen() {
@@ -7,11 +8,12 @@ function ReadBookScreen() {
 
   const [bookData, setBookData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showHeader, setShowHeader] = useState(true);
+  const iframeRef = useRef(null); // Tạo ref cho iframe
 
   useEffect(() => {
     console.log('bookId:', bookId);
     if (bookId) {
-      // Gọi API Gutendex để lấy thông tin sách
       fetch(`https://gutendex.com/books/${bookId}`)
         .then((response) => response.json())
         .then((data) => {
@@ -25,6 +27,35 @@ function ReadBookScreen() {
     }
   }, [bookId]);
 
+  useEffect(() => {
+    const iframe = iframeRef.current;
+
+    // Lắng nghe sự kiện cuộn từ iframe nếu có thể truy cập vào nội dung của nó
+    const handleIframeScroll = () => {
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.addEventListener('scroll', () => {
+          if (iframe.contentWindow.scrollY > 50) {
+            setShowHeader(false);
+          } else {
+            setShowHeader(true);
+          }
+        });
+      }
+    };
+
+    // Kiểm tra xem iframe đã load xong chưa, rồi mới gán sự kiện scroll
+    if (iframe) {
+      iframe.addEventListener('load', handleIframeScroll);
+    }
+
+    // Cleanup sự kiện khi component bị hủy
+    return () => {
+      if (iframe) {
+        iframe.removeEventListener('load', handleIframeScroll);
+      }
+    };
+  }, [iframeRef]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -36,50 +67,39 @@ function ReadBookScreen() {
   const { title, authors, formats } = bookData;
 
   return (
-    <div style={styles.container}>
-      <h1>{title}</h1>
-      <p>
-        <strong>Author:</strong> {authors.map((author) => author.name).join(', ')}
-      </p>
-      <div style={styles.readerContainer}>
-        {/* Link to read the book in plain text format */}
-        {formats['text/plain'] && (
-          <iframe
-            src={formats['text/plain']}
-            style={styles.bookContent}
-            title="Book Content"
-          />
-        )}
-        {/* If there's no plain text version, fallback to HTML or other format */}
-        {!formats['text/plain'] && formats['text/html'] && (
-          <iframe
-            src={formats['text/html']}
-            style={styles.bookContent}
-            title="Book Content"
-          />
-        )}
-        {/* In case no readable format is available */}
-        {!formats['text/plain'] && !formats['text/html'] && (
-          <p>No readable format available for this book.</p>
-        )}
+    <div>
+      <div style={{ ...styles.header, opacity: showHeader ? 1 : 0 }}>
+        <h1>{title}</h1>
+        <p>
+          <strong>Author:</strong> {authors.map((author) => author.name).join(', ')}
+        </p>
       </div>
+      <iframe
+        ref={iframeRef}
+        src={formats['text/plain'] || formats['text/html']}
+        style={styles.bookContent}
+        title="Book Content"
+      />
     </div>
   );
 }
 
 const styles = {
-  container: {
-    padding: '20px',
-  },
-  readerContainer: {
-    marginTop: '20px',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    overflow: 'hidden',
+  header: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    width: '19%',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: '10px',
+    borderBottom: '1px solid #ddd',
+    zIndex: 1000,
+    transition: 'opacity 0.3s ease',
   },
   bookContent: {
     width: '100%',
-    height: '500px',
+    height: '100vh',
     border: 'none',
   },
 };
