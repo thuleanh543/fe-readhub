@@ -1,6 +1,7 @@
-import { width } from '@mui/system';
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 
 function ReadBookScreen() {
   const location = useLocation();
@@ -9,7 +10,7 @@ function ReadBookScreen() {
   const [bookData, setBookData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showHeader, setShowHeader] = useState(true);
-  const iframeRef = useRef(null); // Tạo ref cho iframe
+  const iframeRef = useRef(null);
 
   useEffect(() => {
     console.log('bookId:', bookId);
@@ -30,7 +31,6 @@ function ReadBookScreen() {
   useEffect(() => {
     const iframe = iframeRef.current;
 
-    // Lắng nghe sự kiện cuộn từ iframe nếu có thể truy cập vào nội dung của nó
     const handleIframeScroll = () => {
       if (iframe && iframe.contentWindow) {
         iframe.contentWindow.addEventListener('scroll', () => {
@@ -43,12 +43,10 @@ function ReadBookScreen() {
       }
     };
 
-    // Kiểm tra xem iframe đã load xong chưa, rồi mới gán sự kiện scroll
     if (iframe) {
       iframe.addEventListener('load', handleIframeScroll);
     }
 
-    // Cleanup sự kiện khi component bị hủy
     return () => {
       if (iframe) {
         iframe.removeEventListener('load', handleIframeScroll);
@@ -57,7 +55,11 @@ function ReadBookScreen() {
   }, [iframeRef]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (!bookData) {
