@@ -1,3 +1,3 @@
-import LoginAccount from './login/LoginAccount'
+import LoginAccount from './login/views/LoginAccount'
 
 export {LoginAccount }
