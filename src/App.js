@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import './App.css'
 import { images, colors } from './constants'
 import { useEffect, useRef, useState } from 'react'
@@ -92,6 +92,12 @@ function App () {
     console.log( localStorage.getItem( 'token' ) );
   }, [] );
 
+  const navigate = useNavigate();
+
+  const handleBookClick = (bookId) => {
+    navigate(`/ReadBookScreen`, { state: { bookId } });
+  };
+
   return (
     <div className="App">
       <div
@@ -99,7 +105,6 @@ function App () {
           display: 'flex',
           height: height * 0.09,
           width: width - 15,
-          backgroundColor: colors.black,
           flexDirection: 'row',
           paddingTop: 5,
           position: 'fixed',
@@ -225,7 +230,7 @@ function App () {
 
       <div
         style={ {
-          backgroundColor: '#171544',
+          backgroundColor: colors.themeDark.primary,
           height: height * 0.37,
           paddingLeft: width * 0.05,
           fontWeight: 'bold',
@@ -311,7 +316,7 @@ function App () {
       </div>
       <div
         style={ {
-          backgroundColor: '#060d13',
+          backgroundColor: colors.themeDark.color060d13,
           display: 'flex',
           width: width,
           flexDirection: 'row',
@@ -323,56 +328,58 @@ function App () {
           flexWrap: 'wrap',
         } }
       >
-        { books.map( ( book ) => (
-          <div
-            style={ {
-              display: 'flex',
-              flexDirection: 'column',
-            } }
-          >
-            <div
-              key={ book.id }
-              style={ {
-                height: height * 0.3,
-                width: width * 0.12,
-                backgroundImage: `url('${ book.formats[ 'image/jpeg' ] }')`,
-                borderRadius: 8,
-                backgroundSize: 'cover',
-                marginTop: 10,
-                marginRight: 10,
-                marginLeft: 10,
-                borderWidth: 3,
-                borderColor: '#474a51',
-                borderStyle: 'solid',
-                boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
-                alignItems: 'flex-end',
-                justifyContent: 'space-evenly',
+        {books.map((book) => (
+      <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      onClick={()=>{
+        handleBookClick(book.id)
+      }}
+      >
+      <div
+            key={book.id}
+            style={{
+              height: height * 0.3,
+              width: width * 0.12,
+              backgroundImage: `url('${book.formats['image/jpeg']}')`,
+              borderRadius: 8,
+              backgroundSize: 'cover',
+              marginTop: 10,
+              marginRight: 10,
+              marginLeft: 10,
+              borderWidth: 3,
+              borderColor: '#474a51',
+              borderStyle: 'solid',
+              boxShadow: '5px 5px 10px rgba(255, 255, 255, 0.3)',
+              alignItems: 'flex-end',
+              justifyContent: 'space-evenly',
 
-              } }
-            ></div>
-
-            <span
-              key={ book.id }
-              style={ {
+            }}
+          ></div>
+              <span
+              key={book.id}
+              style={{
                 marginTop: 15,
                 marginTop: 10,
-                width: width * 0.12,
-                height: height * 0.1,
-                fontWeight: 'bold',
-                fontSize: '14px',
-                color: colors.white,
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                WebkitLineClamp: 2,
-                height: '100%',
-                textAlign: 'center',
-              } }>
-              { book.title }
-            </span>
-          </div>
-        ) ) }
+              width: width * 0.12,
+              height: height * 0.1,
+              fontWeight: 'bold',
+              fontSize: '14px',
+              color: colors.themeDark.textColor,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              WebkitLineClamp: 2,
+              height: '100%',
+              textAlign: 'center',
+              }}>
+                {book.title}
+              </span>
+            </div>
+        ))}
       </div>
     </div>
   )
