@@ -33,8 +33,8 @@ function LoginAccount () {
   const [ buttonDisabled, setButtonDisabled ] = useState( true );
   const navigate = useNavigate();
 
-  const validateForm = () => {
-    if ( isValidEmail( email ) && isValidPassword( password ) )
+  const validateForm = ( e, p ) => {
+    if ( isValidEmail( e ) && isValidPassword( p ) )
     {
       setButtonDisabled( false );
     } else
@@ -49,11 +49,6 @@ function LoginAccount () {
 
   const handleBlur1 = () => {
     setIsFocused1( false );
-    if ( email === '' ) setEmailError( 'Email is required' );
-    else if ( !isValidEmail( email ) ) setEmailError( 'Invalid email address' );
-    else setEmailError( '' );
-
-    validateForm();
   };
 
   const handleFocus2 = () => {
@@ -62,27 +57,23 @@ function LoginAccount () {
 
   const handleBlur2 = () => {
     setIsFocused2( false );
-    if ( password === '' ) setPasswordError( 'Password is required' );
-    else if ( !isValidPassword( password ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' );
-    else setPasswordError( '' );
-    validateForm();
   };
 
   const handleChangeEmail = ( e ) => {
     setEmail( e.target.value )
-    if ( email === '' ) setEmailError( 'Email is required' )
-    else if ( !isValidEmail( email ) ) setEmailError( 'Invalid email address' )
+    if ( e.target.value === '' ) setEmailError( 'Email is required' )
+    else if ( !isValidEmail( e.target.value ) ) setEmailError( 'Invalid email address' )
     else setEmailError( '' );
+    validateForm( e.target.value, password );
 
-    validateForm();
   };
 
   const handleChangePassword = ( e ) => {
     setPassword( e.target.value );
-    if ( password === '' ) setPasswordError( 'Password is required' )
-    else if ( !isValidPassword( password ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' )
+    if ( e.target.value === '' ) setPasswordError( 'Password is required' )
+    else if ( !isValidPassword( e.target.value ) ) setPasswordError( 'Password must be at least 8 characters long, include a letter, a number, and a special character' )
     else setPasswordError( '' );
-    validateForm();
+    validateForm( email, e.target.value );
   };
 
   const handleLogin = async () => {
