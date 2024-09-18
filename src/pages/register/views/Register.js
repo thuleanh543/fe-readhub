@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useRef } from 'react';
 import { Button, createTheme, ThemeProvider, CircularProgress } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { images } from '../../../constants';
@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { registerReducer, initialState, actionTypes, validateForm, validateField } from '../redux/registerReducer';
 
 function Register () {
+    const height = useRef( window.innerHeight ).current;
     const [ state, dispatch ] = useReducer( registerReducer, initialState );
     const navigate = useNavigate();
 
@@ -25,9 +26,9 @@ function Register () {
         dispatch( { type: actionTypes.SET_LOADING, payload: true } );
         try
         {
-            const response = await axios.post( `http://localhost:8080/api/v1/authen/send-otp?email=${ state.email }` );
+            const response = await axios.post( `http://localhost:8080/api/v1/authen/send-otp?email=${ state.email }&username=${ state.username }` );
             dispatch( { type: actionTypes.SET_SUCCESS, payload: true } );
-            toast.success( 'OTP sent successfully. Please check your email.' );
+            toast.success( response.data.message );
             navigate( '/VerifyRegister', {
                 state: {
                     username: state.username,
@@ -37,7 +38,7 @@ function Register () {
             } );
         } catch ( error )
         {
-            toast.error( 'Registration failed. Please try again.' );
+            console.log( error.massage );
         } finally
         {
             dispatch( { type: actionTypes.SET_LOADING, payload: false } );
@@ -48,8 +49,16 @@ function Register () {
         <ThemeProvider theme={ theme }>
             <div className="bg-[#141518] min-h-screen flex flex-col">
                 {/* Header */ }
-                <div className="flex justify-between items-center p-5">
-                    <img src={ images.thu } className="h-6" alt="Logo" />
+                <div className="flex gap-2 items-center p-5">
+                    <img
+                        src={ images.imgOpenBook }
+                        alt="Logo Open Book"
+                        style={ {
+                            height: height * 0.09 - 32,
+                            marginLeft: 15,
+                            marginRight: 15,
+                        } }
+                    />
                     <Link to="/">
                         <span className="text-sm font-medium text-[#e5ffbc]">Back to T&C</span>
                     </Link>

@@ -1,6 +1,6 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useRef } from 'react';
 import { Button, createTheme, ThemeProvider } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { images } from '../../../constants';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { registerReducer, initialState, actionTypes } from '../redux/registerReducer';
 
 function VerifyRegister () {
+    const height = useRef( window.innerHeight ).current;
     const [ state, dispatch ] = useReducer( registerReducer, initialState );
     const navigate = useNavigate();
     const location = useLocation();
@@ -48,9 +49,10 @@ function VerifyRegister () {
     const handleVerify = async () => {
         try
         {
-            const response = await axios.post( `http://localhost:8080/api/v1/authen/verify-register?email=${ email }&username=${ username }&password=${ password }&otp=${ state.otp }` );
+            const response = await axios.post( `http://localhost:8080/api/v1/authen/register?email=${ email }&username=${ username }&password=${ password }&otp=${ state.otp }` );
             localStorage.setItem( 'token', response.data.token );
-            toast.success( 'Registration successful!' );
+            localStorage.setItem( 'tokenExpiration', Date.now() + 86400000 );
+            toast.success( response.data.message );
             navigate( '/' );
         } catch ( error )
         {
@@ -61,8 +63,8 @@ function VerifyRegister () {
     const handleResendOTP = async () => {
         try
         {
-            await axios.post( `http://localhost:8080/api/v1/authen/resend-otp?email=${ email }` );
-            toast.success( 'OTP resent successfully. Please check your email.' );
+            const response = await axios.post( `http://localhost:8080/api/v1/authen/send-otp?email=${ email }&username=${ username }` );
+            toast.success( response.data.message );
             dispatch( { type: actionTypes.SET_COUNTDOWN, payload: 60 } );
         } catch ( error )
         {
@@ -74,8 +76,19 @@ function VerifyRegister () {
         <ThemeProvider theme={ theme }>
             <div className="bg-[#141518] min-h-screen flex flex-col">
                 {/* Header */ }
-                <div className="flex justify-between items-center p-5">
-                    <img src={ images.thu } className="h-6" alt="Logo" />
+                <div className="flex gap-2 items-center p-5">
+                    <img
+                        src={ images.imgOpenBook }
+                        alt="Logo Open Book"
+                        style={ {
+                            height: height * 0.09 - 32,
+                            marginLeft: 15,
+                            marginRight: 15,
+                        } }
+                    />
+                    <Link to="/">
+                        <span className="text-sm font-medium text-[#e5ffbc]">Back to ReadHub</span>
+                    </Link>
                 </div>
 
                 {/* Main content */ }
@@ -94,14 +107,6 @@ function VerifyRegister () {
                             onClick={ handleVerify }
                         >
                             Verify
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="buttonRegister"
-                            className="w-full h-12 mt-5"
-                            onClick={ handleResendOTP }
-                        >
-                            Resend OTP
                         </Button>
                         <div className="flex justify-between mt-5">
                             <span className="text-[#dbdbdb] text-sm">Didn't receive OTP?</span>
