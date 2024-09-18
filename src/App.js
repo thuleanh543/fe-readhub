@@ -82,14 +82,15 @@ function App () {
     },
   ] )
 
-  const [books, setBooks] = useState([]);
+  const [ books, setBooks ] = useState( [] );
 
-  useEffect(() => {
-    fetch('https://gutendex.com/books/?page=1')
-      .then((response) => response.json())
-      .then((data) => setBooks(data.results))
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+  useEffect( () => {
+    fetch( 'https://gutendex.com/books/?page=1' )
+      .then( ( response ) => response.json() )
+      .then( ( data ) => setBooks( data.results ) )
+      .catch( ( error ) => console.error( 'Error fetching data:', error ) );
+    console.log( localStorage.getItem( 'token' ) );
+  }, [] );
 
   const navigate = useNavigate();
 
@@ -113,7 +114,7 @@ function App () {
         } }
       >
         <img
-          src={images.imgOpenBook}
+          src={ images.imgOpenBook }
           alt="Logo Open Book"
           style={ {
             height: height * 0.09 - 32,
@@ -123,41 +124,41 @@ function App () {
             marginRight: 15,
           } }
         />
-          <form  style={ {
-            flex: 1,
-            height: height * 0.09,
-          } }
+        <form style={ {
+          flex: 1,
+          height: height * 0.09,
+        } }
           action="/search">
-            <div
-              style={ {
-                height: height * 0.09 - 6,
-                alignItems: 'center',
-                justifyContent: 'center',
-                display: 'flex',
-                flexDirection: 'row',
-              } }
-            >
+          <div
+            style={ {
+              height: height * 0.09 - 6,
+              alignItems: 'center',
+              justifyContent: 'center',
+              display: 'flex',
+              flexDirection: 'row',
+            } }
+          >
 
-              <input
-                type="text"
-                placeholder="Tìm kiếm theo tên sách"
-                style={ {
-                  height: height * 0.09 - 25,
-                  width: width * 0.32,
-                  backgroundColor: colors.white,
-                  padding: '0px  0px 0px 10px',
-                  border: '1px solid transparent',
-                  borderRadius: '3px',
-                  outline: '0',
-                  opacity: '0.8',
-                  fontSize: '15px',
-                  fontWeight: '400',
-                  letterSpacing: '0.4px',
-                  color: colors.black,
-                  textShadow: 'inherit',
-                  boxShadow: '0px 2px 6px rgba(32,32,32, 0.3)',
-                } }
-              /><img
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên sách"
+              style={ {
+                height: height * 0.09 - 25,
+                width: width * 0.32,
+                backgroundColor: colors.white,
+                padding: '0px  0px 0px 10px',
+                border: '1px solid transparent',
+                borderRadius: '3px',
+                outline: '0',
+                opacity: '0.8',
+                fontSize: '15px',
+                fontWeight: '400',
+                letterSpacing: '0.4px',
+                color: colors.black,
+                textShadow: 'inherit',
+                boxShadow: '0px 2px 6px rgba(32,32,32, 0.3)',
+              } }
+            /><img
               src={ images.search }
               style={ {
                 height: height * 0.09 - 41,
@@ -166,12 +167,12 @@ function App () {
                 filter: 'invert(100%)',
               } }
             />
-              <style>{ `input::placeholder {
-            color: ${ colors.black232323FF};
+            <style>{ `input::placeholder {
+            color: ${ colors.black232323FF };
             padding: ${ 15 }; }` }</style>
 
-            </div>
-          </form>
+          </div>
+        </form>
 
         <Link to="/LoginAccount" style={ { textDecoration: 'none' } }>
           <div

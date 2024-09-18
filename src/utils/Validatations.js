@@ -1,7 +1,7 @@
-export const isValidEmail = (stringEmail) => {
-  return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(stringEmail)
+export const isValidEmail = ( stringEmail ) => {
+  return /^[A-Za-z0-9+_.-]+@(.+)$/.test( stringEmail );
 }
 
-export const isValidPassword = (stringPassword) => {
-  return stringPassword.length >= 3
+export const isValidPassword = ( stringPassword ) => {
+  return /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test( stringPassword );
 }
