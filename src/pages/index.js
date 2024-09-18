@@ -1,4 +1,5 @@
-import LoginAccount from './login/LoginAccount'
-import VerifyRegister from './register/VerifyRegister'
+import LoginAccount from './login/views/LoginAccount'
 import Register from './register/Register'
-export { LoginAccount, VerifyRegister, Register }
+import ReadBookScreen from './read_book/views/ReadBookScreen'
+
+export { LoginAccount, Register, ReadBookScreen }
