@@ -90,28 +90,39 @@ function App() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const navigate = useNavigate()
+  const searchTimeout = useRef(null)
 
-  const fetchBooks = useCallback(async () => {
-    if (loading || !hasMore) return
-    setLoading(true)
-    try {
-      const response = await fetch(`https://gutendex.com/books/?page=${page}`)
-      const data = await response.json()
-      setBooks(prevBooks => [...prevBooks, ...data.results])
-      setPage(prevPage => prevPage + 1)
-      setHasMore(data.next !== null)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [page, loading, hasMore])
+  const fetchBooks = useCallback(
+    async (search = '') => {
+      if (loading) return
+      setLoading(true)
+      try {
+        const response = await fetch(
+          `https://gutendex.com/books/?search=${search}&page=${page}`,
+        )
+        const data = await response.json()
+        if (page === 1) {
+          setBooks(data.results)
+        } else {
+          setBooks(prevBooks => [...prevBooks, ...data.results])
+        }
+        setPage(prevPage => prevPage + 1)
+        setHasMore(data.next !== null)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [page, loading],
+  )
 
   useEffect(() => {
-    fetchBooks()
-  }, [])
+    fetchBooks(searchTerm)
+  }, [searchTimeout])
 
   useEffect(() => {
     const handleResize = () => {
@@ -131,7 +142,7 @@ function App() {
         window.innerHeight + document.documentElement.scrollTop >=
         document.documentElement.offsetHeight - 100
       ) {
-        fetchBooks()
+        fetchBooks(searchTerm)
       }
     }
 
@@ -141,6 +152,22 @@ function App() {
 
   const handleBookClick = bookId => {
     navigate('/ReadBookScreen', {state: {bookId}})
+  }
+
+  const handleSearch = event => {
+    const value = event.target.value
+    setSearchTerm(value)
+    setPage(1)
+    setBooks([])
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current)
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      setPage(1)
+      fetchBooks(value)
+    }, 200)
   }
 
   const getGridColumns = () => {
@@ -205,6 +232,8 @@ function App() {
             <input
               type='text'
               placeholder='Tìm kiếm theo tên sách'
+              value={searchTerm}
+              onChange={handleSearch}
               style={{
                 height: height * 0.09 - 25,
                 width: width * 0.32,
@@ -374,6 +403,7 @@ function App() {
           alignItems: 'center',
           backgroundColor: colors.themeDark.color060d13,
           padding: '20px 5%',
+          marginTop: windowSize.height * 0.09,
         }}>
         <div
           style={{
