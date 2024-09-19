@@ -60,7 +60,7 @@ function Register () {
                         } }
                     />
                     <Link to="/">
-                        <span className="text-sm font-medium text-[#e5ffbc]">Back to T&C</span>
+                        <span className="text-sm font-medium text-[#e5ffbc]">Back to ReadHub</span>
                     </Link>
                 </div>
 
