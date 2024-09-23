@@ -51,7 +51,7 @@ function ReadBookScreen() {
         </p>
       </div>
       <iframe
-        src={formats['text/plain'] || formats['text/html']}
+        src={ formats['text/html']||formats['text/plain; charset=us-ascii'] }
         style={styles.bookContent}
         title="Book Content"
       />
