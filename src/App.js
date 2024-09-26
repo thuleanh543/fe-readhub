@@ -85,89 +85,99 @@ function App() {
       quantity: '300',
     },
   ])
-
+  const navigate = useNavigate()
   const [books, setBooks] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-
-  const navigate = useNavigate()
-  const searchTimeout = useRef(null)
+  const [shouldFetch, setShouldFetch] = useState(true)
+  const prevSearchTerm = useRef('')
 
   const fetchBooks = useCallback(
-    async (search = '') => {
-      if (loading) return
+    async (search = '', pageNum = 1) => {
+      setHasMore(true)
+      if (loading || !shouldFetch) return
       setLoading(true)
       try {
-        const response = await fetch(
-          `https://gutendex.com/books/?search=${search}&page=${page}`,
-        )
-        const data = await response.json()
-        if (page === 1) {
-          setBooks(data.results)
+        let apiUrl
+        if (search === '') {
+          // Nếu searchTerm rỗng, sử dụng API cơ bản
+          apiUrl = 'https://gutendex.com/books'
         } else {
-          setBooks(prevBooks => [...prevBooks, ...data.results])
+          const formattedSearchTerm = search.replace(/ /g, '&')
+          apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`
         }
-        setPage(prevPage => prevPage + 1)
-        setHasMore(data.next !== null)
+        const response = await fetch(apiUrl)
+        const data = await response.json()
+        if (Array.isArray(data.results)) {
+          if (pageNum === 1) {
+            setBooks(data.results)
+          } else {
+            setBooks(prevBooks => [...prevBooks, ...data.results])
+          }
+          setPage(pageNum + 1)
+          setHasMore(data.next !== null)
+        } else {
+          setLoading(false)
+          setHasMore(false)
+        }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        setLoading(false)
+        setHasMore(false)
       } finally {
         setLoading(false)
+        setShouldFetch(false)
       }
     },
-    [page, loading],
+    [loading, shouldFetch],
   )
-
-  useEffect(() => {
-    fetchBooks(searchTerm)
-  }, [searchTimeout])
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100
+          document.documentElement.offsetHeight - 100 &&
+        hasMore
       ) {
-        fetchBooks(searchTerm)
+        setShouldFetch(true)
       }
     }
 
     window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [fetchBooks])
 
-  const handleBookClick = bookId => {
-    navigate('/ReadBookScreen', {state: {bookId}})
-  }
+    let searchTimeoutId
+
+    if (searchTerm !== prevSearchTerm.current) {
+      prevSearchTerm.current = searchTerm
+      if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId)
+      }
+      searchTimeoutId = setTimeout(() => {
+        setPage(1)
+        setBooks([])
+        setShouldFetch(true)
+      }, 200)
+    }
+
+    if (shouldFetch) {
+      fetchBooks(searchTerm, page)
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId)
+      }
+    }
+  }, [searchTerm, fetchBooks, page, shouldFetch])
 
   const handleSearch = event => {
     const value = event.target.value
     setSearchTerm(value)
-    setPage(1)
-    setBooks([])
-
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current)
-    }
-
-    searchTimeout.current = setTimeout(() => {
-      setPage(1)
-      fetchBooks(value)
-    }, 200)
+  }
+  const handleBookClick = bookId => {
+    navigate('/ReadBookScreen', {state: {bookId}})
   }
 
   const getGridColumns = () => {
@@ -348,6 +358,7 @@ function App() {
           }}>
           {listOptions.map((item, index) => (
             <div
+              key={item.id}
               style={{
                 height: height * 0.2,
                 width: item.id == 1 ? width * 0.16 : width * 0.075,
@@ -471,6 +482,7 @@ function App() {
             style={{
               color: '#fff',
               textAlign: 'center',
+              marginTop: 10,
             }}>
             No more books to load
           </p>
