@@ -3,11 +3,9 @@ import './App.css'
 import {images, colors} from './constants'
 import {useEffect, useRef, useState, useCallback} from 'react'
 import {CircularProgress} from '@mui/material'
-import {listOptions} from './component/SetData'
+import {listOptions} from './component/set_data/SetData'
 
 function App() {
-  const width = useRef(window.innerWidth).current
-  const height = useRef(window.innerHeight).current
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -148,7 +146,7 @@ function App() {
           src={images.imgOpenBook}
           alt='Logo Open Book'
           style={{
-            height: height * 0.09 - 32,
+            height: windowSize.height * 0.09 - 32,
             marginTop: 13,
             marginBottom: 13,
             marginLeft: 15,
@@ -158,12 +156,12 @@ function App() {
         <form
           style={{
             flex: 1,
-            height: height * 0.09,
+            height: windowSize.height * 0.09,
           }}
           action='/search'>
           <div
             style={{
-              height: height * 0.09 - 6,
+              height: windowSize.height * 0.09 - 6,
               alignItems: 'center',
               justifyContent: 'center',
               display: 'flex',
@@ -175,8 +173,8 @@ function App() {
               value={searchTerm}
               onChange={handleSearch}
               style={{
-                height: height * 0.09 - 25,
-                width: width * 0.32,
+                height: windowSize.height * 0.09 - 25,
+                width: windowSize.width * 0.32,
                 backgroundColor: colors.white,
                 padding: '0px  0px 0px 10px',
                 border: '1px solid transparent',
@@ -194,7 +192,7 @@ function App() {
             <img
               src={images.search}
               style={{
-                height: height * 0.09 - 41,
+                height: windowSize.height * 0.09 - 41,
                 paddingLeft: 10,
                 paddingRight: 10,
                 filter: 'invert(100%)',
@@ -209,7 +207,7 @@ function App() {
         <Link to='/LoginAccount' style={{textDecoration: 'none'}}>
           <div
             style={{
-              width: width * 0.1,
+              width: windowSize.width * 0.1,
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'center',
@@ -219,7 +217,7 @@ function App() {
             <img
               src={images.bell}
               style={{
-                height: height * 0.09 - 41,
+                height: windowSize.height * 0.09 - 41,
                 paddingLeft: 10,
                 paddingRight: 10,
                 filter: 'invert(100%)',
@@ -247,7 +245,7 @@ function App() {
               <img
                 src={images.user}
                 style={{
-                  height: height * 0.09 - 31,
+                  height: windowSize.height * 0.09 - 31,
                   alignSelf: 'center',
                   marginRight: 15,
                 }}
@@ -279,8 +277,8 @@ function App() {
         </span>
         <div
           style={{
-            height: height * 0.22,
-            width: width * 0.91,
+            height: windowSize.height * 0.22,
+            width: windowSize.width * 0.91,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
@@ -290,8 +288,8 @@ function App() {
             <div
               key={item.id}
               style={{
-                height: height * 0.2,
-                width: item.id == 1 ? width * 0.16 : width * 0.075,
+                height: windowSize.height * 0.2,
+                width: item.id == 1 ? windowSize.width * 0.16 : windowSize.width * 0.075,
                 borderRadius: 3,
                 backgroundImage: `url(${item.url})`,
                 backgroundSize: 'cover',
@@ -301,8 +299,8 @@ function App() {
               }}>
               <div
                 style={{
-                  height: height * 0.083,
-                  width: item.id == 1 ? width * 0.16 : width * 0.075,
+                  height: windowSize.height * 0.083,
+                  width: item.id == 1 ? windowSize.width * 0.16 : windowSize.width * 0.075,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
                   backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
