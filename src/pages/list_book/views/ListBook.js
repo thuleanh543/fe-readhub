@@ -116,7 +116,6 @@ const ListBook = ({ searchTerm, windowSize }) => {
         alignItems: 'center',
         backgroundColor: colors.themeDark.color060d13,
         padding: '20px 5%',
-        marginTop: windowSize.height * 0.09,
       }}
     >
       <div
