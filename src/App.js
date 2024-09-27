@@ -85,60 +85,97 @@ function App() {
       quantity: '300',
     },
   ])
-
+  const navigate = useNavigate()
   const [books, setBooks] = useState([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [shouldFetch, setShouldFetch] = useState(true)
+  const prevSearchTerm = useRef('')
 
-  const navigate = useNavigate()
-
-  const fetchBooks = useCallback(async () => {
-    if (loading || !hasMore) return
-    setLoading(true)
-    try {
-      const response = await fetch(`https://gutendex.com/books/?page=${page}`)
-      const data = await response.json()
-      setBooks(prevBooks => [...prevBooks, ...data.results])
-      setPage(prevPage => prevPage + 1)
-      setHasMore(data.next !== null)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [page, loading, hasMore])
-
-  useEffect(() => {
-    fetchBooks()
-  }, [])
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
-
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  const fetchBooks = useCallback(
+    async (search = '', pageNum = 1) => {
+      setHasMore(true)
+      if (loading || !shouldFetch) return
+      setLoading(true)
+      try {
+        let apiUrl
+        if (search === '') {
+          // Nếu searchTerm rỗng, sử dụng API cơ bản
+          apiUrl = 'https://gutendex.com/books'
+        } else {
+          const formattedSearchTerm = search.replace(/ /g, '&')
+          apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`
+        }
+        const response = await fetch(apiUrl)
+        const data = await response.json()
+        if (Array.isArray(data.results)) {
+          if (pageNum === 1) {
+            setBooks(data.results)
+          } else {
+            setBooks(prevBooks => [...prevBooks, ...data.results])
+          }
+          setPage(pageNum + 1)
+          setHasMore(data.next !== null)
+        } else {
+          setLoading(false)
+          setHasMore(false)
+        }
+      } catch (error) {
+        setLoading(false)
+        setHasMore(false)
+      } finally {
+        setLoading(false)
+        setShouldFetch(false)
+      }
+    },
+    [loading, shouldFetch],
+  )
 
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100
+          document.documentElement.offsetHeight - 100 &&
+        hasMore
       ) {
-        fetchBooks()
+        setShouldFetch(true)
       }
     }
 
     window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [fetchBooks])
 
+    let searchTimeoutId
+
+    if (searchTerm !== prevSearchTerm.current) {
+      prevSearchTerm.current = searchTerm
+      if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId)
+      }
+      searchTimeoutId = setTimeout(() => {
+        setPage(1)
+        setBooks([])
+        setShouldFetch(true)
+      }, 200)
+    }
+
+    if (shouldFetch) {
+      fetchBooks(searchTerm, page)
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (searchTimeoutId) {
+        clearTimeout(searchTimeoutId)
+      }
+    }
+  }, [searchTerm, fetchBooks, page, shouldFetch])
+
+  const handleSearch = event => {
+    const value = event.target.value
+    setSearchTerm(value)
+  }
   const handleBookClick = bookId => {
     navigate('/ReadBookScreen', {state: {bookId}})
   }
@@ -205,6 +242,8 @@ function App() {
             <input
               type='text'
               placeholder='Tìm kiếm theo tên sách'
+              value={searchTerm}
+              onChange={handleSearch}
               style={{
                 height: height * 0.09 - 25,
                 width: width * 0.32,
@@ -319,6 +358,7 @@ function App() {
           }}>
           {listOptions.map((item, index) => (
             <div
+              key={item.id}
               style={{
                 height: height * 0.2,
                 width: item.id == 1 ? width * 0.16 : width * 0.075,
@@ -374,6 +414,7 @@ function App() {
           alignItems: 'center',
           backgroundColor: colors.themeDark.color060d13,
           padding: '20px 5%',
+          marginTop: windowSize.height * 0.09,
         }}>
         <div
           style={{
@@ -441,6 +482,7 @@ function App() {
             style={{
               color: '#fff',
               textAlign: 'center',
+              marginTop: 10,
             }}>
             No more books to load
           </p>
