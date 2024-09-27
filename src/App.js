@@ -83,7 +83,7 @@ function App() {
           >
             <input
               type='text'
-              placeholder='Tìm kiếm theo tên sách'
+              placeholder='Nhập tên sách, tác giả hoặc từ khóa'
               value={searchTerm}
               onChange={handleSearch}
               style={{
