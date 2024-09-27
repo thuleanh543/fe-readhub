@@ -1,0 +1,73 @@
+export const  listOptions  = [
+  {
+    id: 1,
+    url: 'https://i.imgur.com/JJ3tmg6.jpg',
+    backgroundColor: '#9a84e9',
+    title: 'Viễn tưởng',
+    quantity: '1.200',
+  },
+
+  {
+    id: 2,
+    url: 'https://i.imgur.com/6Ebubdn.jpg',
+    backgroundColor: '#02fb62',
+    title: 'Khoa học viễn tưởng',
+    quantity: '300',
+  },
+  {
+    id: 3,
+    url: 'https://i.imgur.com/W1tDyVO.jpg',
+    backgroundColor: '#02eefb',
+    title: 'Tưởng tượng',
+    quantity: '881',
+  },
+  {
+    id: 4,
+    url: 'https://i.imgur.com/aqfzW8f.jpg',
+    backgroundColor: '#ec9cbf',
+    title: 'Lịch sử',
+    quantity: '3.300',
+  },
+  {
+    id: 5,
+    url: 'https://i.imgur.com/7tbj9o1.jpg',
+    backgroundColor: '#4b27a5',
+    title: 'Khoa học',
+    quantity: '558',
+  },
+  {
+    id: 6,
+    url: 'https://i.imgur.com/sdyyEH3.jpg',
+    backgroundColor: '#791aae',
+    title: 'Cuộc phiêu lưu',
+    quantity: '200',
+  },
+  {
+    id: 7,
+    url: 'https://i.imgur.com/VmNBNyt.png',
+    backgroundColor: '#010059',
+    title: 'Tiểu sử',
+    quantity: '1.132',
+  },
+  {
+    id: 8,
+    url: 'https://i.imgur.com/DnjIfbk.jpg',
+    backgroundColor: '#db98bb',
+    title: 'Triết học',
+    quantity: '159',
+  },
+  {
+    id: 9,
+    url: 'https://i.imgur.com/KFwJx7P.jpg',
+    backgroundColor: '#121818',
+    title: 'Thơ',
+    quantity: '599',
+  },
+  {
+    id: 10,
+    url: 'https://i.imgur.com/9O6LHZ5.jpg',
+    backgroundColor: '#9f82bd',
+    title: 'Kịch',
+    quantity: '300',
+  },
+]
