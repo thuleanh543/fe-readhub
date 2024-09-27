@@ -101,29 +101,46 @@ function ReadBookScreen() {
   }
 
   const { title, authors } = bookData;
+  const coverImageUrl = bookData.formats['image/jpeg'];
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
+      <img src={coverImageUrl} alt="Book Cover" style={styles.coverImage} />
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         <h1>{title}</h1>
         <p>
           <strong>Author:</strong> {authors.map((author) => author.name).join(', ')}
         </p>
       </div>
+      </div>
       <div style={styles.content}>
         <div style={styles.chapterList}>
-          <List>
-            {chapters.map((chapter) => (
-              <ListItem
-                button
-                key={chapter.id}
-                onClick={() => handleChapterClick(chapter)}
-                selected={selectedChapter && selectedChapter.id === chapter.id}
-              >
-                <ListItemText primary={chapter.name} />
-              </ListItem>
-            ))}
-          </List>
+        <List>
+        {chapters.map((chapter) => (
+        <ListItem ListItem
+          button
+          key={chapter.id}
+          onClick={() => handleChapterClick(chapter)}
+          selected={selectedChapter && selectedChapter.id === chapter.id}
+          sx={{
+            '& .MuiListItemText-primary': {
+          fontFamily: '"Sitka Heading", serif',
+          fontWeight: 500,
+          },
+          backgroundColor: selectedChapter && selectedChapter.id === chapter.id ? '#d3d3d3' : 'transparent',
+          '&:hover': {
+            backgroundColor: '#F1F1F1FF',
+          },
+        }}
+        >
+      <ListItemText primary={chapter.name} />
+    </ListItem>
+  ))}
+</List>
         </div>
         <div ref={contentRef} style={styles.bookContent}>
           {selectedChapter ? (
@@ -154,6 +171,10 @@ function ReadBookScreen() {
 }
 
 const styles = {
+  coverImage : {
+    width: '50px',
+    marginRight: '10px',
+  },
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -164,7 +185,13 @@ const styles = {
     padding: '10px',
     borderBottom: '1px solid #ddd',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    display: 'flex',
+    flexDirection: 'row',
     zIndex: 1000,
+    width: '250px',
+    position: 'fixed',
+    top: 0,
+    left: 0,
   },
   content: {
     display: 'flex',
@@ -172,6 +199,7 @@ const styles = {
     overflow: 'hidden',
   },
   chapterList: {
+    marginTop: '5%',
     width: '250px',
     overflowY: 'auto',
     borderRight: '1px solid #ddd',
