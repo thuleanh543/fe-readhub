@@ -21,12 +21,8 @@ const ListBook = ({ searchTerm, windowSize }) => {
       setLoading(true);
       try {
         let apiUrl;
-        if (search === '') {
-          apiUrl = 'https://gutendex.com/books';
-        } else {
-          const formattedSearchTerm = search.replace(/ /g, '&');
-          apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`;
-        }
+        const formattedSearchTerm = search.replace(/ /g, '&');
+        apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
         if (Array.isArray(data.results)) {
