@@ -127,9 +127,9 @@ const ListBook = ({ searchTerm, windowSize }) => {
           width: '100%',
         }}
       >
-        {books.map(book => (
+        {books.map((book, index) => (
           <div
-            key={book.id}
+            key={`${book.id}-${page}-${index}`}
             onClick={() => handleBookClick(book.id)}
             style={{
               display: 'flex',
