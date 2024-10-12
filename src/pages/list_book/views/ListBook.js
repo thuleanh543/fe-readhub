@@ -110,7 +110,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        backgroundColor: colors.themeDark.color060d13,
+        backgroundColor: colors.themeLight.secondary,
         padding: '20px 5%',
       }}
     >
@@ -153,7 +153,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
                 width: bookWidth,
                 fontWeight: 'bold',
                 fontSize: '14px',
-                color: colors.themeDark.textColor,
+                color: colors.themeLight.textColor,
                 display: '-webkit-box',
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',

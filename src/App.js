@@ -35,7 +35,7 @@ function App() {
     <div
       className='App'
       style={{
-        backgroundColor: colors.themeDark.color060d13,
+        backgroundColor: colors.themeLight.color060d13,
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
@@ -150,7 +150,7 @@ function App() {
       </div>
       <div
         style={{
-          backgroundColor: colors.themeDark.primary,
+          backgroundColor: colors.themeLight.primary,
           height: windowSize.height * 0.37,
           paddingLeft: windowSize.width * 0.05,
           fontWeight: 'bold',

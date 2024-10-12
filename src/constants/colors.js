@@ -13,8 +13,8 @@ export default {
     textColor: '#FFFFFFFF',
   },
   themeLight: {
-    primary: '#1E1E1E',
-    secondary: '#2E2E2E',
+    primary: '#EEEEEEFF',
+    secondary: '#EAEAEAFF',
     tertiary: '#333333',
     accent: '#FFD700',
     error: '#FF0000',
