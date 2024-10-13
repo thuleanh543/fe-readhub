@@ -1,10 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react'
-import {useLocation} from 'react-router-dom'
-import CircularProgress from '@mui/material/CircularProgress'
-import Box from '@mui/material/Box'
-import {images} from '../../../constants'
+import {useLocation, useNavigate} from 'react-router-dom'
 import {ReactReader} from 'react-reader'
-import axios from 'axios'
 import {
   AppBar,
   Toolbar,
@@ -15,26 +11,30 @@ import {
   Drawer,
   Popover,
   TextField,
+  Divider,
 } from '@mui/material'
-import {ColorLens} from '@mui/icons-material'
-const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Màu pastel
+import {ArrowBack, ColorLens} from '@mui/icons-material'
+
+const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Pastel colors
 
 function ReadBookScreen() {
+  const navigate = useNavigate()
   const location = useLocation()
-  const {bookId} = location.state || {}
+  const {bookId, bookTitle} = location.state || {}
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [epubUrl, setEpubUrl] = useState(null)
   const [selections, setSelections] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [rendition, setRendition] = useState(null)
-  const [highlightColor, setHighlightColor] = useState(colors[0]) // Màu mặc định
+  const [highlightColor, setHighlightColor] = useState(colors[0])
   const [comment, setComment] = useState('')
   const [popoverAnchor, setPopoverAnchor] = useState(null)
   const [selectedText, setSelectedText] = useState('')
   const [selectedCfiRange, setSelectedCfiRange] = useState('')
   const readerRef = useRef(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filter, setFilter] = useState('all') // Filter state
 
   const handleError = error => {
     console.error('Error in ReactReader:', error)
@@ -47,10 +47,11 @@ function ReadBookScreen() {
   const handleToggleDrawer = () => {
     setDrawerOpen(!drawerOpen)
   }
+
   useEffect(() => {
     const epubUrl = `https://www.gutenberg.org/cache/epub/${bookId}/pg${bookId}.epub`
     setEpubUrl(epubUrl)
-  }, [])
+  }, [bookId])
 
   useEffect(() => {
     if (rendition) {
@@ -78,7 +79,7 @@ function ReadBookScreen() {
 
       rendition.themes.default({
         '::selection': {
-          background: 'rgba(0, 0, 255, 0.1)', // Màu xanh nhạt khi kéo thả
+          background: 'rgba(0, 0, 255, 0.1)', // Light blue on selection
           color: 'inherit',
         },
       })
@@ -96,30 +97,28 @@ function ReadBookScreen() {
         cfiRange: selectedCfiRange,
         comment,
         color: highlightColor,
-        timestamp: new Date().toISOString(), // Add timestamp
+        timestamp: Date.now(), // Add timestamp for sorting
       }
+      setSelections(prev => [...prev, newSelection])
 
-      setSelections(prev => [newSelection, ...prev])
-
-      // Xóa highlight cũ (nếu có)
+      // Remove old highlight if exists
       rendition.annotations.remove(selectedCfiRange, 'highlight')
 
-      // Thêm highlight mới với màu đã chọn
+      // Add new highlight with selected color
       rendition.annotations.add('highlight', selectedCfiRange, {}, null, 'hl', {
         fill: highlightColor,
         'fill-opacity': '0.3',
         'mix-blend-mode': 'multiply',
       })
 
-      // Cập nhật styles cho highlight
+      // Update styles for the highlight
       rendition.views().forEach(view => {
         const highlights = view.document.querySelectorAll(
           'mark[data-epubjs-annotation="highlight"]',
         )
         highlights.forEach(highlight => {
-          // Find the highlight by CFI range and apply the correct background color
           if (highlight.dataset.epubcfi === selectedCfiRange) {
-            highlight.style.backgroundColor = highlightColor // Apply the selected highlight color
+            highlight.style.backgroundColor = highlightColor // Apply selected highlight color
             highlight.style.opacity = '0.3' // Set opacity
           }
         })
@@ -139,14 +138,29 @@ function ReadBookScreen() {
     )
   }
 
+  // Search and filter logic
+  const filteredSelections = selections
+    .filter(selection => {
+      const isTextMatch = selection.text
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+      const isColorMatch = filter === 'all' || selection.color === filter
+      return isTextMatch && isColorMatch
+    })
+    .sort((a, b) => b.timestamp - a.timestamp) // Sort by latest first
+
   return (
     <div
       className='App'
       style={{height: '100vh', display: 'flex', flexDirection: 'column'}}>
       <AppBar position='static'>
         <Toolbar>
-          <Typography variant='h6' style={{flexGrow: 1}}>
-            Epub Reader
+          <Button color='inherit' onClick={() => navigate(-1)}>
+            <ArrowBack />
+            Back
+          </Button>
+          <Typography variant='h6' style={{flexGrow: 1, textAlign: 'center'}}>
+            {bookTitle || 'Epub Reader'}
           </Typography>
           <Button color='inherit' onClick={handleToggleDrawer}>
             <ColorLens />
@@ -160,8 +174,8 @@ function ReadBookScreen() {
         <ReactReader
           url={epubUrl}
           epubOptions={{
-            allowPopups: true, // Adds `allow-popups` to sandbox-attribute
-            allowScriptedContent: true, // Adds `allow-scripts` to sandbox-attribute
+            allowPopups: true,
+            allowScriptedContent: true,
           }}
           location={location}
           getRendition={_rendition => {
@@ -219,32 +233,109 @@ function ReadBookScreen() {
         </div>
       </Popover>
       <Drawer anchor='right' open={drawerOpen} onClose={handleToggleDrawer}>
-        <div style={{width: 250, padding: '20px'}}>
-          <Typography variant='h6'>Notes</Typography>
-          {selections.map(({text, cfiRange, comment, color}, i) => (
-            <div
-              key={i}
+        <div style={{width: 350}}>
+          <div
+            style={{
+              paddingTop: '20px',
+              paddingLeft: '20px',
+              paddingRight: '20px',
+            }}>
+            <Typography variant='h6' style={{marginBottom: '10px'}}>
+              Notes
+            </Typography>
+            <TextField
+              label='Search Notes'
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              fullWidth
               style={{
-                marginBottom: '15px',
-                borderBottom: '1px solid #eee',
-                paddingBottom: '10px',
+                marginBottom: '10px',
+              }}
+            />
+            <Select
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+              fullWidth
+              style={{
+                marginBottom: '10px',
               }}>
-              <Typography
-                variant='body2'
-                style={{backgroundColor: color, padding: '5px'}}>
-                {text}
-              </Typography>
-              <Typography variant='body2'>{comment}</Typography>
-              <Button size='small' onClick={() => rendition.display(cfiRange)}>
-                Show
-              </Button>
-              <Button
-                size='small'
-                onClick={() => handleRemoveHighlight(cfiRange)}>
-                Remove
-              </Button>
-            </div>
-          ))}
+              <MenuItem
+                value='all'
+                style={{paddingLeft: '20px', paddingRight: '20px'}}>
+                All Colors
+              </MenuItem>
+              {colors.map((color, index) => (
+                <MenuItem key={index} value={color}>
+                  <span
+                    style={{
+                      backgroundColor: color,
+                      padding: '2px 10px',
+                      borderRadius: '5px',
+                      color: color,
+                    }}>
+                    {`ColorColorColorColorColorColori`}
+                  </span>
+                </MenuItem>
+              ))}
+            </Select>
+          </div>
+          <Divider style={{margin: '10px 0'}} />
+          <div
+            style={{
+              maxHeight: 'calc(100vh - 205px)',
+              overflowY: 'auto',
+              paddingLeft: '20px',
+            }}>
+            {filteredSelections.map((note, i) => {
+              const {text, cfiRange, comment, color, timestamp} = note
+              const isLastNote = i === filteredSelections.length - 1 // Check if it's the last note
+              return (
+                <div
+                  key={i}
+                  style={{
+                    marginBottom: '15px',
+                    paddingBottom: '10px',
+                    paddingRight: '10px',
+                    borderBottom: isLastNote ? 'none' : '1px solid #eee', // Conditional border
+                  }}>
+                  <Typography
+                    variant='body2'
+                    style={{
+                      backgroundColor: color,
+                      padding: '7px',
+                      borderRadius: '5px',
+                      marginBottom: '7px',
+                    }}>
+                    {text}
+                  </Typography>
+                  <Typography variant='body2'>{comment}</Typography>
+                  <Typography
+                    variant='caption'
+                    style={{
+                      textAlign: 'right',
+                      display: 'block',
+                      marginTop: '7px',
+                    }}>
+                    {new Date(timestamp).toLocaleString()}
+                  </Typography>
+                  <Button
+                    size='small'
+                    onClick={() => rendition.display(cfiRange)}
+                    style={{marginRight: '5px'}}
+                    variant='outlined'>
+                    Show
+                  </Button>
+                  <Button
+                    size='small'
+                    onClick={() => handleRemoveHighlight(cfiRange)}
+                    variant='outlined'
+                    color='secondary'>
+                    Remove
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </Drawer>
     </div>

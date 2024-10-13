@@ -1,52 +1,52 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React, {useEffect, useState, useCallback, useRef} from 'react'
+import {CircularProgress} from '@mui/material'
+import {useNavigate} from 'react-router-dom'
 
-import { colors, images } from '../../../constants';
+import {colors, images} from '../../../constants'
 
-const ListBook = ({ searchTerm, windowSize }) => {
-  const [books, setBooks] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [shouldFetch, setShouldFetch] = useState(true);
-  const prevSearchTerm = useRef('');
+const ListBook = ({searchTerm, windowSize}) => {
+  const [books, setBooks] = useState([])
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [shouldFetch, setShouldFetch] = useState(true)
+  const prevSearchTerm = useRef('')
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const fetchBooks = useCallback(
     async (search = '', pageNum = 1) => {
-      setHasMore(true);
-      if (loading || !shouldFetch) return;
-      setLoading(true);
+      setHasMore(true)
+      if (loading || !shouldFetch) return
+      setLoading(true)
       try {
-        let apiUrl;
-        const formattedSearchTerm = search.replace(/ /g, '&');
-        apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        let apiUrl
+        const formattedSearchTerm = search.replace(/ /g, '&')
+        apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`
+        const response = await fetch(apiUrl)
+        const data = await response.json()
         if (Array.isArray(data.results)) {
           if (pageNum === 1) {
-            setBooks(data.results);
+            setBooks(data.results)
           } else {
-            setBooks(prevBooks => [...prevBooks, ...data.results]);
+            setBooks(prevBooks => [...prevBooks, ...data.results])
           }
-          setPage(pageNum + 1);
-          setHasMore(data.next !== null);
+          setPage(pageNum + 1)
+          setHasMore(data.next !== null)
         } else {
-          setLoading(false);
-          setHasMore(false);
+          setLoading(false)
+          setHasMore(false)
         }
       } catch (error) {
-        setLoading(false);
-        setHasMore(false);
+        setLoading(false)
+        setHasMore(false)
       } finally {
-        setLoading(false);
-        setShouldFetch(false);
+        setLoading(false)
+        setShouldFetch(false)
       }
     },
     [loading, shouldFetch],
-  );
+  )
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,54 +55,54 @@ const ListBook = ({ searchTerm, windowSize }) => {
           document.documentElement.offsetHeight - 100 &&
         hasMore
       ) {
-        setShouldFetch(true);
+        setShouldFetch(true)
       }
-    };
+    }
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll)
 
-    let searchTimeoutId;
+    let searchTimeoutId
 
     if (searchTerm !== prevSearchTerm.current) {
-      prevSearchTerm.current = searchTerm;
+      prevSearchTerm.current = searchTerm
       if (searchTimeoutId) {
-        clearTimeout(searchTimeoutId);
+        clearTimeout(searchTimeoutId)
       }
       searchTimeoutId = setTimeout(() => {
-        setPage(1);
-        setBooks([]);
-        setShouldFetch(true);
-      }, 200);
+        setPage(1)
+        setBooks([])
+        setShouldFetch(true)
+      }, 200)
     }
 
     if (shouldFetch) {
-      fetchBooks(searchTerm, page);
+      fetchBooks(searchTerm, page)
     }
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll)
       if (searchTimeoutId) {
-        clearTimeout(searchTimeoutId);
+        clearTimeout(searchTimeoutId)
       }
-    };
-  }, [searchTerm, fetchBooks, page, shouldFetch]);
+    }
+  }, [searchTerm, fetchBooks, page, shouldFetch])
 
-  const handleBookClick = bookId => {
-    navigate('/ReadBookScreen', { state: { bookId } });
-  };
+  const handleBookClick = (bookId, bookTitle) => {
+    navigate('/ReadBookScreen', {state: {bookId, bookTitle}})
+  }
 
   const getGridColumns = () => {
-    const width = windowSize.width;
-    if (width > 1400) return 7;
-    if (width > 1200) return 6;
-    if (width > 992) return 5;
-    if (width > 768) return 4;
-    if (width > 576) return 3;
-    return 2;
-  };
+    const width = windowSize.width
+    if (width > 1400) return 7
+    if (width > 1200) return 6
+    if (width > 992) return 5
+    if (width > 768) return 4
+    if (width > 576) return 3
+    return 2
+  }
 
-  const gridColumns = getGridColumns();
-  const bookWidth = (windowSize.width * 0.9) / gridColumns - 20;
+  const gridColumns = getGridColumns()
+  const bookWidth = (windowSize.width * 0.9) / gridColumns - 20
 
   return (
     <div
@@ -112,8 +112,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
         alignItems: 'center',
         backgroundColor: colors.themeLight.secondary,
         padding: '20px 5%',
-      }}
-    >
+      }}>
       <div
         style={{
           display: 'grid',
@@ -121,19 +120,17 @@ const ListBook = ({ searchTerm, windowSize }) => {
           gap: '20px',
           justifyContent: 'center',
           width: '100%',
-        }}
-      >
+        }}>
         {books.map((book, index) => (
           <div
             key={`${book.id}-${page}-${index}`}
-            onClick={() => handleBookClick(book.id)}
+            onClick={() => handleBookClick(book.id, book.title)}
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               cursor: 'pointer',
-            }}
-          >
+            }}>
             <div
               style={{
                 height: bookWidth * 1.38,
@@ -160,8 +157,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
                 textOverflow: 'ellipsis',
                 WebkitLineClamp: 2,
                 textAlign: 'center',
-              }}
-            >
+              }}>
               {book.title}
             </span>
           </div>
@@ -174,8 +170,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
             textAlign: 'center',
             marginTop: 10,
             marginBottom: 10,
-          }}
-        >
+          }}>
           <CircularProgress size={24} color='inherit' /> Loading more books...
         </p>
       )}
@@ -185,13 +180,12 @@ const ListBook = ({ searchTerm, windowSize }) => {
             color: '#fff',
             textAlign: 'center',
             marginTop: 10,
-          }}
-        >
+          }}>
           No more books to load
         </p>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ListBook;
+export default ListBook
