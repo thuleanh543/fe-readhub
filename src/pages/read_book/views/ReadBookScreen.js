@@ -192,16 +192,15 @@ function ReadBookScreen() {
     )
   }
 
-  // Search and filter logic
   const filteredSelections = selections
     .filter(selection => {
-      const isTextMatch = selection.text
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      const isTextMatch =
+        selection.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        selection.comment.toLowerCase().includes(searchTerm.toLowerCase())
       const isColorMatch = filter === 'all' || selection.color === filter
       return isTextMatch && isColorMatch
     })
-    .sort((a, b) => b.timestamp - a.timestamp) // Sort by latest first
+    .sort((a, b) => b.timestamp - a.timestamp)
 
   return (
     <div
@@ -336,7 +335,7 @@ function ReadBookScreen() {
           <Divider style={{margin: '10px 0'}} />
           <div
             style={{
-              maxHeight: 'calc(100vh - 205px)',
+              maxHeight: 'calc(100vh - 215px)',
               overflowY: 'auto',
               paddingLeft: '20px',
             }}>
@@ -384,7 +383,7 @@ function ReadBookScreen() {
                     onClick={() => handleRemoveHighlight(cfiRange)}
                     variant='outlined'
                     color='secondary'
-                    style={{marginRight: '90px'}}>
+                    style={{marginRight: '80px'}}>
                     Remove
                   </Button>
                   <IconButton
