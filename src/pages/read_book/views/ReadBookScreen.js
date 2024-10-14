@@ -35,7 +35,7 @@ import {
 import ExpandableText from './ExpandableText'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Pastel colors
-const themes = ['#FFFFFF', '#F5F5F5', '#E0E0E0', '#121212']
+const themes = ['#FFFFFF', '#F5F5F5', '#121212']
 const fontFamilies = [
   'Arial',
   'Times New Roman',
