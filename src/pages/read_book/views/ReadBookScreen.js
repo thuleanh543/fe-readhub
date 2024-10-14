@@ -12,8 +12,20 @@ import {
   Popover,
   TextField,
   Divider,
+  DialogActions,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material'
-import {ArrowBack, ColorLens} from '@mui/icons-material'
+import {
+  ArrowBack,
+  Bookmark,
+  BookmarkBorder,
+  ColorLens,
+  Edit,
+} from '@mui/icons-material'
+import ExpandableText from './ExpandableText'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Pastel colors
 
@@ -34,7 +46,31 @@ function ReadBookScreen() {
   const [selectedCfiRange, setSelectedCfiRange] = useState('')
   const readerRef = useRef(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filter, setFilter] = useState('all') // Filter state
+  const [filter, setFilter] = useState('all')
+  const [editingNote, setEditingNote] = useState(null)
+  const [bookmarks, setBookmarks] = useState([])
+
+  const handleEditNote = note => {
+    setEditingNote(note)
+  }
+  const handleSaveEdit = () => {
+    if (editingNote) {
+      setSelections(
+        selections.map(s =>
+          s.cfiRange === editingNote.cfiRange ? editingNote : s,
+        ),
+      )
+      setEditingNote(null)
+    }
+  }
+
+  const handleToggleBookmark = cfiRange => {
+    if (bookmarks.includes(cfiRange)) {
+      setBookmarks(bookmarks.filter(b => b !== cfiRange))
+    } else {
+      setBookmarks([...bookmarks, cfiRange])
+    }
+  }
 
   const handleError = error => {
     console.error('Error in ReactReader:', error)
@@ -82,6 +118,24 @@ function ReadBookScreen() {
           background: 'rgba(0, 0, 255, 0.1)', // Light blue on selection
           color: 'inherit',
         },
+        'a:link': {
+          color: 'inherit !important',
+          '-webkit-text-fill-color': 'inherit !important',
+        },
+        'a:hover': {
+          color: 'inherit !important',
+          '-webkit-text-fill-color': 'inherit !important',
+        },
+      })
+
+      rendition.on('rendered', section => {
+        section.document.addEventListener('click', () => {
+          const highlightElements =
+            section.document.querySelectorAll('.highlight')
+          highlightElements.forEach(el => {
+            el.style.transition = 'background-color 0.3s ease'
+          })
+        })
       })
 
       return () => {
@@ -288,7 +342,8 @@ function ReadBookScreen() {
             }}>
             {filteredSelections.map((note, i) => {
               const {text, cfiRange, comment, color, timestamp} = note
-              const isLastNote = i === filteredSelections.length - 1 // Check if it's the last note
+              const isLastNote = i === filteredSelections.length - 1
+              const isBookmarked = bookmarks.includes(cfiRange)
               return (
                 <div
                   key={i}
@@ -296,19 +351,18 @@ function ReadBookScreen() {
                     marginBottom: '15px',
                     paddingBottom: '10px',
                     paddingRight: '10px',
-                    borderBottom: isLastNote ? 'none' : '1px solid #eee', // Conditional border
+                    borderBottom: isLastNote ? 'none' : '1px solid #eee',
                   }}>
-                  <Typography
-                    variant='body2'
+                  <div
                     style={{
                       backgroundColor: color,
                       padding: '7px',
                       borderRadius: '5px',
                       marginBottom: '7px',
                     }}>
-                    {text}
-                  </Typography>
-                  <Typography variant='body2'>{comment}</Typography>
+                    <ExpandableText text={text} maxLength={190} />
+                  </div>
+                  <ExpandableText text={comment} maxLength={190} />
                   <Typography
                     variant='caption'
                     style={{
@@ -329,15 +383,70 @@ function ReadBookScreen() {
                     size='small'
                     onClick={() => handleRemoveHighlight(cfiRange)}
                     variant='outlined'
-                    color='secondary'>
+                    color='secondary'
+                    style={{marginRight: '90px'}}>
                     Remove
                   </Button>
+                  <IconButton
+                    size='small'
+                    onClick={() => handleEditNote(note)}
+                    style={{marginRight: '5px'}}>
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    size='small'
+                    onClick={() => handleToggleBookmark(cfiRange)}>
+                    {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                  </IconButton>
                 </div>
               )
             })}
           </div>
         </div>
       </Drawer>
+
+      <Dialog open={Boolean(editingNote)} onClose={() => setEditingNote(null)}>
+        <DialogTitle>Edit Note</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin='dense'
+            label='Comment'
+            fullWidth
+            multiline
+            rows={4}
+            value={editingNote?.comment || ''}
+            onChange={e =>
+              setEditingNote({...editingNote, comment: e.target.value})
+            }
+          />
+          <Select
+            value={editingNote?.color || colors[0]}
+            onChange={e =>
+              setEditingNote({...editingNote, color: e.target.value})
+            }
+            fullWidth
+            style={{marginTop: '10px'}}>
+            {colors.map((color, index) => (
+              <MenuItem key={index} value={color}>
+                <span
+                  style={{
+                    backgroundColor: color,
+                    padding: '2px 10px',
+                    borderRadius: '5px',
+                    color: color,
+                  }}>
+                  {`ColorColorColorColorColorColori`}
+                </span>
+              </MenuItem>
+            ))}
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditingNote(null)}>Cancel</Button>
+          <Button onClick={handleSaveEdit}>Save</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }
