@@ -97,17 +97,20 @@ function App() {
           boxShadow: '0px 5px 5px rgba(0, 0, 0, 0.2)',
           alignItems: 'center',
         }}>
-        <img
-          src={images.imgOpenBook}
-          alt='Logo Open Book'
-          style={{
-            height: windowSize.height * 0.09 - 32,
-            marginTop: 13,
-            marginBottom: 13,
-            marginLeft: 15,
-            marginRight: 15,
-          }}
-        />
+        <div className='flex gap-2 items-center p-5'>
+          <img
+            src={images.imgOpenBook}
+            alt='Logo Open Book'
+            style={{
+              height: windowSize.height * 0.09 - 32,
+              marginLeft: 15,
+              marginRight: 15,
+            }}
+          />
+          <Link to='/'>
+            <span className='text-sm font-medium '>READHUB</span>
+          </Link>
+        </div>
         <form
           style={{
             flex: 1,
@@ -150,7 +153,7 @@ function App() {
               marginRight: 20,
             }}
             onClick={handleClick}>
-            {user.avatar ? (
+            {user.urlAvatar ? (
               <Avatar src={user.urlAvatar} />
             ) : (
               <Avatar>{user.username ? user.username.charAt(0) : 'U'}</Avatar>
