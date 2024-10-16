@@ -1,35 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './App.css';
-import { images, colors } from './constants';
-import {ListBook} from './pages';
-import { listOptions } from './component/set_data/SetData';
+import React, {useState, useEffect} from 'react'
+import {Link, useNavigate} from 'react-router-dom'
+import './App.css'
+import {images, colors} from './constants'
+import {ListBook} from './pages'
+import {listOptions} from './component/set_data/SetData'
+import axios from 'axios'
+import {Avatar, Button, Menu, MenuItem, ListItemIcon, Icon} from '@mui/material'
+import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
+import {toast} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
-  });
-  const [searchTerm, setSearchTerm] = useState('');
+  })
+  const [searchTerm, setSearchTerm] = useState('')
+  const navigate = useNavigate()
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [user, setUser] = useState(null)
+  const open = Boolean(anchorEl)
 
   const handleSearch = event => {
-    const value = event.target.value;
-    setSearchTerm(value);
-  };
+    const value = event.target.value
+    setSearchTerm(value)
+  }
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleLogout = () => {
+    handleClose()
+    localStorage.removeItem('token')
+    setUser(null)
+    navigate('/')
+    toast.success('Logout successfully')
+  }
+
+  const getUser = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost:8080/api/v1/user/profile',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      setUser(response.data)
+      console.log('user:', response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
         height: window.innerHeight,
-      });
-    };
+      })
+    }
 
-    window.addEventListener('resize', handleResize);
+    getUser()
+
+    window.addEventListener('resize', handleResize)
     return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   return (
     <div
@@ -39,8 +83,7 @@ function App() {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
-      }}
-    >
+      }}>
       <div
         style={{
           display: 'flex',
@@ -52,26 +95,28 @@ function App() {
           top: 0,
           zIndex: 1,
           boxShadow: '0px 5px 5px rgba(0, 0, 0, 0.2)',
-        }}
-      >
-        <img
-          src={images.imgOpenBook}
-          alt='Logo Open Book'
-          style={{
-            height: windowSize.height * 0.09 - 32,
-            marginTop: 13,
-            marginBottom: 13,
-            marginLeft: 15,
-            marginRight: 15,
-          }}
-        />
+          alignItems: 'center',
+        }}>
+        <div className='flex gap-2 items-center p-5'>
+          <img
+            src={images.imgOpenBook}
+            alt='Logo Open Book'
+            style={{
+              height: windowSize.height * 0.09 - 32,
+              marginLeft: 15,
+              marginRight: 15,
+            }}
+          />
+          <Link to='/'>
+            <span className='text-sm font-medium '>READHUB</span>
+          </Link>
+        </div>
         <form
           style={{
             flex: 1,
             height: windowSize.height * 0.09,
           }}
-          action='/search'
-        >
+          action='/search'>
           <div
             style={{
               height: windowSize.height * 0.09 - 6,
@@ -79,8 +124,7 @@ function App() {
               justifyContent: 'center',
               display: 'flex',
               flexDirection: 'row',
-            }}
-          >
+            }}>
             <input
               type='text'
               placeholder='Nhập tên sách, tác giả hoặc từ khóa'
@@ -98,55 +142,75 @@ function App() {
           </div>
         </form>
 
-        <Link to='/LoginAccount' style={{textDecoration: 'none'}}>
-          <div
+        {user ? (
+          <Button
             style={{
-              width: windowSize.width * 0.1,
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-              marginBottom: 3,
-            }}>
-            <img
-              src={images.bell}
+              gap: 10,
+              marginRight: 20,
+            }}
+            onClick={handleClick}>
+            {user.urlAvatar ? (
+              <Avatar src={user.urlAvatar} />
+            ) : (
+              <Avatar>{user.username ? user.username.charAt(0) : 'U'}</Avatar>
+            )}
+            <span>{user.username}</span>
+          </Button>
+        ) : (
+          <div style={{display: 'flex', flexDirection: 'row'}}>
+            <Button
               style={{
-                height: windowSize.height * 0.09 - 41,
-                paddingLeft: 10,
-                paddingRight: 10,
-                filter: 'invert(100%)',
-              }}
-            />
-            <div
-              style={{
-                flex: 1,
+                color: '#fff',
+                padding: '5px 13px',
+                borderRadius: 19,
+                height: 40,
                 display: 'flex',
                 flexDirection: 'row',
-                justifyContent: 'flex-end',
+                backgroundColor: 'lightgray',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 20,
               }}>
-              <p
-                style={{
-                  alignSelf: 'center',
-                  fontSize: 15,
-                  color: '#f7f6f6',
-                  fontWeight: 'bold',
-                  marginLeft: 10,
-                  marginRight: 10,
-                  fontFamily: 'roboto',
-                }}>
-                the joker
-              </p>
-              <img
-                src={images.user}
-                style={{
-                  height: windowSize.height * 0.09 - 31,
-                  alignSelf: 'center',
-                  marginRight: 15,
-                }}
-              />
-            </div>
+              <Link to='/Register'>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                  }}>
+                  Register
+                </div>
+              </Link>
+            </Button>
+            <Button
+              style={{
+                color: '#fff',
+                backgroundColor: '#51bd8e',
+                borderRadius: 19,
+                height: 40,
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 20,
+              }}>
+              <Link to='/LoginAccount'>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                  }}>
+                  Login to ReadHub
+                </div>
+              </Link>
+            </Button>
           </div>
-        </Link>
+        )}
       </div>
       <div
         style={{
@@ -182,7 +246,10 @@ function App() {
               key={item.id}
               style={{
                 height: windowSize.height * 0.2,
-                width: item.id == 1 ? windowSize.width * 0.16 : windowSize.width * 0.075,
+                width:
+                  item.id == 1
+                    ? windowSize.width * 0.16
+                    : windowSize.width * 0.075,
                 borderRadius: 3,
                 backgroundImage: `url(${item.url})`,
                 backgroundSize: 'cover',
@@ -193,7 +260,10 @@ function App() {
               <div
                 style={{
                   height: windowSize.height * 0.083,
-                  width: item.id == 1 ? windowSize.width * 0.16 : windowSize.width * 0.075,
+                  width:
+                    item.id == 1
+                      ? windowSize.width * 0.16
+                      : windowSize.width * 0.075,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
                   backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
@@ -235,12 +305,47 @@ function App() {
           flexDirection: 'column',
           alignItems: 'center',
           marginTop: windowSize.height * 0.09,
-        }}
-      >
+        }}>
         <ListBook searchTerm={searchTerm} windowSize={windowSize} />
       </div>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}>
+        <MenuItem
+          onClick={handleClose}
+          component={Link}
+          to='/Profile'
+          style={{width: 160}}>
+          <ListItemIcon>
+            <AccountCircle />
+          </ListItemIcon>
+          Profile
+        </MenuItem>
+        <MenuItem onClick={handleClose} component={Link} to='/Settings'>
+          <ListItemIcon>
+            <Settings />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <ExitToApp />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
