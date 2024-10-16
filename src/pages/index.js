@@ -3,6 +3,7 @@ import VerifyRegister from './register/views/VerifyRegister'
 import Register from './register/views/Register'
 import ReadBookScreen from './read_book/views/ReadBookScreen'
 import ListBook from './list_book/views/ListBook'
+import DescriptionBook from './description_book/views/DescriptionBook'
 import Dashboard from './Dashboard'
 import Report from './Report'
 import ContentModeration from './ContentModeration'
@@ -18,4 +19,5 @@ export {
   Report,
   ContentModeration,
   Profile,
+  DescriptionBook,
 }

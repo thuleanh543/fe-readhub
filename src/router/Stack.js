@@ -9,6 +9,7 @@ import {
   Report,
   ContentModeration,
   Profile,
+  DescriptionBook,
 } from '../pages'
 
 function Stack() {
@@ -23,6 +24,7 @@ function Stack() {
       <Route path='/Dashboard' element={<Dashboard />} />
       <Route path='/Report' element={<Report />} />
       <Route path='/ContentModeration' element={<ContentModeration />} />
+      <Route path='/DescriptionBook' element={<DescriptionBook />} />
     </Routes>
   )
 }
