@@ -1,4 +1,4 @@
-import {useReducer, useRef} from 'react'
+import React, {useReducer, useEffect} from 'react'
 import {images} from '../../../constants'
 import {isValidEmail, isValidPassword} from '../../../utils/Validatations'
 import {Button} from '@mui/material'
@@ -10,6 +10,7 @@ import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import {loginReducer, initialState, actionTypes} from '../redux/loginReducer'
+import {useRef} from 'react'
 
 const theme = createTheme({
   palette: {
@@ -22,10 +23,16 @@ const theme = createTheme({
   },
 })
 
-function LoginAccount() {
-  const height = useRef(window.innerHeight).current
+const LoginAccount = () => {
   const [state, dispatch] = useReducer(loginReducer, initialState)
   const navigate = useNavigate()
+  const height = useRef(window.innerHeight).current
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      navigate('/')
+    }
+  }, [navigate])
 
   const validateForm = (email, password) => {
     const isFormValid = isValidEmail(email) && isValidPassword(password)
@@ -84,12 +91,18 @@ function LoginAccount() {
       const response = await axios.post(
         `http://localhost:8080/api/v1/authen/login?email=${state.email}&password=${state.password}`,
       )
-      localStorage.setItem('token', response.data.token)
-      toast.success(response.data.message)
-      dispatch({type: actionTypes.SET_SUCCESS, payload: true})
-      navigate('/')
+
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('role', response.data.role)
+        toast.success(response.data.message)
+        dispatch({type: actionTypes.SET_SUCCESS, payload: true})
+        navigate('/')
+      } else {
+        toast.error(response.data.message || 'Login failed')
+      }
     } catch (error) {
-      toast.error('Email hoặc mật khẩu không đúng!')
+      toast.error('Email or password is incorrect!')
     } finally {
       dispatch({type: actionTypes.SET_LOADING, payload: false})
     }
