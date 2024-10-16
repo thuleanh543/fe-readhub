@@ -9,9 +9,7 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  Icon,
   Box,
-  Tabs,
   Tab,
   TextField,
   IconButton,
@@ -61,6 +59,9 @@ function Profile() {
   }
 
   const getUser = async () => {
+    if (!localStorage.getItem('token')) {
+      navigate('/LoginAccount')
+    }
     try {
       const response = await axios.get(
         'http://localhost:8080/api/v1/user/profile',
@@ -71,7 +72,6 @@ function Profile() {
         },
       )
       setUser(response.data)
-      console.log('user:', response.data)
     } catch (error) {
       console.error(error)
     }
