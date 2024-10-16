@@ -330,7 +330,7 @@ function ReadBookScreen() {
             allowScriptedContent: true,
           }}
           location={loca}
-          locationChanged={(loc: string) => setLocation(loc)}
+          locationChanged={loc => setLocation(loc)}
           getRendition={_rendition => {
             setRendition(_rendition)
             _rendition.on('started', () => setLoading(false))

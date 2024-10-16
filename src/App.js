@@ -5,7 +5,7 @@ import {images, colors} from './constants'
 import {ListBook} from './pages'
 import {listOptions} from './component/set_data/SetData'
 import axios from 'axios'
-import {Avatar, Button, Menu, MenuItem, ListItemIcon, Icon} from '@mui/material'
+import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
 import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -53,7 +53,6 @@ function App() {
         },
       )
       setUser(response.data)
-      console.log('user:', response.data)
     } catch (error) {
       console.error(error)
     }
