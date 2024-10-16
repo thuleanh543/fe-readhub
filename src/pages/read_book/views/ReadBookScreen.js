@@ -134,6 +134,18 @@ function ReadBookScreen() {
           transform: `scale(${settings.zoom / 100})`,
           'transform-origin': 'top left',
         },
+        'a, a:link, a:visited, a:hover, a:active': {
+          color: 'inherit !important',
+          '-webkit-text-fill-color': 'inherit !important',
+          'text-decoration': 'none',
+        },
+        '::selection': {
+          'background-color': 'rgba(0, 0, 255, 0.1)',
+          color: 'inherit',
+        },
+        '*': {
+          transition: 'none !important',
+        },
       })
 
       rendition.themes.select('default')
