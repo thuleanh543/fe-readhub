@@ -88,7 +88,8 @@ const ListBook = ({searchTerm, windowSize}) => {
   }, [searchTerm, fetchBooks, page, shouldFetch])
 
   const handleBookClick = (bookId, bookTitle) => {
-    navigate('/ReadBookScreen', {state: {bookId, bookTitle}})
+    // navigate('/ReadBookScreen', {state: {bookId, bookTitle}})
+    navigate('/DescriptionBook', {state: {bookId, bookTitle}})
   }
 
   const getGridColumns = () => {
