@@ -9,6 +9,7 @@ import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
 import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import BookRecommendationsSidebar from './pages/book_recomment/views/RecommendationCategory'
 
 function App() {
   const [windowSize, setWindowSize] = useState({
@@ -244,11 +245,9 @@ function App() {
             <div
               key={item.id}
               style={{
-                height: windowSize.height * 0.2,
+                height: windowSize.height * 0.13,
                 width:
-                  item.id == 1
-                    ? windowSize.width * 0.16
-                    : windowSize.width * 0.075,
+                   windowSize.width * 0.07,
                 borderRadius: 3,
                 backgroundImage: `url(${item.url})`,
                 backgroundSize: 'cover',
@@ -258,11 +257,9 @@ function App() {
               }}>
               <div
                 style={{
-                  height: windowSize.height * 0.083,
+                  height: windowSize.height * 0.05,
                   width:
-                    item.id == 1
-                      ? windowSize.width * 0.16
-                      : windowSize.width * 0.075,
+                     windowSize.width * 0.07,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
                   backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
@@ -301,10 +298,10 @@ function App() {
         style={{
           flex: 1,
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: windowSize.height * 0.09,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
         }}>
+        <BookRecommendationsSidebar />
         <ListBook searchTerm={searchTerm} windowSize={windowSize} />
       </div>
 

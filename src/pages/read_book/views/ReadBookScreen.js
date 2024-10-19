@@ -18,7 +18,6 @@ import {
   DialogTitle,
   DialogContent,
   FormControl,
-  InputLabel,
   Slider,
   RadioGroup,
   FormControlLabel,
@@ -34,7 +33,7 @@ import {
 } from '@mui/icons-material'
 import ExpandableText from './ExpandableText'
 
-const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Pastel colors
+const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
 const themes = ['#FFFFFF', '#F5F5F5', '#121212']
 const fontFamilies = [
   'Arial',
