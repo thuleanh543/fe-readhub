@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {ReactReader, ReactReaderStyle} from 'react-reader'
+import ePub from 'epubjs'
 import {
   AppBar,
   Toolbar,
@@ -33,6 +34,7 @@ import {
   Settings,
 } from '@mui/icons-material'
 import ExpandableText from './ExpandableText'
+import axios from 'axios'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF'] // Pastel colors
 const themes = ['#FFFFFF', '#F5F5F5', '#121212']
@@ -83,6 +85,64 @@ function ReadBookScreen() {
   const [lineHeight, setLineHeight] = useState(1.5)
   const [zoom, setZoom] = useState(100)
   const [settings, setSettings] = useState(defaultSettings)
+  const [user, setUser] = useState(null)
+
+  const getUser = async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost:8080/api/v1/user/profile',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      setUser(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const getNotes = async () => {
+    if (!user || !bookId) return
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/note/user/${user.userId}/book/${bookId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+
+      // Extract the data array from the response
+      const notesData = Array.isArray(response.data.data)
+        ? response.data.data
+        : []
+      setSelections(notesData)
+
+      if (rendition) {
+        notesData.forEach(note => {
+          rendition.annotations.add(
+            'highlight',
+            note.cfiRange,
+            {},
+            null,
+            'hl',
+            {
+              fill: note.color,
+              'fill-opacity': '0.3',
+              'mix-blend-mode': 'multiply',
+            },
+          )
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+      setSelections([]) // Set to empty array in case of error
+    }
+  }
 
   const handleEditNote = note => {
     setEditingNote(note)
@@ -176,7 +236,14 @@ function ReadBookScreen() {
   useEffect(() => {
     const epubUrl = `https://www.gutenberg.org/cache/epub/${bookId}/pg${bookId}.epub`
     setEpubUrl(epubUrl)
+    getUser()
   }, [bookId])
+
+  useEffect(() => {
+    if (user && bookId) {
+      getNotes()
+    }
+  }, [user, bookId, rendition])
 
   useEffect(() => {
     if (rendition) {
@@ -232,61 +299,142 @@ function ReadBookScreen() {
       }
     }
   }, [rendition])
+  useEffect(() => {
+    if (rendition) {
+      const applyHighlights = () => {
+        rendition.views().forEach(view => {
+          selections.forEach(note => {
+            try {
+              const cfiRange = new ePub.CFI(note.cfiRange)
+              const range = cfiRange.toRange(view.document)
 
-  const handleSave = () => {
-    if (comment && selectedCfiRange) {
-      const newSelection = {
-        text: selectedText,
-        cfiRange: selectedCfiRange,
-        comment,
-        color: highlightColor,
-        timestamp: Date.now(),
-      }
-      setSelections(prev => [...prev, newSelection])
+              if (range) {
+                const newHighlight = view.document.createElement('div')
+                newHighlight.setAttribute(
+                  'style',
+                  `
+                background-color: ${note.color};
+                opacity: 0.3;
+                position: absolute;
+                z-index: -1;
+                pointer-events: none;
+                `,
+                )
 
-      rendition.annotations.remove(selectedCfiRange, 'highlight')
-
-      rendition.annotations.add('highlight', selectedCfiRange, {}, null, 'hl', {
-        fill: highlightColor,
-        'fill-opacity': '0.3',
-        'mix-blend-mode': 'multiply',
-      })
-
-      rendition.views().forEach(view => {
-        const highlights = view.document.querySelectorAll(
-          'mark[data-epubjs-annotation="highlight"]',
-        )
-        highlights.forEach(highlight => {
-          if (highlight.dataset.epubcfi === selectedCfiRange) {
-            highlight.style.backgroundColor = highlightColor
-            highlight.style.opacity = '0.3'
-          }
+                const rects = range.getClientRects()
+                for (let i = 0; i < rects.length; i++) {
+                  const rect = rects[i]
+                  const highlightClone = newHighlight.cloneNode()
+                  highlightClone.style.left = `${rect.left}px`
+                  highlightClone.style.top = `${rect.top}px`
+                  highlightClone.style.height = `${rect.height}px`
+                  highlightClone.style.width = `${rect.width}px`
+                  view.document.body.appendChild(highlightClone)
+                }
+              }
+            } catch (error) {
+              console.error('Error applying highlight:', error)
+            }
+          })
         })
+      }
+
+      rendition.on('rendered', section => {
+        applyHighlights()
       })
 
-      setPopoverAnchor(null)
-      setComment('')
-      setSelectedText('')
-      setSelectedCfiRange('')
+      rendition.on('relocated', location => {
+        applyHighlights()
+      })
+    }
+  }, [rendition, selections])
+
+  const handleSave = async () => {
+    if (comment && selectedCfiRange) {
+      const newNote = {
+        userId: user.userId,
+        bookId: bookId,
+        content: comment,
+        selectedText: selectedText,
+        cfiRange: selectedCfiRange,
+        color: highlightColor,
+      }
+
+      try {
+        const response = await axios.post(
+          'http://localhost:8080/api/v1/note',
+          newNote,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+
+        const createdNote = response.data
+
+        setSelections(prev => [...prev, createdNote])
+
+        rendition.annotations.add(
+          'highlight',
+          selectedCfiRange,
+          {},
+          null,
+          'hl',
+          {
+            fill: highlightColor,
+            'fill-opacity': '0.3',
+            'mix-blend-mode': 'multiply',
+          },
+        )
+
+        rendition.views().forEach(view => {
+          const highlights = view.document.querySelectorAll(
+            'mark[data-epubjs-annotation="highlight"]',
+          )
+          highlights.forEach(highlight => {
+            if (highlight.dataset.epubcfi === selectedCfiRange) {
+              highlight.style.backgroundColor = highlightColor
+              highlight.style.opacity = '0.3'
+            }
+          })
+        })
+
+        setPopoverAnchor(null)
+        setComment('')
+        setSelectedText('')
+        setSelectedCfiRange('')
+      } catch (error) {
+        console.error('Error creating note:', error)
+      }
     }
   }
 
   const handleRemoveHighlight = cfiRange => {
     rendition.annotations.remove(cfiRange, 'highlight')
-    setSelections(
-      selections.filter(selection => selection.cfiRange !== cfiRange),
+    setSelections(prevSelections =>
+      prevSelections.filter(selection => selection.cfiRange !== cfiRange),
     )
   }
 
-  const filteredSelections = selections
-    .filter(selection => {
-      const isTextMatch =
-        selection.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        selection.comment.toLowerCase().includes(searchTerm.toLowerCase())
-      const isColorMatch = filter === 'all' || selection.color === filter
-      return isTextMatch && isColorMatch
-    })
-    .sort((a, b) => b.timestamp - a.timestamp)
+  const filteredSelections = Array.isArray(selections)
+    ? selections
+        .filter(selection => {
+          const isTextMatch =
+            (selection.selectedText
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()) ??
+              false) ||
+            (selection.content
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase()) ??
+              false)
+          const isColorMatch = filter === 'all' || selection.color === filter
+          return isTextMatch && isColorMatch
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sắp xếp theo thời gian, mới nhất trước
+    : []
 
   const readerStyles = {
     ...ReactReaderStyle,
@@ -310,10 +458,12 @@ function ReadBookScreen() {
           <Typography variant='h6' style={{flexGrow: 1, textAlign: 'center'}}>
             {bookTitle || 'Epub Reader'}
           </Typography>
-          <Button color='inherit' onClick={handleToggleDrawer}>
-            <ColorLens />
-            Notes
-          </Button>
+          {user && (
+            <Button color='inherit' onClick={handleToggleDrawer}>
+              <ColorLens />
+              Notes
+            </Button>
+          )}
           <Button color='inherit' onClick={handleSettingsDrawerToggle}>
             <Settings />
             Settings
@@ -440,67 +590,78 @@ function ReadBookScreen() {
               overflowY: 'auto',
               paddingLeft: '20px',
             }}>
-            {filteredSelections.map((note, i) => {
-              const {text, cfiRange, comment, color, timestamp} = note
-              const isLastNote = i === filteredSelections.length - 1
-              const isBookmarked = bookmarks.includes(cfiRange)
-              return (
-                <div
-                  key={i}
-                  style={{
-                    marginBottom: '15px',
-                    paddingBottom: '10px',
-                    paddingRight: '10px',
-                    borderBottom: isLastNote ? 'none' : '1px solid #eee',
-                  }}>
+            {filteredSelections.length > 0 ? (
+              filteredSelections.map((note, i) => {
+                const {
+                  selectedText,
+                  cfiRange,
+                  content,
+                  color,
+                  createdAt,
+                  noteId,
+                } = note
+                const isLastNote = i === filteredSelections.length - 1
+                const isBookmarked = bookmarks.includes(cfiRange)
+                return (
                   <div
+                    key={noteId}
                     style={{
-                      backgroundColor: color,
-                      padding: '7px',
-                      borderRadius: '5px',
-                      marginBottom: '7px',
+                      marginBottom: '15px',
+                      paddingBottom: '10px',
+                      paddingRight: '10px',
+                      borderBottom: isLastNote ? 'none' : '1px solid #eee',
                     }}>
-                    <ExpandableText text={text} maxLength={190} />
+                    <div
+                      style={{
+                        backgroundColor: color,
+                        padding: '7px',
+                        borderRadius: '5px',
+                        marginBottom: '7px',
+                      }}>
+                      <ExpandableText text={selectedText} maxLength={190} />
+                    </div>
+                    <ExpandableText text={content} maxLength={190} />
+                    <Typography
+                      variant='caption'
+                      style={{
+                        textAlign: 'right',
+                        display: 'block',
+                        marginTop: '7px',
+                      }}>
+                      {new Date(createdAt).toLocaleString()}
+                    </Typography>
+                    <Button
+                      size='small'
+                      onClick={() => rendition.display(cfiRange)}
+                      style={{marginRight: '5px'}}
+                      variant='outlined'>
+                      Show
+                    </Button>
+                    <Button
+                      size='small'
+                      onClick={() => handleRemoveHighlight(cfiRange)}
+                      variant='outlined'
+                      color='secondary'
+                      style={{marginRight: '80px'}}>
+                      Remove
+                    </Button>
+                    <IconButton
+                      size='small'
+                      onClick={() => handleEditNote(note)}
+                      style={{marginRight: '5px'}}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      size='small'
+                      onClick={() => handleToggleBookmark(cfiRange)}>
+                      {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                    </IconButton>
                   </div>
-                  <ExpandableText text={comment} maxLength={190} />
-                  <Typography
-                    variant='caption'
-                    style={{
-                      textAlign: 'right',
-                      display: 'block',
-                      marginTop: '7px',
-                    }}>
-                    {new Date(timestamp).toLocaleString()}
-                  </Typography>
-                  <Button
-                    size='small'
-                    onClick={() => rendition.display(cfiRange)}
-                    style={{marginRight: '5px'}}
-                    variant='outlined'>
-                    Show
-                  </Button>
-                  <Button
-                    size='small'
-                    onClick={() => handleRemoveHighlight(cfiRange)}
-                    variant='outlined'
-                    color='secondary'
-                    style={{marginRight: '80px'}}>
-                    Remove
-                  </Button>
-                  <IconButton
-                    size='small'
-                    onClick={() => handleEditNote(note)}
-                    style={{marginRight: '5px'}}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    size='small'
-                    onClick={() => handleToggleBookmark(cfiRange)}>
-                    {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
-                  </IconButton>
-                </div>
-              )
-            })}
+                )
+              })
+            ) : (
+              <Typography variant='body1'>No notes found.</Typography>
+            )}
           </div>
         </div>
       </Drawer>

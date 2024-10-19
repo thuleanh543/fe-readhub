@@ -246,7 +246,7 @@ function App() {
               style={{
                 height: windowSize.height * 0.2,
                 width:
-                  item.id == 1
+                  item.id === 1
                     ? windowSize.width * 0.16
                     : windowSize.width * 0.075,
                 borderRadius: 3,
@@ -260,7 +260,7 @@ function App() {
                 style={{
                   height: windowSize.height * 0.083,
                   width:
-                    item.id == 1
+                    item.id === 1
                       ? windowSize.width * 0.16
                       : windowSize.width * 0.075,
                   borderBottomLeftRadius: 3,
