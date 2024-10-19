@@ -102,7 +102,7 @@ const ListBook = ({searchTerm, windowSize}) => {
   }
 
   const gridColumns = getGridColumns()
-  const bookWidth = (windowSize.width * 0.9) / gridColumns - 20
+  const bookWidth = (windowSize.width * 0.7) / gridColumns - 20
 
   return (
     <div
@@ -111,7 +111,7 @@ const ListBook = ({searchTerm, windowSize}) => {
         flexDirection: 'column',
         alignItems: 'center',
         backgroundColor: colors.themeLight.primary,
-        padding: '20px 5%',
+        padding: '20px 3%',
       }}>
       <div
         style={{
