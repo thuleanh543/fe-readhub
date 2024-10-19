@@ -247,7 +247,9 @@ function App() {
               style={{
                 height: windowSize.height * 0.13,
                 width:
-                   windowSize.width * 0.07,
+                  item.id === 1
+                    ? windowSize.width * 0.16
+                    : windowSize.width * 0.075,
                 borderRadius: 3,
                 backgroundImage: `url(${item.url})`,
                 backgroundSize: 'cover',
@@ -259,7 +261,9 @@ function App() {
                 style={{
                   height: windowSize.height * 0.05,
                   width:
-                     windowSize.width * 0.07,
+                    item.id === 1
+                      ? windowSize.width * 0.16
+                      : windowSize.width * 0.075,
                   borderBottomLeftRadius: 3,
                   borderBottomRightRadius: 3,
                   backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,

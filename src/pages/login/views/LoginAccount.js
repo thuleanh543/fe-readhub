@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import {loginReducer, initialState, actionTypes} from '../redux/loginReducer'
 import {useRef} from 'react'
+import {useState} from 'react'
 
 const theme = createTheme({
   palette: {
@@ -27,10 +28,33 @@ const LoginAccount = () => {
   const [state, dispatch] = useReducer(loginReducer, initialState)
   const navigate = useNavigate()
   const height = useRef(window.innerHeight).current
+  const [user, setUser] = useState(null)
+
+  const getUser = async () => {
+    if (!localStorage.getItem('token')) {
+      navigate('/LoginAccount')
+    }
+    try {
+      const response = await axios.get(
+        'http://localhost:8080/api/v1/user/profile',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      setUser(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate('/')
+    if (localStorage.getItem('token') !== null) {
+      getUser()
+      if (user !== null) {
+        navigate('/')
+      }
     }
   }, [navigate])
 
