@@ -88,7 +88,6 @@ const ListBook = ({searchTerm, windowSize}) => {
   }, [searchTerm, fetchBooks, page, shouldFetch])
 
   const handleBookClick = (bookId, bookTitle) => {
-    // navigate('/ReadBookScreen', {state: {bookId, bookTitle}})
     navigate('/DescriptionBook', {state: {bookId, bookTitle}})
   }
 
@@ -111,7 +110,7 @@ const ListBook = ({searchTerm, windowSize}) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        backgroundColor: colors.themeLight.secondary,
+        backgroundColor: colors.themeLight.primary,
         padding: '20px 5%',
       }}>
       <div
@@ -165,15 +164,16 @@ const ListBook = ({searchTerm, windowSize}) => {
         ))}
       </div>
       {loading && (
-        <p
+          <p
           style={{
             color: '#fff',
             textAlign: 'center',
             marginTop: 10,
             marginBottom: 10,
+
           }}>
-          <CircularProgress size={24} color='inherit' /> Loading more books...
-        </p>
+          <CircularProgress size={24} color= {colors.themeLight.primary} /> Loading more books...
+          </p>
       )}
       {!hasMore && (
         <p
