@@ -6,7 +6,7 @@ import {ListBook} from './pages'
 import {listOptions} from './component/set_data/SetData'
 import axios from 'axios'
 import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
-import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
+import {AccountCircle, ExitToApp, Settings,Forum} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 function App() {
@@ -109,6 +109,19 @@ function App() {
             <span className='text-sm font-medium '>READHUB</span>
           </Link>
         </div>
+        <Button
+          component={Link}
+          to="/BookForum"
+          style={{
+            color: '#fff',
+            marginLeft: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+          }}>
+          <Forum />
+          <span>Forum</span>
+        </Button>
         <form
           style={{
             flex: 1,
