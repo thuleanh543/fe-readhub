@@ -8,6 +8,7 @@ import Dashboard from './Dashboard'
 import Report from './Report'
 import ContentModeration from './ContentModeration'
 import Profile from './Profile'
+import BookForum from './book_forum/views/BookForum'
 
 export {
   LoginAccount,
@@ -20,4 +21,5 @@ export {
   ContentModeration,
   Profile,
   DescriptionBook,
+  BookForum,
 }
