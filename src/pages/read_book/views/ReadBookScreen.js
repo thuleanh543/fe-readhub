@@ -18,6 +18,8 @@ import {
   DialogContent,
 } from '@mui/material'
 import axios from 'axios'
+import {toast} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
 const themes = ['#FFFFFF', '#F5F5F5', '#121212']
@@ -57,13 +59,77 @@ function ReadBookScreen() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filter, setFilter] = useState('all')
   const [editingNote, setEditingNote] = useState(null)
-  const [bookmarks, setBookmarks] = useState([])
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [settings, setSettings] = useState(defaultSettings)
   const [user, setUser] = useState(null)
   const [isNote, setIsNote] = useState(false)
+  const [hasBookmark, setHasBookmark] = useState(false)
+  const [currentLocation, setCurrentLocation] = useState(null)
+  const [readStartTime, setReadStartTime] = useState(null)
+  const [bookmarkId, setBookmarkId] = useState(null)
+  const [totalTimeSpent, setTotalTimeSpent] = useState(0)
+  const [lastReadingUpdate, setLastReadingUpdate] = useState(null)
+  const [isActive, setIsActive] = useState(true)
+
+  const startReadingSession = () => {
+    setReadStartTime(Date.now())
+  }
+  const updateReadingHistory = async () => {
+    const currentTime = Date.now()
+    const timeSpent = Math.floor((currentTime - lastReadingUpdate) / 1000) // Convert to seconds
+
+    // if (timeSpent < 1) return
+
+    try {
+      await axios.post(
+        'http://localhost:8080/api/v1/reading-history',
+        {
+          userId: user.userId,
+          bookId: bookId,
+          timeSpent: timeSpent,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      setLastReadingUpdate(currentTime)
+    } catch (error) {
+      console.error('Error updating reading history:', error)
+    }
+  }
+
+  const saveBookmark = async location => {
+    if (!user || !bookId) return
+
+    try {
+      console.log('location', loca)
+      await axios.post(
+        'http://localhost:8080/api/v1/bookmark',
+        {
+          userId: user.userId,
+          bookId: bookId,
+          location: loca,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      setHasBookmark(true)
+      toast.success('Đã lưu đánh dấu trang')
+    } catch (error) {
+      console.error('Error saving bookmark:', error)
+      toast.error('Có lỗi xảy ra khi lưu đánh dấu trang', 'error')
+    }
+  }
 
   const getUser = async () => {
+    if (!localStorage.getItem('token')) return
     try {
       const response = await axios.get(
         'http://localhost:8080/api/v1/user/profile',
@@ -80,8 +146,7 @@ function ReadBookScreen() {
   }
 
   const getNotes = async () => {
-    if (!user || !bookId) return
-
+    if (!user?.userId || !bookId || !rendition) return
     try {
       const response = await axios.get(
         `http://localhost:8080/api/v1/note/user/${user.userId}/book/${bookId}`,
@@ -145,12 +210,56 @@ function ReadBookScreen() {
       console.error('Error updating note:', error)
     }
   }
+  const getBookmark = async () => {
+    if (!user || !bookId) return
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/bookmark/user/${user.userId}/book/${bookId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
 
-  const handleToggleBookmark = cfiRange => {
-    if (bookmarks.includes(cfiRange)) {
-      setBookmarks(bookmarks.filter(b => b !== cfiRange))
+      if (response.data) {
+        console.log('bookmark', response.data)
+        setHasBookmark(true)
+        setBookmarkId(response.data.data.bookmarkId)
+        console.log('bookmarkId', bookmarkId)
+        setLocation(response.data.data.location)
+      }
+    } catch (error) {
+      console.error('Error fetching bookmark:', error)
+    }
+  }
+
+  const handleToggleBookmark = async () => {
+    if (!user || !bookId) return
+
+    if (hasBookmark && bookmarkId) {
+      try {
+        await axios.put(
+          'http://localhost:8080/api/v1/bookmark',
+          {
+            bookmarkId: bookmarkId,
+            userId: user.userId,
+            bookId: bookId,
+            location: loca,
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+        toast.success('Đã đánh dấu trang')
+      } catch (error) {
+        toast.error('Có lỗi xảy ra khi đánh dấu trang', 'error')
+      }
     } else {
-      setBookmarks([...bookmarks, cfiRange])
+      await saveBookmark(currentLocation)
     }
   }
 
@@ -222,10 +331,62 @@ function ReadBookScreen() {
   }, [settings])
 
   useEffect(() => {
+    if (user?.userId && bookId) {
+      setLastReadingUpdate(Date.now())
+      setIsActive(true)
+
+      // Update every 5 minutes if the page is active
+      const intervalId = setInterval(() => {
+        if (isActive) {
+          updateReadingHistory()
+        }
+      }, 5 * 60 * 1000)
+
+      // Clean up
+      return () => {
+        updateReadingHistory()
+        clearInterval(intervalId)
+      }
+    }
+  }, [user, bookId])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setIsActive(false)
+        updateReadingHistory()
+      } else {
+        setIsActive(true)
+        setLastReadingUpdate(Date.now())
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
+  useEffect(() => {
     const epubUrl = `https://www.gutenberg.org/cache/epub/${bookId}/pg${bookId}.epub`
     setEpubUrl(epubUrl)
     getUser()
   }, [bookId])
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      updateReadingHistory()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [])
+
+  useEffect(() => {
+    getBookmark()
+  }, [user])
 
   useEffect(() => {
     if (user && bookId) {
@@ -451,6 +612,9 @@ function ReadBookScreen() {
         onToggleNotes={handleToggleDrawer}
         onToggleSettings={handleSettingsDrawerToggle}
         user={user}
+        onToggleBookmark={handleToggleBookmark}
+        hasBookmark={hasBookmark}
+        currentLocation={currentLocation}
       />
       {loading && <p>Loading...</p>}
       {error && <p style={{color: 'red'}}>{error}</p>}
@@ -488,8 +652,6 @@ function ReadBookScreen() {
         rendition={rendition}
         onRemoveHighlight={handleRemoveHighlight}
         onEditNote={handleEditNote}
-        bookmarks={bookmarks}
-        onToggleBookmark={handleToggleBookmark}
       />
 
       <Dialog open={Boolean(editingNote)} onClose={() => setEditingNote(null)}>
