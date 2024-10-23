@@ -9,8 +9,6 @@ import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
 import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import BookRecommendationsSidebar from './pages/book_recomment/views/RecommendationCategory'
-
 function App() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -298,16 +296,9 @@ function App() {
           ))}
         </div>
       </div>
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-        }}>
-        <BookRecommendationsSidebar />
+
         <ListBook searchTerm={searchTerm} windowSize={windowSize} />
-      </div>
+
 
       <Menu
         anchorEl={anchorEl}
