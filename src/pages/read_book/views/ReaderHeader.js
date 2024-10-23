@@ -1,6 +1,19 @@
 import React from 'react'
-import {AppBar, Toolbar, Typography, Button} from '@mui/material'
-import {ArrowBack, ColorLens, Settings} from '@mui/icons-material'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Tooltip,
+} from '@mui/material'
+import {
+  ArrowBack,
+  ColorLens,
+  Settings,
+  Bookmark,
+  BookmarkBorder,
+} from '@mui/icons-material'
 
 const ReaderHeader = ({
   title,
@@ -8,6 +21,9 @@ const ReaderHeader = ({
   onToggleNotes,
   onToggleSettings,
   user,
+  onToggleBookmark,
+  hasBookmark = false,
+  currentLocation,
 }) => (
   <AppBar position='static'>
     <Toolbar>
@@ -19,10 +35,20 @@ const ReaderHeader = ({
         {title || 'Epub Reader'}
       </Typography>
       {user && (
-        <Button color='inherit' onClick={onToggleNotes}>
-          <ColorLens />
-          Notes
-        </Button>
+        <>
+          <Tooltip title={hasBookmark ? 'Update bookmark' : 'Add bookmark'}>
+            <IconButton
+              color='inherit'
+              onClick={() => onToggleBookmark(currentLocation)}
+              sx={{mr: 1}}>
+              {hasBookmark ? <Bookmark /> : <BookmarkBorder />}
+            </IconButton>
+          </Tooltip>
+          <Button color='inherit' onClick={onToggleNotes}>
+            <ColorLens />
+            Notes
+          </Button>
+        </>
       )}
       <Button color='inherit' onClick={onToggleSettings}>
         <Settings />
