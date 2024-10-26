@@ -120,7 +120,7 @@ function App() {
             gap: '5px',
           }}>
           <Forum />
-          <span>Forum</span>
+          <span>Forums</span>
         </Button>
         <form
           style={{
