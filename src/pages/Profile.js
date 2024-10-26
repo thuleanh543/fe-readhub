@@ -60,7 +60,7 @@ function Profile() {
 
   const getUser = async () => {
     if (!localStorage.getItem('token')) {
-      navigate('/LoginAccount')
+      navigate('/login-account')
     }
     try {
       const response = await axios.get(
@@ -316,7 +316,7 @@ function Profile() {
         <MenuItem
           onClick={handleClose}
           component={Link}
-          to='/Profile'
+          to='/profile'
           style={{width: 160}}>
           <ListItemIcon>
             <AccountCircle />
