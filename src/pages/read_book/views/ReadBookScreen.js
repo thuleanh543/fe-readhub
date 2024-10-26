@@ -163,25 +163,10 @@ function ReadBookScreen() {
         : []
       setSelections(notesData)
 
-      if (rendition) {
-        notesData.forEach(note => {
-          rendition.annotations.add(
-            'highlight',
-            note.cfiRange,
-            {},
-            null,
-            'hl',
-            {
-              fill: note.color,
-              'fill-opacity': '0.3',
-              'mix-blend-mode': 'multiply',
-            },
-          )
-        })
-      }
+      // Không cần thêm highlights ở đây vì sẽ được xử lý bởi useEffect
     } catch (error) {
       console.error('Error fetching notes:', error)
-      setSelections([]) // Set to empty array in case of error
+      setSelections([])
     }
   }
 
@@ -451,50 +436,48 @@ function ReadBookScreen() {
   useEffect(() => {
     if (rendition) {
       const applyHighlights = () => {
-        rendition.views().forEach(view => {
-          selections.forEach(note => {
-            try {
-              const cfiRange = new ePub.CFI(note.cfiRange)
-              const range = cfiRange.toRange(view.document)
+        // Xóa tất cả highlights hiện tại
+        rendition.annotations.remove('highlight')
 
-              if (range) {
-                const newHighlight = view.document.createElement('div')
-                newHighlight.setAttribute(
-                  'style',
-                  `
-                background-color: ${note.color};
-                opacity: 0.3;
-                position: absolute;
-                z-index: -1;
-                pointer-events: none;
-                `,
-                )
-
-                const rects = range.getClientRects()
-                for (let i = 0; i < rects.length; i++) {
-                  const rect = rects[i]
-                  const highlightClone = newHighlight.cloneNode()
-                  highlightClone.style.left = `${rect.left}px`
-                  highlightClone.style.top = `${rect.top}px`
-                  highlightClone.style.height = `${rect.height}px`
-                  highlightClone.style.width = `${rect.width}px`
-                  view.document.body.appendChild(highlightClone)
-                }
-              }
-            } catch (error) {
-              console.error('Error applying highlight:', error)
-            }
-          })
+        // Áp dụng lại highlights cho tất cả selections
+        selections.forEach(note => {
+          rendition.annotations.add(
+            'highlight',
+            note.cfiRange,
+            {},
+            null,
+            'hl',
+            {
+              fill: note.color,
+              'fill-opacity': '0.3',
+              'mix-blend-mode': 'multiply',
+            },
+          )
         })
       }
 
-      rendition.on('rendered', section => {
-        applyHighlights()
-      })
+      // Apply highlights khi component mount và khi selections thay đổi
+      applyHighlights()
 
-      rendition.on('relocated', location => {
+      // Tạo các handler functions riêng biệt
+      const handleRendered = () => {
         applyHighlights()
-      })
+      }
+
+      const handleRelocated = () => {
+        applyHighlights()
+      }
+
+      // Đăng ký event listeners với các handler functions
+      rendition.on('rendered', handleRendered)
+      rendition.on('relocated', handleRelocated)
+
+      // Cleanup function
+      return () => {
+        // Xóa event listeners với cùng handler functions
+        rendition.off('rendered', handleRendered)
+        rendition.off('relocated', handleRelocated)
+      }
     }
   }, [rendition, selections])
 
@@ -522,34 +505,8 @@ function ReadBookScreen() {
         )
 
         const createdNote = response.data
-
         setSelections(prev => [...prev, createdNote])
         setIsNote(!isNote)
-
-        rendition.annotations.add(
-          'highlight',
-          selectedCfiRange,
-          {},
-          null,
-          'hl',
-          {
-            fill: highlightColor,
-            'fill-opacity': '0.3',
-            'mix-blend-mode': 'multiply',
-          },
-        )
-
-        rendition.views().forEach(view => {
-          const highlights = view.document.querySelectorAll(
-            'mark[data-epubjs-annotation="highlight"]',
-          )
-          highlights.forEach(highlight => {
-            if (highlight.dataset.epubcfi === selectedCfiRange) {
-              highlight.style.backgroundColor = highlightColor
-              highlight.style.opacity = '0.3'
-            }
-          })
-        })
 
         setPopoverAnchor(null)
         setComment('')
@@ -568,8 +525,12 @@ function ReadBookScreen() {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
+
+      // Cập nhật state local
       setSelections(selections.filter(s => s.cfiRange !== cfiRange))
-      rendition.annotations.remove(cfiRange)
+
+      // Xóa annotation
+      rendition.annotations.remove(cfiRange, 'highlight')
     } catch (error) {
       console.error('Error deleting note:', error)
     }
