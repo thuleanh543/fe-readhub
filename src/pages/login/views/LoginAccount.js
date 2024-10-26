@@ -32,7 +32,7 @@ const LoginAccount = () => {
 
   const getUser = async () => {
     if (!localStorage.getItem('token')) {
-      navigate('/LoginAccount')
+      navigate('/login-account')
     }
     try {
       const response = await axios.get(

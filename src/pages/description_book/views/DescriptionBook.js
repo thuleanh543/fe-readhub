@@ -226,7 +226,7 @@ export default function DescriptionBook( ) {
                 alignItems: 'center',
                 marginRight: 20,
               }}>
-              <Link to='/Register'>
+              <Link to='/register'>
                 <div
                   style={{
                     fontSize: 15,
@@ -249,7 +249,7 @@ export default function DescriptionBook( ) {
                 alignItems: 'center',
                 marginRight: 20,
               }}>
-              <Link to='/LoginAccount'>
+              <Link to='/login-account'>
                 <div
                   style={{
                     fontSize: 15,
@@ -334,7 +334,7 @@ export default function DescriptionBook( ) {
             variant="contained"
             startIcon={<BookOpen />}
             onClick={() =>{
-              navigate('/ReadBookScreen', {state: {bookId, bookTitle}})
+              navigate('/read-book-screen', {state: {bookId, bookTitle}})
             }}
             sx={{
               bgcolor: '#2563EB',

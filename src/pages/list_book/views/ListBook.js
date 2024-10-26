@@ -85,7 +85,7 @@ const ListBook = ({ searchTerm, windowSize }) => {
   }, [searchTerm, fetchBooks, page, shouldFetch, hasMore]);
 
   const handleBookClick = (bookId, bookTitle) => {
-    navigate('/DescriptionBook', {state: {bookId, bookTitle}})
+    navigate('/description-book', {state: {bookId, bookTitle}})
   };
 
   if (error) {

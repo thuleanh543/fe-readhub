@@ -111,7 +111,7 @@ function App() {
         </div>
         <Button
           component={Link}
-          to="/BookForum"
+          to="/book-forum"
           style={{
             color: '#fff',
             marginLeft: 20,
@@ -186,7 +186,7 @@ function App() {
                 alignItems: 'center',
                 marginRight: 20,
               }}>
-              <Link to='/Register'>
+              <Link to='/register'>
                 <div
                   style={{
                     fontSize: 15,
@@ -209,7 +209,7 @@ function App() {
                 alignItems: 'center',
                 marginRight: 20,
               }}>
-              <Link to='/LoginAccount'>
+              <Link to='/login-account'>
                 <div
                   style={{
                     fontSize: 15,
@@ -328,7 +328,7 @@ function App() {
         <MenuItem
           onClick={handleClose}
           component={Link}
-          to='/Profile'
+          to='/profile'
           style={{width: 160}}>
           <ListItemIcon>
             <AccountCircle />

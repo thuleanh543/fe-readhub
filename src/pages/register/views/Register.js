@@ -29,7 +29,7 @@ function Register () {
             const response = await axios.post( `http://localhost:8080/api/v1/authen/send-otp?email=${ state.email }&username=${ state.username }` );
             dispatch( { type: actionTypes.SET_SUCCESS, payload: true } );
             toast.success( response.data.message );
-            navigate( '/VerifyRegister', {
+            navigate( '/verify-register', {
                 state: {
                     username: state.username,
                     email: state.email,
@@ -107,7 +107,7 @@ function Register () {
 
                         <div className="mt-4 flex items-center justify-center">
                             <span className="text-lg text-[#f2f2f2] mr-2">Already have an account?</span>
-                            <Link to="/loginAccount">
+                            <Link to="/login-account">
                                 <Button className="text-[#0fc6c6]">Login</Button>
                             </Link>
                         </div>

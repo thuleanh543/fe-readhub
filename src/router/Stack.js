@@ -17,16 +17,16 @@ function Stack() {
   return (
     <Routes>
       <Route path='/' element={<App />} />
-      <Route path='/LoginAccount' element={<LoginAccount />} />
-      <Route path='/Register' element={<Register />} />
-      <Route path='/VerifyRegister' element={<VerifyRegister />} />
-      <Route path='/ReadBookScreen' element={<ReadBookScreen />} />
-      <Route path='/Profile' element={<Profile />} />
-      <Route path='/Dashboard' element={<Dashboard />} />
-      <Route path='/Report' element={<Report />} />
-      <Route path='/ContentModeration' element={<ContentModeration />} />
-      <Route path='/DescriptionBook' element={<DescriptionBook />} />
-      <Route path='/BookForum' element={<BookForum/>} />
+      <Route path='/login-account' element={<LoginAccount />} />
+      <Route path='/register' element={<Register />} />
+      <Route path='/verify-register' element={<VerifyRegister />} />
+      <Route path='/read-book-screen' element={<ReadBookScreen />} />
+      <Route path='/profile' element={<Profile />} />
+      <Route path='/dashboard' element={<Dashboard />} />
+      <Route path='/report' element={<Report />} />
+      <Route path='/content-moderation' element={<ContentModeration />} />
+      <Route path='/description-book' element={<DescriptionBook />} />
+      <Route path='/book-forum' element={<BookForum/>} />
     </Routes>
   )
 }
