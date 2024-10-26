@@ -19,7 +19,7 @@ const SettingsDrawer = ({
   updateSettings,
   themes,
   fontFamilies,
-  handleResetSettings,
+  onResetSettings,
 }) => (
   <Drawer anchor='right' open={open} onClose={onClose}>
     <div
@@ -130,7 +130,7 @@ const SettingsDrawer = ({
         variant='contained'
         color='secondary'
         fullWidth
-        onClick={handleResetSettings}
+        onClick={onResetSettings}
         style={{marginTop: 5}}>
         Reset Settings
       </Button>
