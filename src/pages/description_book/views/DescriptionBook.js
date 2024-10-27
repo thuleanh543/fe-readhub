@@ -1,87 +1,42 @@
-import React, {useState, useEffect} from 'react'
-import {Link, useNavigate, useLocation} from 'react-router-dom'
-import {images, colors} from '../../../constants'
-import axios from 'axios'
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { BookOpen, MessageCircle, Share2, BookmarkPlus, Star } from 'lucide-react';
 import {
-  Avatar,
-  Button as MuiButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
   Card,
   CardContent,
-  Button
-} from '@mui/material'
-import {AccountCircle, ExitToApp, Settings} from '@mui/icons-material'
-import {toast} from 'react-toastify'
-import { Star, BookOpen } from 'lucide-react';
+  Button,
+  Typography,
+  Chip,
+  Divider,
+  Box,
+  Container,
+  Grid,
+  CircularProgress,
+} from '@mui/material';
+import { colors } from '../../../constants';
+import HeaderComponent from '../../../component/search/HeaderComponent';
 
-export default function DescriptionBook( ) {
+export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
-  })
-
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [user, setUser] = useState(null)
+  });
+  const [user, setUser] = useState(null);
   const [bookDetails, setBookDetails] = useState(null);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const open = Boolean(anchorEl)
-  const navigate = useNavigate()
-
-  const location = useLocation()
-  const { bookId, bookTitle } = location.state || {}
-
-  const handleSearch = event => {
-    const value = event.target.value
-  }
-
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleLogout = () => {
-    handleClose()
-    localStorage.removeItem('token')
-    setUser(null)
-    navigate('/')
-    toast.success('Logout successfully')
-  }
-
-  const getUser = async () => {
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setUser(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { bookId, bookTitle } = location.state || {};
 
   useEffect(() => {
     const fetchBookDetails = async () => {
       try {
-        console.log("BoooKID" ,bookId);
         const response = await fetch(`https://gutendex.com/books/${bookId}/`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch book details');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch book details');
         const data = await response.json();
-        console.log("Response Data", data);
         setBookDetails(data);
         setLoading(false);
       } catch (err) {
@@ -102,12 +57,8 @@ export default function DescriptionBook( ) {
     return () => window.removeEventListener('resize', handleResize);
   }, [bookId]);
 
-  const handleRatingClick = (value) => {
-    setRating(value);
-  };
-
   const renderStarRating = () => (
-    <div className="flex items-center gap-1">
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
@@ -118,243 +69,196 @@ export default function DescriptionBook( ) {
           }`}
           onMouseEnter={() => setHover(star)}
           onMouseLeave={() => setHover(0)}
-          onClick={() => handleRatingClick(star)}
+          onClick={() => setRating(star)}
         />
       ))}
-    </div>
+    </Box>
   );
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
+  if (loading) return (
+    <Box sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh'
+    }}>
+      <CircularProgress />
+    </Box>
+  );
 
-    getUser()
-
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (error) return (
+    <Box sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      color: 'error.main'
+    }}>
+      {error}
+    </Box>
+  );
 
   return (
-    <div
-      className='App'
-      style={{
-        backgroundColor: colors.themeLight.color060d13,
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-      }}>
-      <div
-        style={{
-          display: 'flex',
-          height: windowSize.height * 0.09,
-          width: windowSize.width,
-          flexDirection: 'row',
-          paddingTop: 5,
-          position: 'fixed',
-          top: 0,
-          zIndex: 1,
-          boxShadow: '0px 5px 5px rgba(0, 0, 0, 0.2)',
-          alignItems: 'center',
-        }}>
-        <div className='flex gap-2 items-center p-5'>
-          <img
-            src={images.imgOpenBook}
-            alt='Logo Open Book'
-            style={{
-              height: windowSize.height * 0.09 - 32,
-              marginLeft: 15,
-              marginRight: 15,
-            }}
-          />
-          <Link to='/'>
-            <span className='text-sm font-medium '>READHUB</span>
-          </Link>
-        </div>
-       <span style={{
-        display: 'flex',
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-       }}>
-          {bookTitle}
-       </span>
+    <Box sx={{
+      minHeight: '100vh',
+      bgcolor: colors.themeLight.color060d13,
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <HeaderComponent
+        windowSize={windowSize}
+        centerContent={bookTitle}
+        showSearch={false}
+      />
 
-        {user ? (
-          <Button
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 10,
-              marginRight: 20,
-            }}
-            onClick={handleClick}>
-            {user.urlAvatar ? (
-              <Avatar src={user.urlAvatar} />
-            ) : (
-              <Avatar>{user.username ? user.username.charAt(0) : 'U'}</Avatar>
-            )}
-            <span>{user.username}</span>
-          </Button>
-        ) : (
-          <div style={{display: 'flex', flexDirection: 'row'}}>
-            <Button
-              style={{
-                color: '#fff',
-                padding: '5px 13px',
-                borderRadius: 19,
-                height: 40,
-                display: 'flex',
-                flexDirection: 'row',
-                backgroundColor: 'lightgray',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 20,
+      <Container sx={{ pt: 12, pb: 6 }}>
+        <Grid container spacing={4}>
+          {/* Left Column - Book Cover */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ position: 'sticky', top: 24 }}>
+              <Card sx={{
+                bgcolor: 'background.paper',
+                boxShadow: theme => `0 8px 24px ${theme.palette.common.black}20`
               }}>
-              <Link to='/register'>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 'bold',
-                    textTransform: 'none',
+                <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+                  <Box sx={{
+                    position: 'relative',
+                    '&:hover .overlay': { opacity: 1 }
                   }}>
-                  Register
-                </div>
-              </Link>
-            </Button>
-            <Button
-              style={{
-                color: '#fff',
-                backgroundColor: '#51bd8e',
-                borderRadius: 19,
-                height: 40,
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: 20,
-              }}>
-              <Link to='/login-account'>
-                <div
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                  }}>
-                  Login to ReadHub
-                </div>
-              </Link>
-            </Button>
-          </div>
-        )}
-      </div>
-      <div style={{
-        display: 'flex',
-        flex: 1,
-        marginTop: windowSize.height * 0.09,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <div className="flex flex-col md:flex-row gap-8">
-      <div className="md:w-1/3">
-        <Card sx={{ borderRadius: 2 }}>
-      <CardContent sx={{ padding: 2 }}>
-        <img
-          src={bookDetails.formats['image/jpeg']}
-          alt={bookDetails.title}
-          style={{
-            width: '100%',
-            borderRadius: '8px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-          }}
-        />
-      </CardContent>
-    </Card>
-  </div>
+                    <img
+                      src={bookDetails.formats['image/jpeg']}
+                      alt={bookDetails.title}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block'
+                      }}
+                    />
+                    <Box className="overlay" sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      bgcolor: 'rgba(0,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: 0,
+                      transition: 'opacity 0.3s'
+                    }}>
+                      <Button
+                        variant="contained"
+                        startIcon={<BookOpen />}
+                        onClick={() => navigate('/read-book-screen', {state: {bookId, bookTitle}})}
+                        sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }}
+                      >
+                        Read Now
+                      </Button>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
+          </Grid>
 
-  <div className="md:w-2/3">
-    <Card sx={{ borderRadius: 2 }}>
-      <CardContent sx={{ padding: 3 }}>
-        <h1 style={{
-          fontSize: '1.875rem',
-          fontWeight: 'bold',
-          color: '#111827',
-          marginBottom: '1rem'
-        }}>{bookDetails.title}</h1>
+          <Grid item xs={12} md={8}>
+            <Card sx={{
+              bgcolor: 'background.paper',
+              boxShadow: theme => `0 8px 24px ${theme.palette.common.black}20`
+            }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                  <Box>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                      {bookDetails.title}
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary">
+                      by {bookDetails.authors.map(author => author.name).join(', ')}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    startIcon={<MessageCircle />}
+                    onClick={() => navigate('/create-forum', { state: { bookId, bookTitle }})}
+                    sx={{ bgcolor: 'primary.main' }}
+                  >
+                    Create Forum
+                  </Button>
+                </Box>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <p style={{ fontSize: '1.125rem', color: '#4B5563' }}>
-            <span style={{ fontWeight: 600 }}>Author: </span>
-            {bookDetails.authors.map(author => author.name).join(', ')}
-          </p>
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" gutterBottom>Genres</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {bookDetails.subjects.slice(0, 3).map((subject, index) => (
+                        <Chip
+                        key={index}
+                        label={subject}
+                        sx={{
+                          bgcolor: 'white',
+                          color: 'primary.main',
+                          border: `1px solid`,
+                          borderColor: 'primary.main',
+                        }}
+                      />
+                      ))}
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" gutterBottom>Language</Typography>
+                    <Typography color="text.secondary">
+                      {bookDetails.languages.map(lang => lang.toUpperCase()).join(', ')}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" gutterBottom>Publisher</Typography>
+                    <Typography color="text.secondary">Project Gutenberg</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" gutterBottom>Downloads</Typography>
+                    <Typography color="text.secondary">
+                      {bookDetails.download_count.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                </Grid>
 
-          <p style={{ fontSize: '1.125rem', color: '#4B5563' }}>
-            <span style={{ fontWeight: 600 }}>Genres: </span>
-            {bookDetails.subjects.slice(0, 3).join(', ')}
-          </p>
+                <Divider sx={{ my: 3 }} />
 
-          <p style={{ fontSize: '1.125rem', color: '#4B5563' }}>
-            <span style={{ fontWeight: 600 }}>Publisher: </span>
-            Project Gutenberg
-          </p>
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="h6" gutterBottom>Rate this book</Typography>
+                  {renderStarRating()}
+                </Box>
 
-          <p style={{ fontSize: '1.125rem', color: '#4B5563' }}>
-            <span style={{ fontWeight: 600 }}>Language: </span>
-            {bookDetails.languages.map(lang => lang.toUpperCase()).join(', ')}
-          </p>
-
-          <p style={{ fontSize: '1.125rem', color: '#4B5563' }}>
-            <span style={{ fontWeight: 600 }}>Downloads: </span>
-            {bookDetails.download_count.toLocaleString()}
-          </p>
-        </div>
-
-        <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontWeight: 600, fontSize: '1.125rem' }}>Rate this book:</span>
-            {renderStarRating()}
-          </div>
-
-          <Button
-            variant="contained"
-            startIcon={<BookOpen />}
-            onClick={() =>{
-              navigate('/read-book-screen', {state: {bookId, bookTitle}})
-            }}
-            sx={{
-              bgcolor: '#2563EB',
-              '&:hover': {
-                bgcolor: '#1D4ED8',
-              },
-              textTransform: 'none',
-              borderRadius: '0.5rem',
-              padding: '0.5rem 2rem'
-            }}
-          >
-            Read Book
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-    </div>
-        </div>
-      </div>
-      );
-
+                <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<BookOpen />}
+                    onClick={() => navigate('/read-book-screen', {state: {bookId, bookTitle}})}
+                    fullWidth
+                  >
+                    Read Book
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<BookmarkPlus />}
+                    fullWidth
+                  >
+                    Save for Later
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Share2 />}
+                    fullWidth
+                  >
+                    Share
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  );
 }
