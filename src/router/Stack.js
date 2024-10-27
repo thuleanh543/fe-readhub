@@ -11,6 +11,7 @@ import {
   Profile,
   DescriptionBook,
   BookForum,
+  CreateForum,
 } from '../pages'
 
 function Stack() {
@@ -27,6 +28,7 @@ function Stack() {
       <Route path='/content-moderation' element={<ContentModeration />} />
       <Route path='/description-book' element={<DescriptionBook />} />
       <Route path='/book-forum' element={<BookForum/>} />
+      <Route path='/create-forum' element={<CreateForum/>} />
     </Routes>
   )
 }

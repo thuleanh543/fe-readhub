@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { colors } from '../../../constants';
-import HeaderComponent from '../../../component/search/HeaderComponent';
+import HeaderComponent from '../../../component/header/HeaderComponent';
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
