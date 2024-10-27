@@ -13,17 +13,13 @@ import {
   Grid,
   Paper,
   Divider,
-  IconButton,
-  Alert,
 } from '@mui/material';
+import { blueGrey } from '@mui/material/colors';
 import {
-  BookOpen,
   Save,
-  X as CloseIcon,
   Image as ImageIcon,
   Send as SendIcon,
 } from 'lucide-react';
-import { colors } from '../../../constants';
 import HeaderComponent from '../../../component/header/HeaderComponent';
 
 const forumCategories = [
@@ -44,7 +40,7 @@ const forumCategories = [
 export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { bookId, bookTitle, authors, subjects } = location.state || {};
+  const { bookId, bookTitle, authors, defaultCoverImage ,  subjects } = location.state || {};
 
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -108,7 +104,7 @@ export default function CreateForum() {
   return (
     <Box sx={{
       minHeight: '100vh',
-      bgcolor: colors.themeLight.color060d13,
+      bgcolor: blueGrey[900],
       pb: 8
     }}>
       <HeaderComponent
@@ -131,7 +127,6 @@ export default function CreateForum() {
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit}>
-                  {/* Book Info Section */}
                   <Paper sx={{ p: 3, mb: 4, bgcolor: 'action.hover' }}>
                     <Typography variant="h6" gutterBottom>
                       Book Information
@@ -179,7 +174,14 @@ export default function CreateForum() {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label="Forum Title"
+                        label={
+                          <Box component="span">
+                            Forum Title
+                            <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
+                              *
+                            </Box>
+                          </Box>
+                        }
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({
                           ...prev,
@@ -303,20 +305,18 @@ export default function CreateForum() {
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
 
-                {formData.coverImage && (
-                  <Box sx={{ mb: 2 }}>
-                    <img
-                      src={formData.coverImage}
-                      alt="Forum cover"
-                      style={{
-                        width: '100%',
-                        height: 200,
-                        objectFit: 'cover',
-                        borderRadius: 8
-                      }}
-                    />
-                  </Box>
-                )}
+                <Box sx={{ mb: 2 }}>
+                  <img
+                    src={formData.coverImage || defaultCoverImage}
+                    alt="Forum cover"
+                    style={{
+                      width: '100%',
+                      height: 200,
+                      objectFit: 'cover',
+                      borderRadius: 8
+                    }}
+                  />
+                </Box>
 
                 <Typography variant="h5" gutterBottom>
                   {formData.title || 'Forum Title'}
