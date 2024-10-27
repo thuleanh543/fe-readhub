@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { colors } from '../../../constants';
-import HeaderComponent from '../../../component/search/HeaderComponent';
+import HeaderComponent from '../../../component/header/HeaderComponent';
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
@@ -150,7 +150,8 @@ export default function DescriptionBook() {
                       <Button
                         variant="contained"
                         startIcon={<BookOpen />}
-                        onClick={() => navigate('/read-book-screen', {state: {bookId, bookTitle}})}
+                        onClick={() => navigate('/read-book-screen', {state: {bookId, bookTitle
+                         }})}
                         sx={{ bgcolor: 'white', color: 'text.primary', '&:hover': { bgcolor: 'grey.100' } }}
                       >
                         Read Now
@@ -180,7 +181,8 @@ export default function DescriptionBook() {
                   <Button
                     variant="contained"
                     startIcon={<MessageCircle />}
-                    onClick={() => navigate('/create-forum', { state: { bookId, bookTitle }})}
+                    onClick={() => {navigate('/create-forum', { state: { bookId, bookTitle,  defaultCoverImage: bookDetails.formats['image/jpeg']  }})
+                  }}
                     sx={{ bgcolor: 'primary.main' }}
                   >
                     Create Forum

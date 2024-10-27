@@ -9,6 +9,7 @@ import Report from './Report'
 import ContentModeration from './ContentModeration'
 import Profile from './Profile'
 import BookForum from './book_forum/views/BookForum'
+import CreateForum from './create_forum/views/CreateForum'
 
 export {
   LoginAccount,
@@ -22,4 +23,5 @@ export {
   Profile,
   DescriptionBook,
   BookForum,
+  CreateForum,
 }

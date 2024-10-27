@@ -9,7 +9,7 @@ import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
 import {AccountCircle, ExitToApp, Settings,Forum} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import HeaderComponent from './component/search/HeaderComponent'
+import HeaderComponent from './component/header/HeaderComponent'
 function App() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
