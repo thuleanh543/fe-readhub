@@ -22,21 +22,6 @@ import {
 } from 'lucide-react';
 import HeaderComponent from '../../../component/header/HeaderComponent';
 
-const forumCategories = [
-  'Plot Discussion',
-  'Character Analysis',
-  'Theme Exploration',
-  'Writing Style',
-  'Historical Context',
-  'Book Review',
-  'Chapter Discussion',
-  'Recommendations',
-  'Author Analysis',
-  'Literary Devices',
-  'Genre Discussion',
-  'Book Impact'
-];
-
 export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -177,9 +162,6 @@ export default function CreateForum() {
                         label={
                           <Box component="span">
                             Forum Title
-                            <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
-                              *
-                            </Box>
                           </Box>
                         }
                         value={formData.title}
@@ -213,7 +195,7 @@ export default function CreateForum() {
                     <Grid item xs={12}>
                       <Autocomplete
                         multiple
-                        options={forumCategories}
+                        options={subjects}
                         value={formData.selectedCategories}
                         onChange={(e, newValue) => setFormData(prev => ({
                           ...prev,
