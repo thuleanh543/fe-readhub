@@ -25,14 +25,14 @@ const SettingsDrawer = ({
     <div
       style={{
         width: 350,
-        paddingTop: 15,
-        paddingLeft: 25,
-        paddingRight: 25,
+        paddingTop: 20,
+        paddingLeft: 30,
+        paddingRight: 30,
       }}>
-      <Typography variant='h6' gutterBottom style={{marginBottom: -5}}>
+      <Typography variant='h6' gutterBottom>
         Settings
       </Typography>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Theme</Typography>
         <Select
           value={settings.theme}
@@ -50,18 +50,12 @@ const SettingsDrawer = ({
                   marginBottom: -5,
                 }}
               />
-              {t === '#FFFFFF'
-                ? 'White'
-                : t === '#F5F5F5'
-                ? 'Light Gray'
-                : t === '#E0E0E0'
-                ? 'Gray'
-                : 'Dark'}
+              {t === '#FFFFFF' ? 'White' : t === '#faf6ed' ? 'Cream' : 'Dark'}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom style={{marginBottom: -5}}>
           Page View
         </Typography>
@@ -74,7 +68,7 @@ const SettingsDrawer = ({
           <FormControlLabel value='double' control={<Radio />} label='Double' />
         </RadioGroup>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Font Family</Typography>
         <Select
           value={settings.fontFamily}
@@ -86,10 +80,11 @@ const SettingsDrawer = ({
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Line Height: {settings.lineHeight}</Typography>
         <Slider
           value={settings.lineHeight}
+          style={{marginLeft: 15, width: '90%'}}
           onChange={(_, newValue) => updateSettings('lineHeight', newValue)}
           min={1.2}
           max={2.0}
@@ -103,30 +98,30 @@ const SettingsDrawer = ({
           step={null}
         />
       </FormControl>
-
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Font Size: {settings.fontSize}px</Typography>
         <Slider
           value={settings.fontSize}
+          style={{marginLeft: 15, width: '90%'}}
           onChange={(_, newValue) => updateSettings('fontSize', newValue)}
           min={12}
           max={24}
           marks={[
-            {value: 12, label: '12px'},
-            {value: 14, label: '14px'},
-            {value: 16, label: '16px'},
-            {value: 18, label: '18px'},
-            {value: 20, label: '20px'},
-            {value: 22, label: '22px'},
-            {value: 24, label: '24px'},
+            {value: 12, label: '12'},
+            {value: 14, label: '14'},
+            {value: 16, label: '16'},
+            {value: 18, label: '18'},
+            {value: 20, label: '20'},
+            {value: 22, label: '22'},
+            {value: 24, label: '24'},
           ]}
           step={null}
         />
       </FormControl>
-
-      <FormControl fullWidth margin='normal'>
-        <Typography gutterBottom>Font Weight: {settings.fontWeight}</Typography>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
+        <Typography gutterBottom>Font Weight:</Typography>
         <Slider
+          style={{marginLeft: 15, width: '90%'}}
           value={settings.fontWeight}
           onChange={(_, newValue) => updateSettings('fontWeight', newValue)}
           min={400}
@@ -142,6 +137,7 @@ const SettingsDrawer = ({
         <Typography gutterBottom>Zoom: {settings.zoom}%</Typography>
         <Slider
           value={settings.zoom}
+          style={{marginLeft: 15, width: '90%'}}
           onChange={(_, newValue) => updateSettings('zoom', newValue)}
           min={100}
           max={150}

@@ -22,7 +22,7 @@ import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
-const themes = ['#FFFFFF', '#F5F5F5', '#121212']
+const themes = ['#FFFFFF', '#faf6ed', '#121212']
 const fontFamilies = ['Times New Roman', 'Arial', 'Georgia', 'Verdana']
 const defaultSettings = {
   theme: themes[0],
@@ -317,33 +317,26 @@ function ReadBookScreen() {
   }
 
   const updateSettings = (key, value) => {
+    setSettings(prev => ({...prev, [key]: value}))
+
     if (['fontSize', 'fontWeight', 'lineHeight', 'zoom'].includes(key)) {
-      setSettings(prev => {
-        const newSettings = {...prev, [key]: value}
-
-        // Clear book và apply settings trước
-        rendition.clear()
-        rendition.themes.default({
-          body: {
-            background: newSettings.theme,
-            color: newSettings.theme === '#121212' ? '#FFFFFF' : '#000000',
-            'font-family': newSettings.fontFamily,
-            'font-size': `${newSettings.fontSize}px`,
-            'font-weight': newSettings.fontWeight,
-            'line-height': newSettings.lineHeight,
-            transform: `scale(${newSettings.zoom / 100})`,
-            'transform-origin': 'top left',
-          },
-        })
-        rendition.themes.select('default')
-
-        // Reload book từ vị trí hiện tại
-        rendition.display(loca)
-
-        return newSettings
+      rendition.clear()
+      rendition.themes.default({
+        body: {
+          background: settings.theme,
+          color: settings.theme === '#121212' ? '#FFFFFF' : '#000000',
+          'font-family': settings.fontFamily,
+          'font-size': `${value}px`,
+          'font-weight': key === 'fontWeight' ? value : settings.fontWeight,
+          'line-height': key === 'lineHeight' ? value : settings.lineHeight,
+          transform:
+            key === 'zoom'
+              ? `scale(${value / 100})`
+              : `scale(${settings.zoom / 100})`,
+          'transform-origin': 'top left',
+        },
       })
-    } else {
-      setSettings(prev => ({...prev, [key]: value}))
+      rendition.display(loca)
     }
   }
 
@@ -637,12 +630,47 @@ function ReadBookScreen() {
         onLocationChanged={loc => setLocation(loc)}
         onGetRendition={_rendition => {
           setRendition(_rendition)
+
+          // Apply default settings ngay khi rendition được tạo
+          _rendition.themes.default({
+            body: {
+              background: defaultSettings.theme,
+              color:
+                defaultSettings.theme === '#121212' ? '#FFFFFF' : '#000000',
+              'font-family': defaultSettings.fontFamily,
+              'font-size': `${defaultSettings.fontSize}px`,
+              'font-weight': defaultSettings.fontWeight,
+              'line-height': defaultSettings.lineHeight,
+              transform: `scale(${defaultSettings.zoom / 100})`,
+              'transform-origin': 'top left',
+            },
+            'a, a:link, a:visited, a:hover, a:active': {
+              color: 'inherit !important',
+              '-webkit-text-fill-color': 'inherit !important',
+              'text-decoration': 'none',
+            },
+            '::selection': {
+              'background-color': 'rgba(0, 0, 255, 0.1)',
+              color: 'inherit',
+            },
+            '*': {
+              transition: 'none !important',
+            },
+          })
+
+          _rendition.themes.select('default')
+
+          if (defaultSettings.pageView === 'double') {
+            _rendition.spread('auto')
+          } else {
+            _rendition.spread('none')
+          }
+
           _rendition.on('started', () => setLoading(false))
         }}
         onError={handleError}
         readerStyles={readerStyles}
       />
-
       <NotePopover
         anchorPosition={popoverAnchor}
         open={Boolean(popoverAnchor)}
