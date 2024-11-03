@@ -23,20 +23,14 @@ import 'react-toastify/dist/ReactToastify.css'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
 const themes = ['#FFFFFF', '#F5F5F5', '#121212']
-const fontFamilies = [
-  'Arial',
-  'Times New Roman',
-  'Georgia',
-  'Verdana',
-  'Roboto',
-]
+const fontFamilies = ['Times New Roman', 'Arial', 'Georgia', 'Verdana']
 const defaultSettings = {
   theme: themes[0],
   pageView: 'double',
   fontFamily: fontFamilies[0],
-  fontSize: 100,
+  fontSize: 16,
   fontWeight: 400,
-  lineHeight: 1.5,
+  lineHeight: 1.2,
   zoom: 100,
 }
 
@@ -67,18 +61,17 @@ function ReadBookScreen() {
   const [currentLocation, setCurrentLocation] = useState(null)
   const [readStartTime, setReadStartTime] = useState(null)
   const [bookmarkId, setBookmarkId] = useState(null)
-  const [totalTimeSpent, setTotalTimeSpent] = useState(0)
   const [lastReadingUpdate, setLastReadingUpdate] = useState(null)
   const [isActive, setIsActive] = useState(true)
+  const [activeHighlights] = useState(new Set())
 
   const startReadingSession = () => {
     setReadStartTime(Date.now())
   }
+
   const updateReadingHistory = async () => {
     const currentTime = Date.now()
-    const timeSpent = Math.floor((currentTime - lastReadingUpdate) / 1000) // Convert to seconds
-
-    // if (timeSpent < 1) return
+    const timeSpent = Math.floor((currentTime - lastReadingUpdate) / 1000)
 
     try {
       await axios.post(
@@ -105,7 +98,6 @@ function ReadBookScreen() {
     if (!user || !bookId) return
 
     try {
-      console.log('location', loca)
       await axios.post(
         'http://localhost:8080/api/v1/bookmark',
         {
@@ -157,13 +149,10 @@ function ReadBookScreen() {
         },
       )
 
-      // Extract the data array from the response
       const notesData = Array.isArray(response.data.data)
         ? response.data.data
         : []
       setSelections(notesData)
-
-      // Không cần thêm highlights ở đây vì sẽ được xử lý bởi useEffect
     } catch (error) {
       console.error('Error fetching notes:', error)
       setSelections([])
@@ -172,8 +161,8 @@ function ReadBookScreen() {
 
   const handleEditNote = note => {
     setEditingNote(note)
-    console.log('note', note)
   }
+
   const handleSaveEdit = async () => {
     try {
       await axios.put(`http://localhost:8080/api/v1/note`, editingNote, {
@@ -195,6 +184,7 @@ function ReadBookScreen() {
       console.error('Error updating note:', error)
     }
   }
+
   const getBookmark = async () => {
     if (!user || !bookId) return
     try {
@@ -208,10 +198,8 @@ function ReadBookScreen() {
       )
 
       if (response.data) {
-        console.log('bookmark', response.data)
         setHasBookmark(true)
         setBookmarkId(response.data.data.bookmarkId)
-        console.log('bookmarkId', bookmarkId)
         setLocation(response.data.data.location)
       }
     } catch (error) {
@@ -259,18 +247,27 @@ function ReadBookScreen() {
   const handleToggleDrawer = () => {
     setDrawerOpen(!drawerOpen)
   }
+
   const handleSettingsDrawerToggle = () => {
     setSettingsDrawerOpen(!settingsDrawerOpen)
   }
 
   const applySettings = () => {
     if (rendition) {
+      // Xóa toàn bộ highlight hiện tại trước
+      activeHighlights.forEach(cfiRange => {
+        rendition.annotations.remove(cfiRange, 'highlight')
+      })
+      activeHighlights.clear()
+
+      // Apply settings mới
       rendition.themes.default({
         body: {
           background: settings.theme,
           color: settings.theme === '#121212' ? '#FFFFFF' : '#000000',
-          'font-family': settings.fontFamily,
-          'font-size': `${settings.fontSize}%`,
+          'font-family':
+            settings.fontFamily === 'Default' ? 'inherit' : settings.fontFamily,
+          'font-size': `${settings.fontSize}px`,
           'font-weight': settings.fontWeight,
           'line-height': settings.lineHeight,
           transform: `scale(${settings.zoom / 100})`,
@@ -297,20 +294,64 @@ function ReadBookScreen() {
       } else {
         rendition.spread('none')
       }
+
+      // Apply lại highlight sau khi settings đã được cập nhật
+      setTimeout(() => {
+        selections.forEach(note => {
+          rendition.annotations.add(
+            'highlight',
+            note.cfiRange,
+            {},
+            null,
+            'hl',
+            {
+              fill: note.color,
+              'fill-opacity': '0.3',
+              'mix-blend-mode': 'multiply',
+            },
+          )
+          activeHighlights.add(note.cfiRange)
+        })
+      }, 50)
     }
   }
 
   const updateSettings = (key, value) => {
-    setSettings(prevSettings => ({
-      ...prevSettings,
-      [key]: value,
-    }))
+    if (['fontSize', 'fontWeight', 'lineHeight', 'zoom'].includes(key)) {
+      setSettings(prev => {
+        const newSettings = {...prev, [key]: value}
+
+        // Clear book và apply settings trước
+        rendition.clear()
+        rendition.themes.default({
+          body: {
+            background: newSettings.theme,
+            color: newSettings.theme === '#121212' ? '#FFFFFF' : '#000000',
+            'font-family': newSettings.fontFamily,
+            'font-size': `${newSettings.fontSize}px`,
+            'font-weight': newSettings.fontWeight,
+            'line-height': newSettings.lineHeight,
+            transform: `scale(${newSettings.zoom / 100})`,
+            'transform-origin': 'top left',
+          },
+        })
+        rendition.themes.select('default')
+
+        // Reload book từ vị trí hiện tại
+        rendition.display(loca)
+
+        return newSettings
+      })
+    } else {
+      setSettings(prev => ({...prev, [key]: value}))
+    }
   }
 
   const handleResetSettings = () => {
     setSettings(defaultSettings)
   }
 
+  // Event Listeners and Effect Hooks
   useEffect(() => {
     applySettings()
   }, [settings])
@@ -320,14 +361,12 @@ function ReadBookScreen() {
       setLastReadingUpdate(Date.now())
       setIsActive(true)
 
-      // Update every 5 minutes if the page is active
       const intervalId = setInterval(() => {
         if (isActive) {
           updateReadingHistory()
         }
       }, 5 * 60 * 1000)
 
-      // Clean up
       return () => {
         updateReadingHistory()
         clearInterval(intervalId)
@@ -383,14 +422,18 @@ function ReadBookScreen() {
     if (rendition) {
       const handleSelection = (cfiRange, contents) => {
         const selection = contents.window.getSelection()
-        const range = selection.getRangeAt(0)
-        const text = selection.toString().trim()
+        const text = selection.toString().trim() // Lấy text và trim luôn
+
+        // Chỉ xử lý khi có text thật sự
         if (text) {
+          const range = selection.getRangeAt(0)
           setSelectedText(text)
           setSelectedCfiRange(cfiRange)
+
           const rect = range.getBoundingClientRect()
           const viewportHeight = window.innerHeight
           const viewportWidth = window.innerWidth
+
           setPopoverAnchor({
             top:
               rect.top < viewportHeight / 2
@@ -405,7 +448,7 @@ function ReadBookScreen() {
 
       rendition.themes.default({
         '::selection': {
-          background: 'rgba(0, 0, 255, 0.1)', // Light blue on selection
+          background: 'rgba(0, 0, 255, 0.1)',
           color: 'inherit',
         },
         'a:link': {
@@ -418,29 +461,17 @@ function ReadBookScreen() {
         },
       })
 
-      rendition.on('rendered', section => {
-        section.document.addEventListener('click', () => {
-          const highlightElements =
-            section.document.querySelectorAll('.highlight')
-          highlightElements.forEach(el => {
-            el.style.transition = 'background-color 0.3s ease'
-          })
-        })
-      })
-
       return () => {
         rendition.off('selected', handleSelection)
       }
     }
   }, [rendition])
+
+  // Highlight Management
   useEffect(() => {
     if (rendition) {
-      const applyHighlights = () => {
-        // Xóa tất cả highlights hiện tại
-        rendition.annotations.remove('highlight')
-
-        // Áp dụng lại highlights cho tất cả selections
-        selections.forEach(note => {
+      const applyHighlight = note => {
+        if (!activeHighlights.has(note.cfiRange)) {
           rendition.annotations.add(
             'highlight',
             note.cfiRange,
@@ -451,32 +482,51 @@ function ReadBookScreen() {
               fill: note.color,
               'fill-opacity': '0.3',
               'mix-blend-mode': 'multiply',
+              'white-space': 'pre-wrap', // Giữ nguyên khoảng trắng
+              'box-decoration-break': 'clone', // Đảm bảo highlight không vượt quá text
             },
           )
+          activeHighlights.add(note.cfiRange)
+        }
+      }
+
+      const removeHighlight = cfiRange => {
+        rendition.annotations.remove(cfiRange, 'highlight')
+        activeHighlights.delete(cfiRange)
+      }
+
+      const refreshHighlights = () => {
+        // Xóa những highlight không còn trong selections
+        for (const cfiRange of activeHighlights) {
+          if (!selections.some(note => note.cfiRange === cfiRange)) {
+            removeHighlight(cfiRange)
+          }
+        }
+
+        // Thêm những highlight mới
+        selections.forEach(note => {
+          if (!activeHighlights.has(note.cfiRange)) {
+            applyHighlight(note)
+          }
         })
       }
 
-      // Apply highlights khi component mount và khi selections thay đổi
-      applyHighlights()
+      refreshHighlights()
 
-      // Tạo các handler functions riêng biệt
-      const handleRendered = () => {
-        applyHighlights()
-      }
-
+      // Handler cho việc di chuyển trang
       const handleRelocated = () => {
-        applyHighlights()
+        selections.forEach(note => {
+          if (!activeHighlights.has(note.cfiRange)) {
+            applyHighlight(note)
+          }
+        })
       }
 
-      // Đăng ký event listeners với các handler functions
-      rendition.on('rendered', handleRendered)
       rendition.on('relocated', handleRelocated)
 
-      // Cleanup function
       return () => {
-        // Xóa event listeners với cùng handler functions
-        rendition.off('rendered', handleRendered)
         rendition.off('relocated', handleRelocated)
+        // Không xóa highlights khi unmount để tránh việc phải render lại
       }
     }
   }, [rendition, selections])
@@ -506,12 +556,11 @@ function ReadBookScreen() {
 
         const createdNote = response.data
         setSelections(prev => [...prev, createdNote])
-        setIsNote(!isNote)
-
         setPopoverAnchor(null)
         setComment('')
         setSelectedText('')
         setSelectedCfiRange('')
+        setIsNote(!isNote)
       } catch (error) {
         console.error('Error creating note:', error)
       }
@@ -526,11 +575,12 @@ function ReadBookScreen() {
         },
       })
 
-      // Cập nhật state local
-      setSelections(selections.filter(s => s.cfiRange !== cfiRange))
-
-      // Xóa annotation
+      // Xóa highlight cụ thể
       rendition.annotations.remove(cfiRange, 'highlight')
+      activeHighlights.delete(cfiRange)
+
+      // Cập nhật state
+      setSelections(selections.filter(s => s.cfiRange !== cfiRange))
     } catch (error) {
       console.error('Error deleting note:', error)
     }
@@ -551,7 +601,7 @@ function ReadBookScreen() {
           const isColorMatch = filter === 'all' || selection.color === filter
           return isTextMatch && isColorMatch
         })
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sắp xếp theo thời gian, mới nhất trước
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     : []
 
   const readerStyles = {
@@ -577,8 +627,10 @@ function ReadBookScreen() {
         hasBookmark={hasBookmark}
         currentLocation={currentLocation}
       />
+
       {loading && <p>Loading...</p>}
       {error && <p style={{color: 'red'}}>{error}</p>}
+
       <ReaderContent
         epubUrl={epubUrl}
         location={loca}
@@ -590,6 +642,7 @@ function ReadBookScreen() {
         onError={handleError}
         readerStyles={readerStyles}
       />
+
       <NotePopover
         anchorPosition={popoverAnchor}
         open={Boolean(popoverAnchor)}
@@ -601,6 +654,7 @@ function ReadBookScreen() {
         setComment={setComment}
         onSave={handleSave}
       />
+
       <NotesDrawer
         open={drawerOpen}
         onClose={handleToggleDrawer}
@@ -657,6 +711,7 @@ function ReadBookScreen() {
           <Button onClick={handleSaveEdit}>Save</Button>
         </DialogActions>
       </Dialog>
+
       <SettingsDrawer
         open={settingsDrawerOpen}
         onClose={handleSettingsDrawerToggle}

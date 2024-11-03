@@ -87,33 +87,55 @@ const SettingsDrawer = ({
         </Select>
       </FormControl>
       <FormControl fullWidth margin='normal'>
-        <Typography gutterBottom>Font Size: {settings.fontSize}%</Typography>
+        <Typography gutterBottom>Line Height: {settings.lineHeight}</Typography>
+        <Slider
+          value={settings.lineHeight}
+          onChange={(_, newValue) => updateSettings('lineHeight', newValue)}
+          min={1.2}
+          max={2.0}
+          marks={[
+            {value: 1.2, label: '1.2'},
+            {value: 1.4, label: '1.4'},
+            {value: 1.6, label: '1.6'},
+            {value: 1.8, label: '1.8'},
+            {value: 2.0, label: '2.0'},
+          ]}
+          step={null}
+        />
+      </FormControl>
+
+      <FormControl fullWidth margin='normal'>
+        <Typography gutterBottom>Font Size: {settings.fontSize}px</Typography>
         <Slider
           value={settings.fontSize}
           onChange={(_, newValue) => updateSettings('fontSize', newValue)}
-          min={50}
-          max={200}
-          step={10}
+          min={12}
+          max={24}
+          marks={[
+            {value: 12, label: '12px'},
+            {value: 14, label: '14px'},
+            {value: 16, label: '16px'},
+            {value: 18, label: '18px'},
+            {value: 20, label: '20px'},
+            {value: 22, label: '22px'},
+            {value: 24, label: '24px'},
+          ]}
+          step={null}
         />
       </FormControl>
+
       <FormControl fullWidth margin='normal'>
         <Typography gutterBottom>Font Weight: {settings.fontWeight}</Typography>
         <Slider
           value={settings.fontWeight}
           onChange={(_, newValue) => updateSettings('fontWeight', newValue)}
-          min={100}
-          max={900}
-          step={100}
-        />
-      </FormControl>
-      <FormControl fullWidth margin='normal'>
-        <Typography gutterBottom>Line Height: {settings.lineHeight}</Typography>
-        <Slider
-          value={settings.lineHeight}
-          onChange={(_, newValue) => updateSettings('lineHeight', newValue)}
-          min={1}
-          max={3}
-          step={0.1}
+          min={400}
+          max={700}
+          marks={[
+            {value: 400, label: 'Normal'},
+            {value: 700, label: 'Bold'},
+          ]}
+          step={null}
         />
       </FormControl>
       <FormControl fullWidth margin='normal'>
@@ -121,8 +143,8 @@ const SettingsDrawer = ({
         <Slider
           value={settings.zoom}
           onChange={(_, newValue) => updateSettings('zoom', newValue)}
-          min={50}
-          max={200}
+          min={100}
+          max={150}
           step={10}
         />
       </FormControl>
