@@ -180,7 +180,9 @@ export default function DescriptionBook() {
                   <Button
                     variant="contained"
                     startIcon={<MessageCircle />}
-                    onClick={() => {navigate('/create-forum', { state: { bookId, bookTitle,  defaultCoverImage: bookDetails.formats['image/jpeg'] ,
+                    onClick={() => {navigate('/create-forum', { state: { bookId, bookTitle,
+                      authors: bookDetails.authors.map(author => author.name).join(', '),
+                      defaultCoverImage: bookDetails.formats['image/jpeg'] ,
                       subjects: bookDetails.subjects
                     }})
                   }}
