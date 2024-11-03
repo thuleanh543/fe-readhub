@@ -137,7 +137,7 @@ export default function CreateForum() {
     }}>
       <HeaderComponent
         windowSize={windowSize}
-        centerContent="Create New Forum"
+        centerContent=""
         showSearch={false}
       />
 
