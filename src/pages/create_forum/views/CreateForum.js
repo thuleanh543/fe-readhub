@@ -21,27 +21,15 @@ import {
   Send as SendIcon,
 } from 'lucide-react';
 import HeaderComponent from '../../../component/header/HeaderComponent';
-
-const forumCategories = [
-  'Plot Discussion',
-  'Character Analysis',
-  'Theme Exploration',
-  'Writing Style',
-  'Historical Context',
-  'Book Review',
-  'Chapter Discussion',
-  'Recommendations',
-  'Author Analysis',
-  'Literary Devices',
-  'Genre Discussion',
-  'Book Impact'
-];
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
   const { bookId, bookTitle, authors, defaultCoverImage ,  subjects } = location.state || {};
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -89,15 +77,55 @@ export default function CreateForum() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // TODO: Implement forum creation API call
-      console.log('Forum Data:', {
-        ...formData,
-        bookId,
-        bookTitle,
-        authors
-      });
-      // Navigate to forum page after creation
-      // navigate('/forum/${forumId}');
+      try {
+        // Tạo FormData object để gửi file
+        const formDataToSend = new FormData();
+        formDataToSend.append('bookId', bookId);
+        formDataToSend.append('bookTitle', bookTitle);
+        formDataToSend.append('authors', authors);
+        formDataToSend.append('forumTitle', formData.title);
+        formDataToSend.append('forumDescription', formData.description);
+
+        // Append categories/subjects
+        formData.selectedCategories.forEach(category => {
+          formDataToSend.append('categories', category);
+        });
+        subjects?.forEach(subject => {
+          formDataToSend.append('subjects', subject);
+        });
+
+        // Xử lý ảnh
+        if (formData.coverImage) {
+          // Nếu coverImage là base64 string, cần chuyển về File
+          const response = await fetch(formData.coverImage);
+          const blob = await response.blob();
+          const file = new File([blob], "forumImage.jpg", { type: 'image/jpeg' });
+          formDataToSend.append('forumImage', file);
+        }
+
+        // Gọi API
+        const response = await fetch('http://localhost:8080/api/v1/forums', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: formDataToSend,
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          toast.success(result.message);
+          setTimeout(() => {
+            navigate('/book-forum');
+          }, 1500);
+        } else {
+          toast.error(result.message || 'Failed to create forum');
+        }
+      } catch (error) {
+        console.error('Error creating forum:', error);
+        toast.error('An error occurred while creating the forum');
+      }
     }
   };
 
@@ -109,7 +137,7 @@ export default function CreateForum() {
     }}>
       <HeaderComponent
         windowSize={windowSize}
-        centerContent="Create New Forum"
+        centerContent=""
         showSearch={false}
       />
 
@@ -177,9 +205,6 @@ export default function CreateForum() {
                         label={
                           <Box component="span">
                             Forum Title
-                            <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
-                              *
-                            </Box>
                           </Box>
                         }
                         value={formData.title}
@@ -213,7 +238,7 @@ export default function CreateForum() {
                     <Grid item xs={12}>
                       <Autocomplete
                         multiple
-                        options={forumCategories}
+                        options={subjects}
                         value={formData.selectedCategories}
                         onChange={(e, newValue) => setFormData(prev => ({
                           ...prev,
@@ -269,14 +294,15 @@ export default function CreateForum() {
                   </Grid>
 
                   <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                    <Button
-                      variant="contained"
-                      startIcon={<SendIcon />}
-                      type="submit"
-                      size="large"
-                    >
-                      Create Forum
-                    </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<SendIcon />}
+                    type="submit"
+                    size="large"
+                    disabled={isSubmitting}
+                  >
+                  {isSubmitting ? 'Creating...' : 'Create Forum'}
+                  </Button>
                     <Button
                       variant="outlined"
                       startIcon={<Save />}

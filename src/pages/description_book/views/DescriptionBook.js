@@ -113,7 +113,6 @@ export default function DescriptionBook() {
 
       <Container sx={{ pt: 12, pb: 6 }}>
         <Grid container spacing={4}>
-          {/* Left Column - Book Cover */}
           <Grid item xs={12} md={4}>
             <Box sx={{ position: 'sticky', top: 24 }}>
               <Card sx={{
@@ -181,7 +180,11 @@ export default function DescriptionBook() {
                   <Button
                     variant="contained"
                     startIcon={<MessageCircle />}
-                    onClick={() => {navigate('/create-forum', { state: { bookId, bookTitle,  defaultCoverImage: bookDetails.formats['image/jpeg']  }})
+                    onClick={() => {navigate('/create-forum', { state: { bookId, bookTitle,
+                      authors: bookDetails.authors.map(author => author.name).join(', '),
+                      defaultCoverImage: bookDetails.formats['image/jpeg'] ,
+                      subjects: bookDetails.subjects
+                    }})
                   }}
                     sx={{ bgcolor: 'primary.main' }}
                   >
@@ -193,7 +196,7 @@ export default function DescriptionBook() {
                   <Grid item xs={12} md={6}>
                     <Typography variant="h6" gutterBottom>Genres</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {bookDetails.subjects.slice(0, 3).map((subject, index) => (
+                      {bookDetails.subjects.map((subject, index) => (
                         <Chip
                         key={index}
                         label={subject}
