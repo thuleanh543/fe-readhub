@@ -25,14 +25,14 @@ const SettingsDrawer = ({
     <div
       style={{
         width: 350,
-        paddingTop: 15,
-        paddingLeft: 25,
-        paddingRight: 25,
+        paddingTop: 20,
+        paddingLeft: 30,
+        paddingRight: 30,
       }}>
-      <Typography variant='h6' gutterBottom style={{marginBottom: -5}}>
+      <Typography variant='h6' gutterBottom>
         Settings
       </Typography>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Theme</Typography>
         <Select
           value={settings.theme}
@@ -50,18 +50,12 @@ const SettingsDrawer = ({
                   marginBottom: -5,
                 }}
               />
-              {t === '#FFFFFF'
-                ? 'White'
-                : t === '#F5F5F5'
-                ? 'Light Gray'
-                : t === '#E0E0E0'
-                ? 'Gray'
-                : 'Dark'}
+              {t === '#FFFFFF' ? 'White' : t === '#faf6ed' ? 'Cream' : 'Dark'}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom style={{marginBottom: -5}}>
           Page View
         </Typography>
@@ -74,7 +68,7 @@ const SettingsDrawer = ({
           <FormControlLabel value='double' control={<Radio />} label='Double' />
         </RadioGroup>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Font Family</Typography>
         <Select
           value={settings.fontFamily}
@@ -86,43 +80,67 @@ const SettingsDrawer = ({
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth margin='normal'>
-        <Typography gutterBottom>Font Size: {settings.fontSize}%</Typography>
-        <Slider
-          value={settings.fontSize}
-          onChange={(_, newValue) => updateSettings('fontSize', newValue)}
-          min={50}
-          max={200}
-          step={10}
-        />
-      </FormControl>
-      <FormControl fullWidth margin='normal'>
-        <Typography gutterBottom>Font Weight: {settings.fontWeight}</Typography>
-        <Slider
-          value={settings.fontWeight}
-          onChange={(_, newValue) => updateSettings('fontWeight', newValue)}
-          min={100}
-          max={900}
-          step={100}
-        />
-      </FormControl>
-      <FormControl fullWidth margin='normal'>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
         <Typography gutterBottom>Line Height: {settings.lineHeight}</Typography>
         <Slider
           value={settings.lineHeight}
+          style={{marginLeft: 15, width: '90%'}}
           onChange={(_, newValue) => updateSettings('lineHeight', newValue)}
-          min={1}
-          max={3}
-          step={0.1}
+          min={1.2}
+          max={2.0}
+          marks={[
+            {value: 1.2, label: '1.2'},
+            {value: 1.4, label: '1.4'},
+            {value: 1.6, label: '1.6'},
+            {value: 1.8, label: '1.8'},
+            {value: 2.0, label: '2.0'},
+          ]}
+          step={null}
+        />
+      </FormControl>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
+        <Typography gutterBottom>Font Size: {settings.fontSize}px</Typography>
+        <Slider
+          value={settings.fontSize}
+          style={{marginLeft: 15, width: '90%'}}
+          onChange={(_, newValue) => updateSettings('fontSize', newValue)}
+          min={12}
+          max={24}
+          marks={[
+            {value: 12, label: '12'},
+            {value: 14, label: '14'},
+            {value: 16, label: '16'},
+            {value: 18, label: '18'},
+            {value: 20, label: '20'},
+            {value: 22, label: '22'},
+            {value: 24, label: '24'},
+          ]}
+          step={null}
+        />
+      </FormControl>
+      <FormControl fullWidth margin='normal' style={{marginBottom: -1}}>
+        <Typography gutterBottom>Font Weight:</Typography>
+        <Slider
+          style={{marginLeft: 15, width: '90%'}}
+          value={settings.fontWeight}
+          onChange={(_, newValue) => updateSettings('fontWeight', newValue)}
+          min={400}
+          max={700}
+          marks={[
+            {value: 400, label: 'Normal'},
+            {value: 700, label: 'Bold'},
+          ]}
+          step={null}
         />
       </FormControl>
       <FormControl fullWidth margin='normal'>
         <Typography gutterBottom>Zoom: {settings.zoom}%</Typography>
         <Slider
           value={settings.zoom}
+          style={{marginLeft: 15, width: '90%'}}
           onChange={(_, newValue) => updateSettings('zoom', newValue)}
-          min={50}
-          max={200}
+          min={100}
+          max={150}
           step={10}
         />
       </FormControl>
