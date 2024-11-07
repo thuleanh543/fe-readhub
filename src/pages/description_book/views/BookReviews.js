@@ -13,6 +13,7 @@ import ReviewItem from './ReviewItem'
 import axios from 'axios'
 import {useEffect} from 'react'
 import {useState} from 'react'
+import {useMemo} from 'react'
 
 const BookReviews = ({onWriteReview, bookId, refreshTrigger, currentUser}) => {
   const [reviews, setReviews] = useState([])
@@ -20,6 +21,21 @@ const BookReviews = ({onWriteReview, bookId, refreshTrigger, currentUser}) => {
   const [averageRating, setAverageRating] = useState(0)
   const [totalReviews, setTotalReviews] = useState(0)
   const [distribution, setDistribution] = useState({})
+  const [sortBy, setSortBy] = useState('recent')
+
+  const handleSortChange = value => {
+    setSortBy(value)
+  }
+  const sortedReviews = useMemo(() => {
+    if (sortBy === 'recent') {
+      return [...reviews].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      )
+    } else if (sortBy === 'helpful') {
+      return [...reviews].sort((a, b) => b.likeCount - a.likeCount)
+    }
+    return reviews
+  }, [reviews, sortBy])
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -170,17 +186,25 @@ const BookReviews = ({onWriteReview, bookId, refreshTrigger, currentUser}) => {
             }}>
             <Typography variant='h6'>Reviews</Typography>
             <Box sx={{display: 'flex', gap: 2}}>
-              <Button variant='text'>Most Recent</Button>
-              <Button variant='text'>Most Helpful</Button>
+              <Button
+                variant={sortBy === 'recent' ? 'contained' : 'text'}
+                onClick={() => handleSortChange('recent')}>
+                Most Recent
+              </Button>
+              <Button
+                variant={sortBy === 'helpful' ? 'contained' : 'text'}
+                onClick={() => handleSortChange('helpful')}>
+                Most Helpful
+              </Button>
             </Box>
           </Box>
 
-          {reviews.map((review, index) => (
+          {sortedReviews.map((review, index) => (
             <ReviewItem
               key={review.reviewId}
               review={review}
               index={index}
-              isLast={index === reviews.length - 1}
+              isLast={index === sortedReviews.length - 1}
               currentUser={currentUser}
             />
           ))}
