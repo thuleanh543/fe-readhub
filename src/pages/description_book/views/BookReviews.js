@@ -6,28 +6,70 @@ import {
   Typography,
   Divider,
   Box,
+  CircularProgress,
 } from '@mui/material'
 import {Star} from 'lucide-react'
 import ReviewItem from './ReviewItem'
+import axios from 'axios'
+import {useEffect} from 'react'
+import {useState} from 'react'
 
-const BookReviews = ({onWriteReview}) => {
-  const reviews = [
-    {
-      name: 'John Smith',
-      date: '2024-03-15',
-      rating: 3,
-      comment: "This book has good flashcards, but I'd prefer more exercises.",
-      likes: 1,
-    },
-    {
-      name: 'Jane Doe',
-      date: '2024-03-10',
-      rating: 5,
-      comment:
-        'A fantastic book with great examples and clear explanations. Highly recommended!',
-      likes: 3,
-    },
-  ]
+const BookReviews = ({onWriteReview, bookId, refreshTrigger, currentUser}) => {
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [averageRating, setAverageRating] = useState(0)
+  const [totalReviews, setTotalReviews] = useState(0)
+  const [distribution, setDistribution] = useState({})
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!currentUser && !bookId) return
+      setLoading(true)
+      try {
+        const url = currentUser?.userId
+          ? `http://localhost:8080/api/v1/review/book/${bookId}?currentUserId=${currentUser.userId}`
+          : `http://localhost:8080/api/v1/review/book/${bookId}`
+
+        const config = currentUser
+          ? {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+            }
+          : {}
+
+        const response = await axios.get(url, config)
+
+        const data = response.data.data
+        setReviews(data.reviews)
+        setAverageRating(data.averageRating)
+        setTotalReviews(data.total)
+        setDistribution(data.distribution)
+      } catch (error) {
+        console.error('Error fetching reviews:', error)
+        setReviews([])
+        setAverageRating(0)
+        setTotalReviews(0)
+        setDistribution({})
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (bookId) {
+      fetchReviews()
+    }
+  }, [refreshTrigger])
+
+  if (loading) return <CircularProgress />
+
+  const distributionPercentage = Object.entries(distribution)
+    .map(([stars, count]) => ({
+      stars: parseInt(stars),
+      percentage: totalReviews > 0 ? (count / totalReviews) * 100 : 0,
+    }))
+    .sort((a, b) => b.stars - a.stars)
+
   return (
     <Card
       sx={{
@@ -36,7 +78,6 @@ const BookReviews = ({onWriteReview}) => {
         mt: 3,
       }}>
       <CardContent sx={{p: 4}}>
-        {/* Header with overall rating */}
         <Box
           sx={{
             display: 'flex',
@@ -50,7 +91,7 @@ const BookReviews = ({onWriteReview}) => {
             </Typography>
             <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
               <Typography variant='h3' component='span'>
-                4.5
+                {averageRating.toFixed(1)}
               </Typography>
               <Box>
                 <Box sx={{display: 'flex', gap: 0.5}}>
@@ -58,7 +99,7 @@ const BookReviews = ({onWriteReview}) => {
                     <Star
                       key={star}
                       className={
-                        star <= 4.5
+                        star <= averageRating
                           ? 'text-yellow-400 fill-yellow-400'
                           : 'text-gray-300'
                       }
@@ -66,7 +107,7 @@ const BookReviews = ({onWriteReview}) => {
                   ))}
                 </Box>
                 <Typography variant='body2' color='text.secondary'>
-                  (9 reviews)
+                  ({totalReviews} reviews)
                 </Typography>
               </Box>
             </Box>
@@ -80,15 +121,8 @@ const BookReviews = ({onWriteReview}) => {
           </Button>
         </Box>
 
-        {/* Rating bars */}
         <Box sx={{mt: 4}}>
-          {[
-            {stars: 5, percentage: 67},
-            {stars: 4, percentage: 11},
-            {stars: 3, percentage: 22},
-            {stars: 2, percentage: 0},
-            {stars: 1, percentage: 0},
-          ].map(({stars, percentage}) => (
+          {distributionPercentage.map(({stars, percentage}) => (
             <Box
               key={stars}
               sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 1}}>
@@ -118,14 +152,15 @@ const BookReviews = ({onWriteReview}) => {
                   }}
                 />
               </Box>
-              <Typography sx={{minWidth: 50}}>{percentage}%</Typography>
+              <Typography sx={{minWidth: 50}}>
+                {percentage.toFixed(0)}%
+              </Typography>
             </Box>
           ))}
         </Box>
 
         <Divider sx={{my: 4}} />
 
-        {/* Reviews section */}
         <Box>
           <Box
             sx={{
@@ -140,13 +175,13 @@ const BookReviews = ({onWriteReview}) => {
             </Box>
           </Box>
 
-          {/* Review items */}
           {reviews.map((review, index) => (
             <ReviewItem
-              key={index}
+              key={review.reviewId}
               review={review}
               index={index}
               isLast={index === reviews.length - 1}
+              currentUser={currentUser}
             />
           ))}
         </Box>

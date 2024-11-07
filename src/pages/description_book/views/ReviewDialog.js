@@ -7,62 +7,118 @@ import {
   Button,
   TextField,
   Box,
-  Checkbox,
-  FormControlLabel,
+  CircularProgress,
 } from '@mui/material'
 import {Star} from 'lucide-react'
+import axios from 'axios'
 
 const ReviewDialog = ({
   open,
   onClose,
-  onSubmit,
-  existingReview = null, // Add this prop to check if user has reviewed
+  bookId,
+  currentUser,
+  existingReview = null,
+  onReviewSubmit,
 }) => {
   const [reviewRating, setReviewRating] = useState(0)
-  const [reviewHover, setReviewHover] = useState(0)
-  const [displayName, setDisplayName] = useState('')
   const [reviewText, setReviewText] = useState('')
-  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [reviewHover, setReviewHover] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [initialReview, setInitialReview] = useState(null)
+  const [hasChanges, setHasChanges] = useState(false)
 
-  // Load existing review data when dialog opens
+  // Fetch user's review when dialog opens
   useEffect(() => {
-    if (existingReview && open) {
-      setReviewRating(existingReview.rating)
-      setDisplayName(
-        existingReview.isAnonymous ? '' : existingReview.displayName,
-      )
-      setReviewText(existingReview.review)
-      setIsAnonymous(existingReview.isAnonymous)
+    const fetchUserReview = async () => {
+      if (!currentUser || !open) return
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/review/user/${currentUser.userId}/book/${bookId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+
+        if (response.data.data && response.data.data.length > 0) {
+          const userReview = response.data.data[0]
+          setInitialReview(userReview)
+          setReviewRating(userReview.rating)
+          setReviewText(userReview.review)
+        } else {
+          // No existing review
+          setInitialReview(null)
+          setReviewRating(0)
+          setReviewText('')
+        }
+      } catch (error) {
+        console.error('Error fetching user review:', error)
+      }
     }
-  }, [existingReview, open])
 
-  const handleSubmit = () => {
-    onSubmit({
-      rating: reviewRating,
-      displayName: isAnonymous ? 'Anonymous' : displayName,
-      review: reviewText,
-      isAnonymous,
-      isUpdate: !!existingReview,
-    })
-    // Reset form
-    setReviewRating(0)
-    setReviewHover(0)
-    setDisplayName('')
-    setReviewText('')
-    setIsAnonymous(false)
+    fetchUserReview()
+  }, [open, currentUser, bookId])
+
+  // Check for changes
+  useEffect(() => {
+    if (!initialReview) {
+      // If no initial review, enable submit if form has content
+      setHasChanges(reviewRating > 0 && reviewText.trim() !== '')
+      return
+    }
+
+    // Check if rating or text has changed from initial values
+    const ratingChanged = reviewRating !== initialReview.rating
+    const textChanged = reviewText !== initialReview.review
+    setHasChanges(ratingChanged || textChanged)
+  }, [reviewRating, reviewText, initialReview])
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true)
+      const reviewData = {
+        userId: currentUser.userId,
+        bookId: bookId,
+        rating: reviewRating,
+        review: reviewText,
+      }
+
+      if (initialReview) {
+        // Update existing review
+        reviewData.reviewId = initialReview.reviewId
+        await axios.put('http://localhost:8080/api/v1/review', reviewData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+      } else {
+        // Create new review
+        await axios.post('http://localhost:8080/api/v1/review', reviewData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+      }
+
+      // Reset state
+      setHasChanges(false)
+      onReviewSubmit() // Gọi hàm callback sau khi submit thành công
+      onClose()
+    } catch (error) {
+      console.error('Error submitting review:', error)
+    } finally {
+      setLoading(false)
+    }
   }
-
-  const isViewOnly = existingReview && !existingReview.canEdit
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>
-        {existingReview
-          ? isViewOnly
-            ? 'Your Review'
-            : 'Update Your Review'
-          : 'Write a Review'}
+        {initialReview ? 'Update Your Review' : 'Write a Review'}
       </DialogTitle>
+
       <DialogContent>
         {/* Rating Stars */}
         <Box
@@ -81,26 +137,12 @@ const ReviewDialog = ({
                   ? 'text-yellow-400 fill-yellow-400'
                   : 'text-gray-300'
               }`}
-              onMouseEnter={() => !isViewOnly && setReviewHover(star)}
-              onMouseLeave={() => !isViewOnly && setReviewHover(0)}
-              onClick={() => !isViewOnly && setReviewRating(star)}
-              style={{cursor: isViewOnly ? 'default' : 'pointer'}}
+              onMouseEnter={() => setReviewHover(star)}
+              onMouseLeave={() => setReviewHover(0)}
+              onClick={() => setReviewRating(star)}
             />
           ))}
         </Box>
-
-        {/* Review Form */}
-        {!isAnonymous && (
-          <TextField
-            fullWidth
-            placeholder='Display name'
-            variant='outlined'
-            sx={{mb: 2}}
-            value={displayName}
-            onChange={e => setDisplayName(e.target.value)}
-            disabled={isViewOnly}
-          />
-        )}
 
         <TextField
           fullWidth
@@ -110,37 +152,25 @@ const ReviewDialog = ({
           variant='outlined'
           value={reviewText}
           onChange={e => setReviewText(e.target.value)}
-          disabled={isViewOnly}
         />
-
-        {!isViewOnly && (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isAnonymous}
-                onChange={e => setIsAnonymous(e.target.checked)}
-              />
-            }
-            label='Post as anonymous'
-            sx={{mt: 2}}
-          />
-        )}
       </DialogContent>
 
       <DialogActions sx={{p: 2, gap: 1}}>
         <Button onClick={onClose} variant='outlined'>
-          {isViewOnly ? 'Close' : 'Cancel'}
+          Cancel
         </Button>
-        {!isViewOnly && (
-          <Button
-            variant='contained'
-            onClick={handleSubmit}
-            disabled={
-              !reviewRating || (!displayName && !isAnonymous) || !reviewText
-            }>
-            {existingReview ? 'Update Review' : 'Submit Review'}
-          </Button>
-        )}
+        <Button
+          variant='contained'
+          onClick={handleSubmit}
+          disabled={!hasChanges || loading}>
+          {loading ? (
+            <CircularProgress size={24} />
+          ) : initialReview ? (
+            'Update Review'
+          ) : (
+            'Submit Review'
+          )}
+        </Button>
       </DialogActions>
     </Dialog>
   )

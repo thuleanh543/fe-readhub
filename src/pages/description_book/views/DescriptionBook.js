@@ -27,8 +27,6 @@ export default function DescriptionBook() {
   })
   const [user, setUser] = useState(null)
   const [bookDetails, setBookDetails] = useState(null)
-  const [rating, setRating] = useState(0)
-  const [hover, setHover] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
@@ -36,36 +34,32 @@ export default function DescriptionBook() {
   const {bookId, bookTitle} = location.state || {}
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const [shouldRefreshReviews, setShouldRefreshReviews] = useState(0)
 
-  const getUser = async () => {
-    if (!localStorage.getItem('token')) return
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setUser(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  // Thêm function để check nếu user đã review chưa
 
   const handleLogin = () => {
     setShowLoginDialog(false)
     navigate('/login')
   }
 
-  const handleReviewSubmit = reviewData => {
-    console.log('Review submitted:', reviewData)
-    // Handle the review submission logic here
-    setShowReviewDialog(false)
-  }
-
   useEffect(() => {
+    const getUser = async () => {
+      if (!localStorage.getItem('token')) return
+      try {
+        const response = await axios.get(
+          'http://localhost:8080/api/v1/user/profile',
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+        setUser(response.data)
+      } catch (error) {
+        console.error(error)
+      }
+    }
     const fetchBookDetails = async () => {
       try {
         const response = await fetch(`https://gutendex.com/books/${bookId}/`)
@@ -90,7 +84,7 @@ export default function DescriptionBook() {
     getUser()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [bookId])
+  }, [])
 
   if (loading)
     return (
@@ -101,7 +95,7 @@ export default function DescriptionBook() {
           justifyContent: 'center',
           minHeight: '100vh',
         }}>
-        <CircularProgress />
+        <CircularProgress size={24} />
       </Box>
     )
 
@@ -322,6 +316,7 @@ export default function DescriptionBook() {
         </Grid>
 
         <BookReviews
+          bookId={bookId}
           onWriteReview={() => {
             if (!user) {
               setShowLoginDialog(true)
@@ -329,6 +324,8 @@ export default function DescriptionBook() {
               setShowReviewDialog(true)
             }
           }}
+          refreshTrigger={shouldRefreshReviews}
+          currentUser={user}
         />
       </Container>
       <LoginDialog
@@ -339,8 +336,15 @@ export default function DescriptionBook() {
 
       <ReviewDialog
         open={showReviewDialog}
-        onClose={() => setShowReviewDialog(false)}
-        onSubmit={handleReviewSubmit}
+        onClose={() => {
+          setShowReviewDialog(false)
+        }}
+        onReviewSubmit={() => {
+          setShowReviewDialog(false)
+          setShouldRefreshReviews(prevState => prevState + 1) // Tăng giá trị để trigger refresh
+        }}
+        bookId={bookId}
+        currentUser={user}
       />
     </Box>
   )
