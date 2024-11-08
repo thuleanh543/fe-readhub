@@ -129,7 +129,8 @@ const BookForum = () => {
                   <p className="text-gray-600 text-sm mb-2">by {forum.authors}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {forum.categories?.map((category, index) => (
-                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                      <span key={index} className="
+                      px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
                         {category}
                       </span>
                     ))}
@@ -144,7 +145,8 @@ const BookForum = () => {
                 <h3 className="text-sm font-semibold text-gray-600 mb-2">Subjects</h3>
                 <div className="flex flex-wrap gap-2">
                   {forum.subjects.map((subject, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+                    <span key={index} className="
+                      px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
                       {subject}
                     </span>
                   ))}
