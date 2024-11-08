@@ -35,12 +35,73 @@ export default function DescriptionBook() {
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [shouldRefreshReviews, setShouldRefreshReviews] = useState(0)
+  const [isSaved, setIsSaved] = useState(false)
 
   // Thêm function để check nếu user đã review chưa
 
   const handleLogin = () => {
     setShowLoginDialog(false)
     navigate('/login')
+  }
+  const checkBookSaved = async () => {
+    if (!user) return
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/v1/saved-books/user/${user.userId}/${bookId}/is-saved`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      if (response.data.success) {
+        setIsSaved(response.data.data)
+      }
+    } catch (error) {
+      console.error('Error checking saved status:', error)
+    }
+  }
+  const handleSaveBook = async () => {
+    if (!user) {
+      setShowLoginDialog(true)
+      return
+    }
+
+    try {
+      if (isSaved) {
+        // Unsave book
+        const response = await axios.delete(
+          `http://localhost:8080/api/v1/saved-books/user/${user.userId}/book/${bookId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+        if (response.data.success) {
+          setIsSaved(false)
+          // Có thể thêm toast hoặc notification ở đây
+        }
+      } else {
+        // Save book
+        const response = await axios.post(
+          `http://localhost:8080/api/v1/saved-books/user/${user.userId}/book/${bookId}`,
+          null,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+        if (response.data.success) {
+          setIsSaved(true)
+          // Có thể thêm toast hoặc notification ở đây
+        }
+      }
+    } catch (error) {
+      console.error('Error saving/unsaving book:', error)
+      // Có thể thêm error toast ở đây
+    }
   }
 
   useEffect(() => {
@@ -56,10 +117,27 @@ export default function DescriptionBook() {
           },
         )
         setUser(response.data)
+        // Kiểm tra trạng thái saved ngay sau khi có user data
+        try {
+          const savedResponse = await axios.get(
+            `http://localhost:8080/api/v1/saved-books/user/${response.data.userId}/${bookId}/is-saved`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+            },
+          )
+          if (savedResponse.data.success) {
+            setIsSaved(savedResponse.data.data)
+          }
+        } catch (error) {
+          console.error('Error checking saved status:', error)
+        }
       } catch (error) {
         console.error(error)
       }
     }
+
     const fetchBookDetails = async () => {
       try {
         const response = await fetch(`https://gutendex.com/books/${bookId}/`)
@@ -81,10 +159,10 @@ export default function DescriptionBook() {
     }
 
     fetchBookDetails()
-    getUser()
+    getUser() // Không cần .then nữa vì đã xử lý trong hàm getUser
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [bookId]) // Thêm bookId vào dependencies
 
   if (loading)
     return (
@@ -303,8 +381,9 @@ export default function DescriptionBook() {
                   <Button
                     variant='outlined'
                     startIcon={<BookmarkPlus />}
+                    onClick={handleSaveBook}
                     fullWidth>
-                    Save for Later
+                    {isSaved ? 'Unsave Book' : 'Save for Later'}
                   </Button>
                   <Button variant='outlined' startIcon={<Share2 />} fullWidth>
                     Share

@@ -6,7 +6,7 @@ import {ListBook} from './pages'
 import {listOptions} from './component/set_data/SetData'
 import axios from 'axios'
 import {Avatar, Button, Menu, MenuItem, ListItemIcon} from '@mui/material'
-import {AccountCircle, ExitToApp, Settings,Forum} from '@mui/icons-material'
+import {AccountCircle, ExitToApp, Settings, Forum} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import HeaderComponent from './component/header/HeaderComponent'
@@ -81,134 +81,100 @@ function App() {
         backgroundColor: colors.themeLight.color060d13,
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh',
+        height: '100vh',
       }}>
       <HeaderComponent windowSize={windowSize} />
-      <div
-        style={{
-          backgroundColor: colors.themeLight.primary,
-          height: windowSize.height * 0.37,
-          paddingLeft: windowSize.width * 0.05,
-          fontWeight: 'bold',
-          paddingRight: 25,
-          display: 'flex',
-          flexDirection: 'column',
-          paddingTop: windowSize.height * 0.11,
-        }}>
-        <span
-          style={{
-            float: 'left',
-            color: '#8e8cbb',
-            textTransform: 'uppercase',
-            alignSelf: 'flex-start',
-          }}>
-          Thể loại phổ biến
-        </span>
+      <div style={{flex: 1, overflowY: 'auto'}}>
         <div
           style={{
-            height: windowSize.height * 0.22,
-            width: windowSize.width * 0.91,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            backgroundColor: colors.themeLight.primary,
+            height: windowSize.height * 0.37,
+            paddingLeft: windowSize.width * 0.05,
+            fontWeight: 'bold',
+            paddingRight: 25,
+            flex: 1,
+            flexDirection: 'column',
+            paddingTop: windowSize.height * 0.11,
+            overflowY: 'auto',
           }}>
-          {listOptions.map((item, index) => (
-            <div
-              key={item.id}
-              style={{
-                height: windowSize.height * 0.13,
-                width:
-                  item.id === 1
-                    ? windowSize.width * 0.16
-                    : windowSize.width * 0.075,
-                borderRadius: 3,
-                backgroundImage: `url(${item.url})`,
-                backgroundSize: 'cover',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-              }}>
+          <span
+            style={{
+              float: 'left',
+              color: '#8e8cbb',
+              textTransform: 'uppercase',
+              alignSelf: 'flex-start',
+            }}>
+            Thể loại phổ biến
+          </span>
+          <div
+            style={{
+              height: windowSize.height * 0.22,
+              width: windowSize.width * 0.91,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            {listOptions.map((item, index) => (
               <div
+                key={item.id}
                 style={{
-                  height: windowSize.height * 0.05,
+                  height: windowSize.height * 0.13,
                   width:
                     item.id === 1
                       ? windowSize.width * 0.16
                       : windowSize.width * 0.075,
-                  borderBottomLeftRadius: 3,
-                  borderBottomRightRadius: 3,
-                  backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
+                  borderRadius: 3,
+                  backgroundImage: `url(${item.url})`,
+                  backgroundSize: 'cover',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: 'flex-end',
                 }}>
-                <span
+                <div
                   style={{
-                    marginTop: 1,
-                    marginBottom: 2,
-                    fontSize: 15,
-                    fontWeight: 'Bold',
-                    color: '#fff',
-                    fontFamily: 'roboto',
-                    lineHeight: 1,
+                    height: windowSize.height * 0.05,
+                    width:
+                      item.id === 1
+                        ? windowSize.width * 0.16
+                        : windowSize.width * 0.075,
+                    borderBottomLeftRadius: 3,
+                    borderBottomRightRadius: 3,
+                    backgroundColor: `${item.backgroundColor || '#9b9b9b'}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}>
-                  {item.title}
-                </span>
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 'normal',
-                    color: '#fff',
-                    fontFamily: 'cursive',
-                  }}>
-                  {item.quantity} views
-                </span>
+                  <span
+                    style={{
+                      marginTop: 1,
+                      marginBottom: 2,
+                      fontSize: 15,
+                      fontWeight: 'Bold',
+                      color: '#fff',
+                      fontFamily: 'roboto',
+                      lineHeight: 1,
+                    }}>
+                    {item.title}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 'normal',
+                      color: '#fff',
+                      fontFamily: 'cursive',
+                    }}>
+                    {item.quantity} views
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
         <ListBook searchTerm={searchTerm} windowSize={windowSize} />
-
-
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}>
-        <MenuItem
-          onClick={handleClose}
-          component={Link}
-          to='/profile'
-          style={{width: 160}}>
-          <ListItemIcon>
-            <AccountCircle />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        <MenuItem onClick={handleClose} component={Link} to='/Settings'>
-          <ListItemIcon>
-            <Settings />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <ExitToApp />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
+      </div>
     </div>
   )
 }
