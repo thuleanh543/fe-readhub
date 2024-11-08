@@ -10,6 +10,7 @@ import {AccountCircle, ExitToApp, Settings, Forum} from '@mui/icons-material'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import HeaderComponent from './component/header/HeaderComponent'
+import BookRecommendations from './component/recommendations/BookRecommendations'
 function App() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -104,7 +105,7 @@ function App() {
               textTransform: 'uppercase',
               alignSelf: 'flex-start',
             }}>
-            Thể loại phổ biến
+            Popular Categories
           </span>
           <div
             style={{
@@ -172,6 +173,8 @@ function App() {
             ))}
           </div>
         </div>
+
+        {user && <BookRecommendations windowSize={windowSize} user={user} />}
 
         <ListBook searchTerm={searchTerm} windowSize={windowSize} />
       </div>

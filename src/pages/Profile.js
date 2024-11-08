@@ -14,6 +14,11 @@ import {
   TextField,
   IconButton,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material'
 import {
   AccountCircle,
@@ -31,28 +36,95 @@ function Profile() {
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  const [searchTerm, setSearchTerm] = useState('')
-  const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = useState(null)
   const [user, setUser] = useState(null)
-  const open = Boolean(anchorEl)
-  const [value, setValue] = React.useState('1')
+  const [value, setValue] = useState('1')
   const [username, setUsername] = useState('')
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState(null)
+  const [isProfileChanged, setIsProfileChanged] = useState(false)
+  const [fullName, setFullname] = useState('')
+  const navigate = useNavigate()
 
   const handleAvatarChange = async event => {
-    console.error('handleAvatarChange')
+    const file = event.target.files[0]
+    setAvatarFile(file)
+
+    // Đọc file ảnh và hiển thị preview
+    const reader = new FileReader()
+    reader.onload = e => {
+      setAvatarUrl(e.target.result)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload ảnh lên server ngay khi chọn xong
+    try {
+      const formData = new FormData()
+      formData.append('avatar', file)
+      await axios.post(
+        `http://localhost:8080/api/v1/user/${user.userId}/upload-avatar`,
+        formData,
+        {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
+      )
+      getUser() // Refresh user info
+      toast.success('Avatar uploaded successfully')
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to upload avatar')
+    }
+  }
+  useEffect(() => {
+    // Kiểm tra xem username hoặc fullName đã thay đổi so với giá trị ban đầu hay chưa
+    if (username !== user?.username || fullName !== user?.fullName) {
+      setIsProfileChanged(true)
+    } else {
+      setIsProfileChanged(false)
+    }
+  }, [username, fullName])
+
+  const handleUpdateProfile = async () => {
+    try {
+      await axios.put(
+        `http://localhost:8080/api/v1/user/${user.userId}`,
+        {username: username, fullName: fullName},
+        {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
+      )
+
+      if (avatarFile) {
+        const formData = new FormData()
+        formData.append('avatar', avatarFile)
+        await axios.post(
+          `http://localhost:8080/api/v1/user/${user.userId}/upload-avatar`,
+          formData,
+          {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
+        )
+      }
+
+      getUser() // Refresh user info
+      toast.success('Update profile successfully')
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to update profile')
+    }
   }
 
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget)
-  }
+  const handleDeleteAccount = async () => {
+    try {
+      await axios.delete(`http://localhost:8080/api/v1/user/${user.userId}`, {
+        headers: {Authorization: `Bearer ${localStorage.getItem('token')}`},
+      })
 
-  const handleClose = () => {
-    setAnchorEl(null)
+      localStorage.removeItem('token')
+      navigate('/login')
+      toast.success('Account deleted successfully')
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to delete account')
+    }
   }
 
   const handleLogout = () => {
-    handleClose()
     localStorage.removeItem('token')
     setUser(null)
     navigate('/')
@@ -62,17 +134,17 @@ function Profile() {
   const getUser = async () => {
     if (!localStorage.getItem('token')) {
       navigate('/login-account')
+      return
     }
+
     try {
       const response = await axios.get(
         'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
+        {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
       setUser(response.data)
+      setUsername(response.data.username)
+      setFullname(response.data.fullName)
     } catch (error) {
       console.error(error)
     }
@@ -89,16 +161,14 @@ function Profile() {
     getUser()
 
     window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   return (
     <div
       className='App'
       style={{
-        backgroundColor: colors.themeLight.color060d13,
+        backgroundColor: colors.themeLight.primary,
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
@@ -110,7 +180,7 @@ function Profile() {
       />
       <div
         style={{
-          backgroundColor: colors.themeLight.primary,
+          backgroundColor: 'white',
           height: windowSize.height - windowSize.height * 0.002,
           paddingLeft: windowSize.width * 0.2,
           fontWeight: 'bold',
@@ -120,14 +190,13 @@ function Profile() {
           paddingTop: windowSize.height * 0.11,
         }}>
         <div>
-          <h1>MY PROFILE</h1>
           <TabContext value={value}>
             <Box sx={{borderBottom: 1, borderColor: 'divider'}}>
               <TabList
                 onChange={(e, newValue) => setValue(newValue)}
                 aria-label='lab API tabs example'>
-                <Tab label='Infomation' value='1' />
-                <Tab label='Accounts and security' value='2' />
+                <Tab label='Information' value='1' />
+                <Tab label='Account and Security' value='2' />
               </TabList>
             </Box>
             <TabPanel value='1'>
@@ -155,19 +224,17 @@ function Profile() {
                   />
                   <label htmlFor='avatar-upload'>
                     <IconButton
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        position: 'relative',
-                      }}
+                      sx={{width: 100, height: 100, position: 'relative'}}
                       component='span'>
-                      {user.urlAvatar ? (
+                      {avatarUrl ? (
+                        <Avatar
+                          src={avatarUrl}
+                          sx={{width: 100, height: 100}}
+                        />
+                      ) : user.urlAvatar ? (
                         <Avatar
                           src={user.urlAvatar}
-                          sx={{
-                            width: 100,
-                            height: 100,
-                          }}
+                          sx={{width: 100, height: 100}}
                         />
                       ) : (
                         <Avatar>
@@ -193,13 +260,23 @@ function Profile() {
                     label='Username'
                     variant='outlined'
                     fullWidth
-                    value={user.username}
+                    value={username}
                     onChange={e => setUsername(e.target.value)}
+                    sx={{marginTop: 2}}
+                  />
+                  <TextField
+                    label='Full name'
+                    variant='outlined'
+                    fullWidth
+                    value={fullName}
+                    onChange={e => setFullname(e.target.value)}
                     sx={{marginTop: 2}}
                   />
                   <Button
                     variant='contained'
                     color='primary'
+                    onClick={handleUpdateProfile}
+                    disabled={!isProfileChanged}
                     sx={{marginTop: 2, width: '100%'}}>
                     Update Profile
                   </Button>
@@ -223,29 +300,24 @@ function Profile() {
                     User Profile
                   </Typography>
                   <TextField
+                    disabled
                     label='Email'
                     variant='outlined'
                     fullWidth
                     value={user.email}
                     sx={{marginTop: 2}}
-                  />
-                  <TextField
-                    label='Password'
-                    type='password'
-                    variant='outlined'
-                    fullWidth
-                    value={'123456789'}
-                    sx={{marginTop: 2}}
+                    InputProps={{readOnly: true}}
                   />
                   <Button
                     variant='contained'
                     color='primary'
                     sx={{marginTop: 2, width: '100%'}}>
-                    Update Profile
+                    Reset Password
                   </Button>
                   <Button
                     variant='contained'
                     color='error'
+                    onClick={() => setDeleteDialogOpen(true)}
                     sx={{marginTop: 2, width: '100%'}}>
                     Delete Account
                   </Button>
@@ -255,6 +327,27 @@ function Profile() {
           </TabContext>
         </div>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to permanently delete your account? This
+            action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color='primary'>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteAccount} color='primary' autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }

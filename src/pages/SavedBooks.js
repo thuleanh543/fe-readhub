@@ -90,7 +90,7 @@ const BookCard = ({book, onUnsave, showUnsave = true, onClick}) => (
       <Typography
         variant='subtitle2'
         component='h2'
-        color='white'
+        color='black'
         sx={{
           fontSize: '0.875rem',
           fontWeight: 'bold',
@@ -211,10 +211,10 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchRecommendedBooks = async () => {
+    const fetchRecommendedBooks = async userId => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/v1/saved-books/user/${userId}/recommendations`,
+          `http://localhost:8080/api/v1/recommendations/user/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -241,7 +241,7 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
     }
 
     if (userId) {
-      fetchRecommendedBooks()
+      fetchRecommendedBooks(userId)
     }
   }, [userId, maxBooks])
 
