@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Heart, Share2, MessageCircle, Users, ThumbsUp, Bookmark, MoreHorizontal, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Heart, Share2, MessageCircle, Users, ThumbsUp, Bookmark, MoreHorizontal, Send,Image } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import HeaderComponent from '../../../component/header/HeaderComponent'
 import { Box } from '@mui/material';
-import {colors} from '../../../constants'
+import {colors} from '../../../constants';
+import SockJS from 'sockjs-client';
+import { Stomp ,Client } from '@stomp/stompjs';
 
 const ForumDiscussion = () => {
   const { forumId } = useParams();
@@ -13,6 +15,11 @@ const ForumDiscussion = () => {
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [user, setUser] = useState(null);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
+  const fileInputRef = useRef(null);
+  const webSocketRef = useRef(null);
 
   const getUser = async () => {
     try {
@@ -33,6 +40,105 @@ const ForumDiscussion = () => {
     }
   }
 
+  const connectWebSocket = () => {
+    const socket = new SockJS('http://localhost:8080/ws');
+    const client = Stomp.over(() => socket);
+
+    client.debug = () => {};
+
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+
+    client.connect(
+      headers,
+      () => {
+        console.log('Connected to WebSocket');
+        setStompClient(client);
+        webSocketRef.current = client;
+
+        client.subscribe(`/topic/forum/${forumId}`, (message) => {
+          try {
+            const newComment = JSON.parse(message.body);
+            setComments(prevComments => {
+              const exists = prevComments.some(c => c.id === newComment.id);
+              if (!exists) {
+                return [newComment, ...prevComments];
+              }
+              return prevComments;
+            });
+          } catch (error) {
+            console.error('Error processing comment:', error);
+          }
+        });
+      },
+      (error) => {
+        console.error('WebSocket connection error:', error);
+      }
+    );
+
+    return client;
+  };
+
+  const handleImageSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() && !selectedImage) return;
+
+    try {
+      let imageUrl = null;
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append('image', selectedImage);
+
+        const response = await fetch('http://localhost:8080/api/v1/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          imageUrl = data.url;
+        }
+      }
+
+      if (stompClient?.connected) {
+        const token = localStorage.getItem('token');
+        const commentData = {
+          content: newComment,
+          discussionId: forumId,
+          imageUrl: imageUrl
+        };
+
+        stompClient.send(
+          "/app/comment",
+          {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          JSON.stringify(commentData)
+        );
+
+        setNewComment('');
+        setSelectedImage(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
+  };
   useEffect(() => {
     const fetchForumData = async () => {
       try {
@@ -65,8 +171,16 @@ const ForumDiscussion = () => {
         setLoading(false);
       }
     };
+    connectWebSocket();
     getUser();
     fetchForumData();
+    return () => {
+      if (webSocketRef.current) {
+        console.log('Disconnecting WebSocket');
+        webSocketRef.current.disconnect();
+        webSocketRef.current = null;
+      }
+    };
   }, [forumId]);
 
   if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -153,39 +267,73 @@ const ForumDiscussion = () => {
       </div>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* New Comment Input */}
           <div className="bg-white rounded-lg shadow-md p-4 mb-8">
-            <div className="flex gap-4">
-              <img
-                src={user?.urlAvatar || "/api/placeholder/48/48"}
-                alt="Your avatar"
-                className="w-10 h-10 rounded-full"
+      <div className="flex gap-4">
+        <img
+          src={user?.urlAvatar || "/api/placeholder/48/48"}
+          alt="Your avatar"
+          className="w-10 h-10 rounded-full"
+        />
+        <div className="flex-1">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Share your thoughts about this book..."
+            className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+            rows="3"
+          />
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                ref={fileInputRef}
+                className="hidden"
+                id="image-upload"
               />
-              <div className="flex-1">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Share your thoughts about this book..."
-                  className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
-                  rows="3"
-                />
-                <div className="flex justify-between items-center mt-4">
-                  <div className="flex gap-2">
-                  </div>
-                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                    <Send className="w-4 h-4" />
-                    Post
+              <label
+                htmlFor="image-upload"
+                className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <Image className="w-5 h-5" />
+                <span>Add Image</span>
+              </label>
+              {selectedImage && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">
+                    {selectedImage.name}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setSelectedImage(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ×
                   </button>
                 </div>
-              </div>
+              )}
             </div>
+            <button
+              onClick={handleSubmitComment}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Post
+            </button>
           </div>
+        </div>
+      </div>
+    </div>
 
           {/* Comments List */}
           <div className="space-y-6">
             {comments.map((comment) => (
               <div key={comment.id} className="bg-white rounded-lg shadow-md p-6">
-                {/* Comment Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex gap-4">
                     <img
@@ -210,8 +358,15 @@ const ForumDiscussion = () => {
                   <p className="text-gray-800 whitespace-pre-wrap mb-4">
                     {comment.content}
                   </p>
-
-                  {/* Comment Actions */}
+                  {comment.imageUrl && (
+              <div className="mb-4">
+                <img
+                  src={comment.imageUrl}
+                  alt="Comment attachment"
+                  className="max-w-full rounded-lg"
+                />
+              </div>
+            )}
                   <div className="flex items-center gap-6 text-gray-500">
                     <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
                       <ThumbsUp className="w-5 h-5" />
