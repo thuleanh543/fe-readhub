@@ -27,7 +27,9 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { bookId, bookTitle, authors, defaultCoverImage ,  subjects } = location.state || {};
+  const { bookId, bookTitle, authors, subjects } = location.state || {};
+
+  const [previewImage, setPreviewImage] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [windowSize, setWindowSize] = useState({
@@ -48,12 +50,27 @@ export default function CreateForum() {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        coverImage: file
+      }));
+
+      // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
-        setFormData(prev => ({
-          ...prev,
-          coverImage: e.target.result
-        }));
+        setPreviewImage(e.target.result);
       };
       reader.readAsDataURL(file);
     }
@@ -70,6 +87,10 @@ export default function CreateForum() {
     if (formData.selectedCategories.length === 0) {
       newErrors.categories = 'Please select at least one category';
     }
+    if (!formData.coverImage) {
+      newErrors.coverImage = 'Forum cover image is required';
+      toast.error('Please upload a forum cover image');
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,7 +99,6 @@ export default function CreateForum() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        // Tạo FormData object để gửi file
         const formDataToSend = new FormData();
         formDataToSend.append('bookId', bookId);
         formDataToSend.append('bookTitle', bookTitle);
@@ -90,20 +110,21 @@ export default function CreateForum() {
         formData.selectedCategories.forEach(category => {
           formDataToSend.append('categories', category);
         });
-        subjects?.forEach(subject => {
-          formDataToSend.append('subjects', subject);
-        });
 
-        // Xử lý ảnh
-        if (formData.coverImage) {
-          // Nếu coverImage là base64 string, cần chuyển về File
-          const response = await fetch(formData.coverImage);
-          const blob = await response.blob();
-          const file = new File([blob], "forumImage.jpg", { type: 'image/jpeg' });
-          formDataToSend.append('forumImage', file);
+        if (subjects && subjects.length > 0) {
+          subjects.forEach(subject => {
+            formDataToSend.append('subjects', subject);
+          });
         }
 
-        // Gọi API
+        // Handle image upload
+        if (formData.coverImage) {
+          formDataToSend.append('forumImage', formData.coverImage);
+          console.log('Image appended successfully');
+        }
+
+        setIsSubmitting(true);
+
         const response = await fetch('http://localhost:8080/api/v1/forums', {
           method: 'POST',
           headers: {
@@ -111,6 +132,11 @@ export default function CreateForum() {
           },
           body: formDataToSend,
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create forum');
+        }
 
         const result = await response.json();
 
@@ -124,7 +150,9 @@ export default function CreateForum() {
         }
       } catch (error) {
         console.error('Error creating forum:', error);
-        toast.error('An error occurred while creating the forum');
+        toast.error(error.message || 'An error occurred while creating the forum');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -238,7 +266,7 @@ export default function CreateForum() {
                     <Grid item xs={12}>
                       <Autocomplete
                         multiple
-                        options={subjects}
+                        options={subjects || []}
                         value={formData.selectedCategories}
                         onChange={(e, newValue) => setFormData(prev => ({
                           ...prev,
@@ -253,40 +281,54 @@ export default function CreateForum() {
                           />
                         )}
                         renderTags={(value, getTagProps) =>
-                          value.map((option, index) => (
-                            <Chip
-                              variant="outlined"
-                              label={option}
-                              {...getTagProps({ index })}
-                              sx={{ bgcolor: 'primary.main', color: 'white' }}
-                            />
-                          ))
+                          value.map((option, index) => {
+                            const tagProps = getTagProps({ index });
+                            const { key, ...chipProps } = tagProps;
+                            return (
+                              <Chip
+                                key={key}
+                                {...chipProps}
+                                variant="outlined"
+                                label={option}
+                                sx={{ bgcolor: 'primary.main', color: 'white' }}
+                              />
+                            );
+                          })
                         }
                       />
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Box sx={{
-                        border: '2px dashed grey',
-                        borderRadius: 1,
-                        p: 3,
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}>
+                      <Box
+                        sx={{
+                          border: '2px dashed',
+                          borderColor: errors.coverImage ? 'error.main' : 'grey.500',
+                          borderRadius: 1,
+                          p: 3,
+                          textAlign: 'center',
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' }
+                        }}
+                      >
                         <input
                           accept="image/*"
                           type="file"
                           onChange={handleImageUpload}
                           style={{ display: 'none' }}
                           id="forum-cover-upload"
+                          required
                         />
                         <label htmlFor="forum-cover-upload">
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                            <ImageIcon size={40} />
-                            <Typography>
-                              {formData.coverImage ? 'Change Cover Image' : 'Upload Forum Cover Image (Optional)'}
+                            <ImageIcon size={40} color={errors.coverImage ? '#d32f2f' : undefined} />
+                            <Typography color={errors.coverImage ? 'error' : 'inherit'}>
+                              {formData.coverImage ? 'Change Cover Image' : 'Upload Forum Cover Image (Required)'}
                             </Typography>
+                            {errors.coverImage && (
+                              <Typography variant="caption" color="error">
+                                {errors.coverImage}
+                              </Typography>
+                            )}
                           </Box>
                         </label>
                       </Box>
@@ -294,15 +336,15 @@ export default function CreateForum() {
                   </Grid>
 
                   <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<SendIcon />}
-                    type="submit"
-                    size="large"
-                    disabled={isSubmitting}
-                  >
-                  {isSubmitting ? 'Creating...' : 'Create Forum'}
-                  </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<SendIcon />}
+                      type="submit"
+                      size="large"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Creating...' : 'Create Forum'}
+                    </Button>
                     <Button
                       variant="outlined"
                       startIcon={<Save />}
@@ -332,16 +374,34 @@ export default function CreateForum() {
                 <Divider sx={{ mb: 2 }} />
 
                 <Box sx={{ mb: 2 }}>
-                  <img
-                    src={formData.coverImage || defaultCoverImage}
-                    alt="Forum cover"
-                    style={{
-                      width: '100%',
-                      height: 200,
-                      objectFit: 'cover',
-                      borderRadius: 8
-                    }}
-                  />
+                  {previewImage ? (
+                    <img
+                      src={previewImage}
+                      alt="Forum cover"
+                      style={{
+                        width: '100%',
+                        height: 200,
+                        objectFit: 'cover',
+                        borderRadius: 8
+                      }}
+                    />
+                  ) : (
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 200,
+                        bgcolor: 'grey.200',
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Typography color="text.secondary">
+                        No image selected
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
 
                 <Typography variant="h5" gutterBottom>
