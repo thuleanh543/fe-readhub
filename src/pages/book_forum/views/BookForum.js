@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart } from 'lucide-react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import ForumItemCard from './widgets/ForumItemCard';
 
 const BookForum = () => {
   const [forums, setForums] = useState([]);
@@ -34,7 +36,6 @@ const BookForum = () => {
     }
   );
 
-  // Fetch forums data from API
   useEffect(() => {
     const fetchForums = async () => {
       try {
@@ -58,7 +59,7 @@ const BookForum = () => {
     fetchForums();
   }, []);
 
-  // Hardcoded challenge data (not available in API)
+
   const readingChallenges = [
     {
       id: 1,
@@ -98,80 +99,7 @@ const BookForum = () => {
       {/* Forums Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {forums.map((forum) => (
-          <div key={forum.discussionId} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-            {/* Forum Header */}
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-bold">{forum.forumTitle}</h2>
-                {
-                // forum.trending
-                1==1
-                && (
-                  <span className="flex items-center px-2 py-1 bg-red-100 text-red-600 text-sm rounded-full">
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    Trending
-                  </span>
-                )}
-              </div>
-              <p className="text-gray-600 mb-4">{forum.forumDescription}</p>
-            </div>
-
-            <div className="px-6 py-4 border-t border-b border-gray-100">
-              <h3 className="text-lg font-semibold mb-4">Currently Reading</h3>
-              <div className="flex gap-4">
-                <img
-                  src={forum.imageUrl || "/api/placeholder/96/144"}
-                  alt={forum.bookTitle}
-                  className="w-24 h-36 object-cover rounded"
-                />
-                <div>
-                  <h4 className="font-bold">{forum.bookTitle}</h4>
-                  <p className="text-gray-600 text-sm mb-2">by {forum.authors}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {forum.categories?.map((category, index) => (
-                      <span key={index} className="
-                      px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
-                        {category}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Book Subjects */}
-            {forum.subjects && forum.subjects.length > 0 && (
-              <div className="px-6 py-4">
-                <h3 className="text-sm font-semibold text-gray-600 mb-2">Subjects</h3>
-                <div className="flex flex-wrap gap-2">
-                  {forum.subjects.map((subject, index) => (
-                    <span key={index} className="
-                      px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                      {subject}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Forum Stats */}
-            <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-between items-center border-t border-gray-200">
-              <div className="flex gap-4">
-                <div className="flex items-center text-gray-600">
-                  <Users className="w-4 h-4 mr-1" />
-                  <span className="text-sm">{forum.totalMembers}</span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  <span className="text-sm">{forum.totalPosts}</span>
-                </div>
-              </div>
-              <div className="flex items-center text-gray-500 text-sm">
-                <Clock className="w-4 h-4 mr-1" />
-                {new Date(forum.updatedAt).toLocaleDateString()}
-              </div>
-            </div>
-          </div>
+          <ForumItemCard key={forum.discussionId} forum={forum} />
         ))}
       </div>
 
