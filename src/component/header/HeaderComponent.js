@@ -4,7 +4,7 @@ import {toast} from 'react-toastify'
 import {Plus, Search, MessageSquare} from 'lucide-react'
 import {images} from '../../constants'
 
-const Header = ({windowSize, centerContent, showSearch = true, onSearch}) => {
+const Header = ({centerContent, showSearch = true, onSearch}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [user, setUser] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)

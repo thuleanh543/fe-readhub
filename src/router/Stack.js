@@ -12,6 +12,7 @@ import {
   DescriptionBook,
   BookForum,
   CreateForum,
+  ForumDiscussion,
 } from '../pages'
 
 function Stack() {
@@ -29,6 +30,7 @@ function Stack() {
       <Route path='/description-book' element={<DescriptionBook />} />
       <Route path='/book-forum' element={<BookForum/>} />
       <Route path='/create-forum' element={<CreateForum/>} />
+      <Route path='/forum-discussion/:forumId' element={<ForumDiscussion/>} />
     </Routes>
   )
 }

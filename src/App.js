@@ -83,7 +83,7 @@ function App() {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
-      <HeaderComponent windowSize={windowSize} />
+      <HeaderComponent/>
       <div
         style={{
           backgroundColor: colors.themeLight.primary,

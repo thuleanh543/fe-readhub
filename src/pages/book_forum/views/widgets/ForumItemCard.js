@@ -42,7 +42,7 @@ const ForumItemCard = ({ forum }) => {
     }
 
     if (isMember) {
-      navigate(`/forums/${forum.discussionId}/discussion`);
+      navigate(`/forum-discussion/${forum.discussionId}`);
     } else {
       try {
         const response = await fetch(
@@ -58,7 +58,7 @@ const ForumItemCard = ({ forum }) => {
         if (data.success) {
           toast.success('Tham gia diễn đàn thành công');
           setIsMember(true);
-          navigate(`/forums/${forum.discussionId}/discussion`);
+          navigate(`/forum-discussion/${forum.discussionId}`);
         }
       } catch (err) {
         toast.error(err.response?.data?.message || 'Có lỗi xảy ra');

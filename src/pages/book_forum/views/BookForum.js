@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart } from 'lucide-react';
+import {
+  Box,
+} from '@mui/material'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ForumItemCard from './widgets/ForumItemCard';
+import HeaderComponent from '../../../component/header/HeaderComponent';
+import {colors} from '../../../constants'
 
 const BookForum = () => {
   const [forums, setForums] = useState([]);
@@ -83,8 +88,18 @@ const BookForum = () => {
   if (error) return <div className="container mx-auto px-4 py-8">Error: {error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header Section */}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: colors.themeLight.color060d13,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+      <HeaderComponent
+        centerContent=""
+        showSearch={false}
+      />
+    <div className="container mx-auto px-4 py-8 mt-12">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-4xl font-bold mb-2">Book Forums</h1>
@@ -128,6 +143,7 @@ const BookForum = () => {
         </div>
       </div>
     </div>
+    </Box>
   );
 };
 
