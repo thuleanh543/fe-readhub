@@ -3,11 +3,21 @@ import {Link, useNavigate} from 'react-router-dom'
 import {toast} from 'react-toastify'
 import {Plus, Search, MessageSquare} from 'lucide-react'
 import {images} from '../../constants'
+import {
+  AccountCircle,
+  ExitToApp,
+  PhotoCamera,
+  LibraryBooks,
+  Settings,
+} from '@mui/icons-material'
+import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
 
 const Header = ({centerContent, showSearch = true, onSearch}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [user, setUser] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const open = Boolean(anchorEl)
   const navigate = useNavigate()
 
   const handleSearch = event => {
@@ -16,6 +26,14 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
     if (onSearch) {
       onSearch(value)
     }
+  }
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
   }
 
   const handleLogout = () => {
@@ -94,52 +112,27 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
 
           <div className='flex items-center space-x-4'>
             {user ? (
-              <div className='relative'>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className='flex items-center space-x-3 p-2 rounded-full hover:bg-gray-100 transition-colors'>
-                  <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white'>
-                    {user.urlAvatar ? (
-                      <img
-                        src={user.urlAvatar}
-                        alt={user.username}
-                        className='w-8 h-8 rounded-full'
-                      />
-                    ) : (
-                      <span className='font-medium'>
-                        {user.username
-                          ? user.username.charAt(0).toUpperCase()
-                          : 'U'}
-                      </span>
-                    )}
-                  </div>
-                  <span className='font-medium text-gray-700'>
-                    {user.username}
-                  </span>
-                </button>
-
-                {isMenuOpen && (
-                  <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200'>
-                    <Link
-                      to='/profile'
-                      className='block px-4 py-2 text-gray-700 hover:bg-gray-100'
-                      onClick={() => setIsMenuOpen(false)}>
-                      Profile
-                    </Link>
-                    <Link
-                      to='/settings'
-                      className='block px-4 py-2 text-gray-700 hover:bg-gray-100'
-                      onClick={() => setIsMenuOpen(false)}>
-                      Settings
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className='block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100'>
-                      Logout
-                    </button>
-                  </div>
+              <Button
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 10,
+                  marginRight: 20,
+                }}
+                onClick={handleClick}>
+                {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
                 )}
-              </div>
+                <span>{user.username}</span>
+              </Button>
             ) : (
               <div className='flex items-center space-x-4'>
                 <Link
@@ -157,6 +150,47 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
           </div>
         </div>
       </div>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}>
+        <MenuItem
+          onClick={handleClose}
+          component={Link}
+          to='/profile'
+          style={{width: 160}}>
+          <ListItemIcon>
+            <AccountCircle />
+          </ListItemIcon>
+          Profile
+        </MenuItem>
+        <MenuItem onClick={handleClose} component={Link} to='/saved-books'>
+          <ListItemIcon>
+            <LibraryBooks />
+          </ListItemIcon>
+          My Library
+        </MenuItem>
+        <MenuItem onClick={handleClose} component={Link} to='/settings'>
+          <ListItemIcon>
+            <Settings />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <ExitToApp />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
     </div>
   )
 }
