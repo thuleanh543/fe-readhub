@@ -24,6 +24,7 @@ import {
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
+import Header from '../component/header/HeaderComponent'
 
 function Profile() {
   const [windowSize, setWindowSize] = useState({
@@ -102,57 +103,11 @@ function Profile() {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
-      <div
-        style={{
-          display: 'flex',
-          height: windowSize.height * 0.09,
-          width: windowSize.width - 15,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingTop: 5,
-          position: 'fixed',
-          top: 0,
-          zIndex: 1,
-          boxShadow: '0px 5px 5px rgba(0, 0, 0, 0.2)',
-          alignItems: 'center',
-        }}>
-        <div className='flex gap-2 items-center p-5'>
-          <img
-            src={images.imgOpenBook}
-            alt='Logo Open Book'
-            style={{
-              height: windowSize.height * 0.09 - 32,
-              marginLeft: 15,
-              marginRight: 15,
-            }}
-          />
-          <Link to='/'>
-            <span className='text-sm font-medium '>Back to ReadHub</span>
-          </Link>
-        </div>
-
-        {user && (
-          <Button
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 10,
-              marginRight: 20,
-            }}
-            onClick={handleClick}>
-            {user.urlAvatar ? (
-              <Avatar src={user.urlAvatar} />
-            ) : (
-              <Avatar>
-                {user.username ? user.username.toUpperCase().charAt(0) : 'U'}
-              </Avatar>
-            )}
-            <span>{user.username}</span>
-          </Button>
-        )}
-      </div>
+      <Header
+        windowSize={windowSize}
+        centerContent={'MY PROFILE'}
+        showSearch={false}
+      />
       <div
         style={{
           backgroundColor: colors.themeLight.primary,
@@ -300,42 +255,6 @@ function Profile() {
           </TabContext>
         </div>
       </div>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}>
-        <MenuItem
-          onClick={handleClose}
-          component={Link}
-          to='/profile'
-          style={{width: 160}}>
-          <ListItemIcon>
-            <AccountCircle />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        <MenuItem onClick={handleClose} component={Link} to='/Settings'>
-          <ListItemIcon>
-            <Settings />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <ExitToApp />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
     </div>
   )
 }
