@@ -164,7 +164,6 @@ export default function CreateForum() {
       pb: 8
     }}>
       <HeaderComponent
-        windowSize={windowSize}
         centerContent=""
         showSearch={false}
       />

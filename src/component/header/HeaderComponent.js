@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material'
 import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
 
-const Header = ({windowSize, centerContent, showSearch = true, onSearch}) => {
+const Header = ({centerContent, showSearch = true, onSearch}) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [user, setUser] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)

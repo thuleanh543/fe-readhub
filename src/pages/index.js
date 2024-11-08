@@ -10,6 +10,7 @@ import ContentModeration from './ContentModeration'
 import Profile from './Profile'
 import BookForum from './book_forum/views/BookForum'
 import CreateForum from './create_forum/views/CreateForum'
+import ForumDiscussion from './forum_discussion/views/ForumDiscussion'
 import SavedBooks from './SavedBooks'
 
 export {
@@ -25,5 +26,6 @@ export {
   DescriptionBook,
   BookForum,
   CreateForum,
+  ForumDiscussion,
   SavedBooks,
 }

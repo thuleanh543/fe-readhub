@@ -83,7 +83,7 @@ function App() {
         flexDirection: 'column',
         height: '100vh',
       }}>
-      <HeaderComponent windowSize={windowSize} />
+      <HeaderComponent/>
       <div style={{flex: 1, overflowY: 'auto'}}>
         <div
           style={{

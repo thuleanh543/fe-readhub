@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react'
 import {useNavigate, useLocation} from 'react-router-dom'
-import {BookOpen, MessageCircle, Share2, BookmarkPlus, Star} from 'lucide-react'
+import {BookOpen, MessageCircle, Share2, BookmarkPlus} from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -36,8 +36,6 @@ export default function DescriptionBook() {
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [shouldRefreshReviews, setShouldRefreshReviews] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
-
-  // Thêm function để check nếu user đã review chưa
 
   const handleLogin = () => {
     setShowLoginDialog(false)
@@ -200,7 +198,6 @@ export default function DescriptionBook() {
         flexDirection: 'column',
       }}>
       <HeaderComponent
-        windowSize={windowSize}
         centerContent={bookTitle}
         showSearch={false}
       />
