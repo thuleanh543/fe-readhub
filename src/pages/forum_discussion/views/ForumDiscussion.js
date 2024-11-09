@@ -18,6 +18,7 @@ import {colors} from '../../../constants'
 import SockJS from 'sockjs-client'
 import {Stomp, Client} from '@stomp/stompjs'
 import ForumCommentItem from './widgets/ForumCommentItem'
+import ForumInteractionButtons from './widgets/ForumInteractionButtons'
 
 const ForumDiscussion = () => {
   const {forumId} = useParams()
@@ -228,23 +229,11 @@ console.log('Posting comment:', commentData)
                   alt={forum?.forumTitle}
                   className='w-full h-[450px] object-cover rounded-lg shadow-lg'
                 />
-
-                <div className='flex justify-between mt-4'>
-                  <button className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors'>
-                    <Heart className='w-5 h-5' />
-                    <span>Like</span>
-                  </button>
-                  <button className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors'>
-                    <Share2 className='w-5 h-5' />
-                    <span>Share</span>
-                  </button>
-                  <button className='flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors'>
-                    <Bookmark className='w-5 h-5' />
-                    <span>Save</span>
-                  </button>
-                </div>
+                <ForumInteractionButtons
+                  forumId={forumId}
+                  user={user}
+                />
               </div>
-
               {/* Forum Info */}
               <div className='flex-1'>
                 <h1 className='text-4xl font-bold mb-4'>{forum?.forumTitle}</h1>
