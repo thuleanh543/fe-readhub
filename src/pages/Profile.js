@@ -52,7 +52,7 @@ function Profile() {
   const [isProfileChanged, setIsProfileChanged] = useState(false)
   const [fullName, setFullname] = useState('')
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
+  const [password, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -69,7 +69,7 @@ function Profile() {
     try {
       await axios.put(
         `http://localhost:8080/api/v1/user/${user.userId}/reset-password`,
-        {currentPassword, newPassword},
+        {password, newPassword},
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
       setResetPasswordDialogOpen(false)
@@ -395,7 +395,7 @@ function Profile() {
             <OutlinedInput
               id='current-password'
               type={showCurrentPassword ? 'text' : 'password'}
-              value={currentPassword}
+              value={password}
               onChange={e => setCurrentPassword(e.target.value)}
               endAdornment={
                 <InputAdornment position='end'>
