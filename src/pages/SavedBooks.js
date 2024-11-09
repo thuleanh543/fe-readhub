@@ -450,8 +450,10 @@ function SavedBooks() {
               },
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: 'lightgray',
+              backgroundColor: '#2196f3',
             },
+            borderBottom: 1,
+            borderColor: 'divider',
           }}>
           <Tab
             icon={<BookmarkPlus size={20} />}
