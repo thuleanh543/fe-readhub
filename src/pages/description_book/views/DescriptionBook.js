@@ -39,7 +39,7 @@ export default function DescriptionBook() {
 
   const handleLogin = () => {
     setShowLoginDialog(false)
-    navigate('/login')
+    navigate('/login-account')
   }
   const checkBookSaved = async () => {
     if (!user) return

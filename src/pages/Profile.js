@@ -152,7 +152,7 @@ function Profile() {
       })
 
       localStorage.removeItem('token')
-      navigate('/login')
+      navigate('/login-account')
       toast.success('Account deleted successfully')
     } catch (error) {
       console.error(error)

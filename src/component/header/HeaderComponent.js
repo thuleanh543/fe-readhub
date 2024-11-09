@@ -11,6 +11,7 @@ import {
   Settings,
 } from '@mui/icons-material'
 import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
+import LoginDialog from '../../component/dialogs/LoginDialog'
 
 const Header = ({centerContent, showSearch = true, onSearch}) => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -19,6 +20,12 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
   const navigate = useNavigate()
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+
+  const handleLogin = () => {
+    setShowLoginDialog(false)
+    navigate('/login-account')
+  }
 
   const handleSearch = event => {
     const value = event.target.value
@@ -82,13 +89,19 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
             </Link>
 
             <div className='flex items-center space-x-2'>
-              <Link
-                to='/book-forum'
-                className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
-                <MessageSquare className='w-4 h-4 mr-2' />
-                <span>Forums</span>
-              </Link>
-            </div>
+  <button
+    onClick={() => {
+      if (!user) {
+        setShowLoginDialog(true);
+      } else {
+        navigate('/book-forum');
+      }
+    }}
+    className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
+    <MessageSquare className='w-4 h-4 mr-2' />
+    <span>Forums</span>
+  </button>
+</div>
           </div>
 
           {showSearch && (
@@ -191,6 +204,11 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
           Logout
         </MenuItem>
       </Menu>
+      <LoginDialog
+        open={showLoginDialog}
+        onClose={() => setShowLoginDialog(false)}
+        onLogin={handleLogin}
+      />
     </div>
   )
 }
