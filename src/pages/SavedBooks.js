@@ -193,7 +193,7 @@ const RecentlyReadBooks = ({userId, maxBooks = 20}) => {
               book={book}
               showUnsave={false}
               onClick={() =>
-                navigate('/read-book-screen', {
+                navigate('/description-book', {
                   state: {bookId: book.id, bookTitle: book.title},
                 })
               }
@@ -278,7 +278,7 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
             book={book}
             showUnsave={false}
             onClick={() =>
-              navigate('/read-book-screen', {
+              navigate('/description-book', {
                 state: {bookId: book.id, bookTitle: book.title},
               })
             }
@@ -496,7 +496,7 @@ function SavedBooks() {
                     book={book}
                     onUnsave={handleUnsaveBook}
                     onClick={() =>
-                      navigate('/read-book-screen', {
+                      navigate('/description-book', {
                         state: {bookId: book.id, bookTitle: book.title},
                       })
                     }
