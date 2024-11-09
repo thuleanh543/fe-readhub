@@ -171,15 +171,36 @@ function ReadBookScreen() {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
+
       if (editingNote) {
         setSelections(
           selections.map(s =>
             s.cfiRange === editingNote.cfiRange ? editingNote : s,
           ),
         )
-        setEditingNote(null)
+
+        // Xóa highlight cũ
+        rendition.annotations.remove(editingNote.cfiRange, 'highlight')
+        activeHighlights.delete(editingNote.cfiRange)
+
+        // Tạo highlight mới với màu đã cập nhật
+        rendition.annotations.add(
+          'highlight',
+          editingNote.cfiRange,
+          {},
+          null,
+          'hl',
+          {
+            fill: editingNote.color,
+            'fill-opacity': '0.3',
+            'mix-blend-mode': 'multiply',
+          },
+        )
+        activeHighlights.add(editingNote.cfiRange)
+
+        setIsNote(!isNote)
+        setEditingNote(null) // Đóng dialog
       }
-      setIsNote(!isNote)
     } catch (error) {
       console.error('Error updating note:', error)
     }

@@ -19,6 +19,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  FormHelperText,
 } from '@mui/material'
 import {
   AccountCircle,
@@ -30,6 +35,7 @@ import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
 import Header from '../component/header/HeaderComponent'
+import {Visibility, VisibilityOff} from '@mui/icons-material'
 
 function Profile() {
   const [windowSize, setWindowSize] = useState({
@@ -45,7 +51,37 @@ function Profile() {
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [isProfileChanged, setIsProfileChanged] = useState(false)
   const [fullName, setFullname] = useState('')
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+  const [password, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
+
+  const handleResetPassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('New password and confirm password do not match')
+      return
+    }
+
+    try {
+      await axios.put(
+        `http://localhost:8080/api/v1/user/${user.userId}/reset-password`,
+        {password, newPassword},
+        {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
+      )
+      setResetPasswordDialogOpen(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      toast.success('Password reset successfully')
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to reset password')
+    }
+  }
 
   const handleAvatarChange = async event => {
     const file = event.target.files[0]
@@ -311,6 +347,7 @@ function Profile() {
                   <Button
                     variant='contained'
                     color='primary'
+                    onClick={() => setResetPasswordDialogOpen(true)}
                     sx={{marginTop: 2, width: '100%'}}>
                     Reset Password
                   </Button>
@@ -345,6 +382,86 @@ function Profile() {
           </Button>
           <Button onClick={handleDeleteAccount} color='primary' autoFocus>
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={resetPasswordDialogOpen}
+        onClose={() => setResetPasswordDialogOpen(false)}>
+        <DialogTitle>Reset Password</DialogTitle>
+        <DialogContent>
+          <FormControl variant='outlined' fullWidth sx={{marginTop: 2}}>
+            <InputLabel htmlFor='current-password'>Current Password</InputLabel>
+            <OutlinedInput
+              id='current-password'
+              type={showCurrentPassword ? 'text' : 'password'}
+              value={password}
+              onChange={e => setCurrentPassword(e.target.value)}
+              endAdornment={
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='toggle password visibility'
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    edge='end'>
+                    {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label='Current Password'
+            />
+          </FormControl>
+          <FormControl variant='outlined' fullWidth sx={{marginTop: 2}}>
+            <InputLabel htmlFor='new-password'>New Password</InputLabel>
+            <OutlinedInput
+              id='new-password'
+              type={showNewPassword ? 'text' : 'password'}
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              endAdornment={
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='toggle password visibility'
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    edge='end'>
+                    {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label='New Password'
+            />
+          </FormControl>
+          <FormControl variant='outlined' fullWidth sx={{marginTop: 2}}>
+            <InputLabel htmlFor='confirm-password'>Confirm Password</InputLabel>
+            <OutlinedInput
+              id='confirm-password'
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              endAdornment={
+                <InputAdornment position='end'>
+                  <IconButton
+                    aria-label='toggle password visibility'
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge='end'>
+                    {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label='Confirm Password'
+            />
+            {newPassword !== confirmPassword && (
+              <FormHelperText error>Passwords do not match</FormHelperText>
+            )}
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setResetPasswordDialogOpen(false)}
+            color='primary'>
+            Cancel
+          </Button>
+          <Button onClick={handleResetPassword} color='primary'>
+            Reset
           </Button>
         </DialogActions>
       </Dialog>
