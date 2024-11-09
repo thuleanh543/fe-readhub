@@ -31,6 +31,7 @@ const ForumDiscussion = () => {
   const [stompClient, setStompClient] = useState(null)
   const fileInputRef = useRef(null)
   const webSocketRef = useRef(null)
+  const [isSending, setIsSending] = useState(false);
 
   const getUser = async () => {
     try {
@@ -102,13 +103,13 @@ const ForumDiscussion = () => {
 
   const handleSubmitComment = async () => {
     if (!newComment.trim() && !selectedImage) return
-
+    if (isSending) return;
     try {
       let imageUrl = null
       if (selectedImage) {
         const formData = new FormData()
-        formData.append('image', selectedImage)
-
+        setIsSending(true);
+        formData.append('file', selectedImage)
         const response = await fetch('http://localhost:8080/api/v1/upload', {
           method: 'POST',
           headers: {
@@ -118,19 +119,20 @@ const ForumDiscussion = () => {
         })
 
         if (response.ok) {
-          const data = await response.json()
-          imageUrl = data.url
+          const result = await response.json();
+          imageUrl = result.data.url;
         }
       }
 
       if (stompClient?.connected) {
+
         const token = localStorage.getItem('token')
         const commentData = {
           content: newComment,
           discussionId: forumId,
           imageUrl: imageUrl,
         }
-
+console.log('Posting comment:', commentData)
         stompClient.send(
           '/app/comment',
           {
@@ -148,7 +150,9 @@ const ForumDiscussion = () => {
       }
     } catch (error) {
       console.error('Error posting comment:', error)
-    }
+    } finally {
+      setIsSending(false);
+  }
   }
   useEffect(() => {
     const fetchForumData = async () => {
@@ -339,11 +343,26 @@ const ForumDiscussion = () => {
                       )}
                     </div>
                     <button
-                      onClick={handleSubmitComment}
-                      className='bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2'>
-                      <Send className='w-4 h-4' />
-                      Post
-                    </button>
+    onClick={handleSubmitComment}
+    disabled={isSending}
+    className={`${
+        isSending
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700'
+    } text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2`}
+>
+    {isSending ? (
+        <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span>Sending...</span>
+        </>
+    ) : (
+        <>
+            <Send className="w-4 h-4" />
+            <span>Post</span>
+        </>
+    )}
+</button>
                   </div>
                 </div>
               </div>
@@ -382,14 +401,22 @@ const ForumDiscussion = () => {
                       {comment.content}
                     </p>
                     {comment.imageUrl && (
-                      <div className='mb-4'>
-                        <img
-                          src={comment.imageUrl}
-                          alt='Comment attachment'
-                          className='max-w-full rounded-lg'
-                        />
-                      </div>
-                    )}
+                <div className="mb-4">
+                    <img
+                        src={comment.imageUrl}
+                        alt="Comment attachment"
+                        className="max-w-full rounded-lg"
+                        onError={(e) => {
+                            console.error('Image load error:', e);
+                            console.log('Failed URL:', comment.imageUrl);
+                            e.target.style.display = 'none';
+                        }}
+                        onLoad={() => {
+                            console.log('Image loaded successfully:', comment.imageUrl);
+                        }}
+                    />
+                </div>
+              )}
                     <div className='flex items-center gap-6 text-gray-500'>
                       <button className='flex items-center gap-2 hover:text-blue-600 transition-colors'>
                         <ThumbsUp className='w-5 h-5' />
