@@ -322,7 +322,7 @@ function SavedBooks() {
   useEffect(() => {
     const getUser = async () => {
       if (!localStorage.getItem('token')) {
-        navigate('/login')
+        navigate('/login-account')
         return
       }
       try {

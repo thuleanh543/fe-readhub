@@ -17,6 +17,7 @@ import {Box} from '@mui/material'
 import {colors} from '../../../constants'
 import SockJS from 'sockjs-client'
 import {Stomp, Client} from '@stomp/stompjs'
+import ForumCommentItem from './widgets/ForumCommentItem'
 
 const ForumDiscussion = () => {
   const {forumId} = useParams()
@@ -371,70 +372,12 @@ console.log('Posting comment:', commentData)
             {/* Comments List */}
             <div className='space-y-6'>
               {comments.map(comment => (
-                <div
+                <ForumCommentItem
                   key={comment.id}
-                  className='bg-white rounded-lg shadow-md p-6'>
-                  <div className='flex justify-between items-start mb-4'>
-                    <div className='flex gap-4'>
-                      <img
-                        src={comment.user.urlAvatar || '/api/placeholder/48/48'}
-                        alt={comment.user.fullName}
-                        className='w-12 h-12 rounded-full'
-                      />
-                      <div>
-                        <h3 className='font-semibold text-lg'>
-                          {comment.user.fullName}
-                        </h3>
-                        <p className='text-gray-500 text-sm'>
-                          {new Date(comment.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <button className='text-gray-400 hover:text-gray-600'>
-                      <MoreHorizontal className='w-6 h-6' />
-                    </button>
-                  </div>
-
-                  {/* Comment Content */}
-                  <div className='pl-16'>
-                    <p className='text-gray-800 whitespace-pre-wrap mb-4'>
-                      {comment.content}
-                    </p>
-                    {comment.imageUrl && (
-                <div className="mb-4">
-                    <img
-                        src={comment.imageUrl}
-                        alt="Comment attachment"
-                        className="max-w-full rounded-lg"
-                        onError={(e) => {
-                            console.error('Image load error:', e);
-                            console.log('Failed URL:', comment.imageUrl);
-                            e.target.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                            console.log('Image loaded successfully:', comment.imageUrl);
-                        }}
-                    />
-                </div>
-              )}
-                    <div className='flex items-center gap-6 text-gray-500'>
-                      <button className='flex items-center gap-2 hover:text-blue-600 transition-colors'>
-                        <ThumbsUp className='w-5 h-5' />
-                        <span>{comment.likes || 0}</span>
-                      </button>
-                      <button className='flex items-center gap-2 hover:text-blue-600 transition-colors'>
-                        <MessageCircle className='w-5 h-5' />
-                        <span>Reply</span>
-                      </button>
-                      <button className='flex items-center gap-2 hover:text-blue-600 transition-colors'>
-                        <Share2 className='w-5 h-5' />
-                        <span>Share</span>
-                      </button>
-                    </div>
-
-                    {/* Replies would go here */}
-                  </div>
-                </div>
+                  comment={comment}
+                  stompClient={stompClient}
+                  user={user}
+               />
               ))}
             </div>
           </div>
