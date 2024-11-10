@@ -73,7 +73,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
 
       // Subscribe to reply delete
       const replyDeleteSub = stompClient.subscribe(
-        `/topic/reply/${comment.id}/delete`,
+        `/topic/comment/${comment.id}/reply/delete`,
         message => {
           const { replyId } = JSON.parse(message.body);
           setReplies(prev => prev.filter(reply => reply.id !== replyId));
@@ -211,7 +211,12 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
   };
 
   const handleReplyDelete = (replyId) => {
-    if (stompClient?.connected) {
+    try {
+      if (!stompClient?.connected) {
+        toast.error('Connection lost. Please refresh the page.');
+        return;
+      }
+
       stompClient.send(
         '/app/comment/reply/delete',
         {
@@ -219,6 +224,11 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
         },
         JSON.stringify({ replyId: replyId })
       );
+
+      setShowReplyOptions(null);
+    } catch (error) {
+      console.error('Error deleting reply:', error);
+      toast.error('Failed to delete reply. Please try again.');
     }
   };
 
