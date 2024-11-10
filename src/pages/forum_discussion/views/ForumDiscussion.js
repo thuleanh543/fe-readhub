@@ -54,6 +54,10 @@ const ForumDiscussion = () => {
     }
   }
 
+  const handleCommentDeleted = (commentId) => {
+    setComments(prevComments => prevComments.filter(c => c.id !== commentId));
+  };
+
   const connectWebSocket = () => {
     const socket = new SockJS('http://localhost:8080/ws')
     const client = Stomp.over(() => socket)
@@ -202,6 +206,22 @@ console.log('Posting comment:', commentData)
       }
     }
   }, [forumId])
+
+  useEffect(() => {
+    if (stompClient) {
+      const commentDeleteSub = stompClient.subscribe(
+        `/topic/forum/${forumId}/comment-delete`,
+        message => {
+          const { commentId } = JSON.parse(message.body);
+          setComments(prevComments => prevComments.filter(c => c.id !== commentId));
+        }
+      );
+
+      return () => {
+        commentDeleteSub.unsubscribe();
+      };
+    }
+  }, [stompClient, forumId]);
 
   if (loading)
     return (
@@ -366,6 +386,7 @@ console.log('Posting comment:', commentData)
                   comment={comment}
                   stompClient={stompClient}
                   user={user}
+                  onCommentDeleted={handleCommentDeleted}
                />
               ))}
             </div>
