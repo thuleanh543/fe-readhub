@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { DialogConfirmation } from '../../../../component/dialogs/DialogConfirmation';
+import { Avatar } from '@mui/material';
 
 const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
   // States for reply functionality
@@ -350,13 +351,17 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
     <div className="bg-white rounded-lg shadow-md p-6 mb-4">
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
-          <img
-            src={comment.user.urlAvatar || '/api/placeholder/48/48'}
-            alt={comment.user.fullName}
-            className="w-12 h-12 rounded-full"
-          />
+        {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
+                )}
           <div>
-            <h3 className="font-semibold text-lg">{comment.user.fullName}</h3>
+            <h3 className="font-semibold text-lg">{comment.user.username}</h3>
             <p className="text-gray-500 text-sm">
               {new Date(comment.createdAt).toLocaleString()}
             </p>
@@ -598,11 +603,15 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
               <div className="space-y-4">
                 {replies.map((reply) => (
                   <div key={reply.id} className="flex gap-4">
-                    <img
-                      src={reply.user.urlAvatar || '/api/placeholder/32/32'}
-                      alt={reply.user.fullName}
-                      className="w-8 h-8 rounded-full"
-                    />
+                    {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
+                )}
                     <div className="flex-1">
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <div className="flex justify-between items-start">
