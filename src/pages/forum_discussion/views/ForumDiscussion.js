@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import {useNavigate, useParams} from 'react-router-dom'
 import HeaderComponent from '../../../component/header/HeaderComponent'
-import {Box} from '@mui/material'
+import {Avatar, Box} from '@mui/material'
 import {colors} from '../../../constants'
 import SockJS from 'sockjs-client'
 import {Stomp, Client} from '@stomp/stompjs'
@@ -273,15 +273,17 @@ console.log('Posting comment:', commentData)
                   <div>
                     <h3 className='text-white/60 text-sm mb-1'>Created By</h3>
                     <div className='flex items-center gap-2'>
-                      <img
-                        src={
-                          forum?.creator?.urlAvatar || '/api/placeholder/32/32'
-                        }
-                        alt={forum?.creator?.fullName}
-                        className='w-8 h-8 rounded-full'
-                      />
+                    {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
+                )}
                       <span className='text-lg font-medium'>
-                        {forum?.creator?.fullName}
+                        {forum?.creator?.username}
                       </span>
                     </div>
                   </div>
@@ -305,11 +307,15 @@ console.log('Posting comment:', commentData)
           <div className='max-w-4xl mx-auto'>
             <div className='bg-white rounded-lg shadow-md p-4 mb-8'>
               <div className='flex gap-4'>
-                <img
-                  src={user?.urlAvatar || '/api/placeholder/48/48'}
-                  alt='Your avatar'
-                  className='w-10 h-10 rounded-full'
-                />
+              {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
+                )}
                 <div className='flex-1'>
                   <textarea
                     value={newComment}

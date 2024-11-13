@@ -117,6 +117,7 @@ const LoginAccount = () => {
       )
 
       if (response.data.success) {
+        console.log(response.data)
         localStorage.setItem('token', response.data.token)
         localStorage.setItem('role', response.data.role)
         toast.success(response.data.message)
