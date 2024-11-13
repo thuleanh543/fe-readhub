@@ -7,10 +7,12 @@ import { useNavigate } from 'react-router-dom';
 const ForumItemCard = ({ forum }) => {
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [commentsCount, setCommentsCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     checkMembership();
+    fetchCommentsCount();
   }, [forum.discussionId]);
 
   const checkMembership = async () => {
@@ -33,6 +35,26 @@ const ForumItemCard = ({ forum }) => {
       setLoading(false);
     }
   };
+
+  const fetchCommentsCount = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/forums/${forum.discussionId}/comments`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setCommentsCount(data.data.length);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   const handleForumAction = async () => {
     const token = localStorage.getItem('token');
@@ -152,7 +174,7 @@ const ForumItemCard = ({ forum }) => {
           </div>
           <div className="flex items-center text-gray-600">
             <MessageCircle className="w-4 h-4 mr-1" />
-            <span className="text-sm">{forum.totalPosts}</span>
+            <span className="text-sm">{commentsCount}</span>
           </div>
         </div>
         <div className="flex items-center text-gray-500 text-sm">
