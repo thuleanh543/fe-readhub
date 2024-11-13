@@ -38,7 +38,7 @@ function Stack() {
       <Route
         path="/admin/*"
         element={
-          <PrivateRoute allowedRoles={['ROLE_ADMIN']}>
+          <PrivateRoute allowedRoles={['ADMIN']}>
             <AdminLayout>
               <Routes>
                 <Route path="dashboard" element={<Dashboard />} />
