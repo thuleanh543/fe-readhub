@@ -1,188 +1,219 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import {useNavigate} from 'react-router-dom';
-const ListBook = ({ searchTerm, windowSize }) => {
-  const [books, setBooks] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [shouldFetch, setShouldFetch] = useState(true);
-  const [error, setError] = useState(null);
-  const prevSearchTerm = useRef('');
+import React, {useEffect, useState, useCallback, useRef} from 'react'
+import {useNavigate} from 'react-router-dom'
 
+const ListBook = ({searchTerm, windowSize}) => {
+  const [books, setBooks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
+  const abortControllerRef = useRef(null)
+  const navigate = useNavigate()
+  const searchTimeoutRef = useRef(null)
+  const observerRef = useRef(null)
+  const prevSearchTermRef = useRef(searchTerm)
+
+  // Last element observer for infinite scroll
+  const lastBookElementRef = useCallback(
+    node => {
+      if (loading) return
+      if (observerRef.current) observerRef.current.disconnect()
+      observerRef.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMore && !initialLoad) {
+          setPage(prevPage => prevPage + 1)
+        }
+      })
+      if (node) observerRef.current.observe(node)
+    },
+    [loading, hasMore, initialLoad],
+  )
 
   const fetchBooks = useCallback(
-    async (search = '', pageNum = 1) => {
-      setHasMore(true);
-      if (loading || !shouldFetch) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const formattedSearchTerm = search.replace(/ /g, '&');
-        const apiUrl = `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+    async (pageNum = 1, isNewSearch = false) => {
+      if (!searchTerm.trim()) return
 
-        if (Array.isArray(data.results)) {
-          if (pageNum === 1) {
-            setBooks(data.results);
-          } else {
-            setBooks(prevBooks => [...prevBooks, ...data.results]);
-          }
-          setPage(pageNum + 1);
-          setHasMore(data.next !== null);
-        } else {
-          setHasMore(false);
-        }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+
+      abortControllerRef.current = new AbortController()
+      setLoading(true)
+      setError(null)
+
+      try {
+        const formattedSearchTerm = searchTerm.replace(/ /g, '&')
+        const response = await fetch(
+          `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`,
+          {signal: abortControllerRef.current.signal},
+        )
+
+        if (!response.ok) throw new Error('Failed to fetch books')
+        const data = await response.json()
+
+        const validBooks = data.results.filter(
+          book =>
+            book.formats['image/jpeg'] &&
+            book.title &&
+            !book.title.includes('[') &&
+            book.authors?.length,
+        )
+
+        setBooks(prev => (isNewSearch ? validBooks : [...prev, ...validBooks]))
+        setHasMore(data.next !== null && validBooks.length > 0)
+        setInitialLoad(false)
       } catch (err) {
-        setError('Failed to load books. Please try again later.');
-        setHasMore(false);
+        if (err.name === 'AbortError') return
+        setError('Failed to load books. Please try again.')
       } finally {
-        setLoading(false);
-        setShouldFetch(false);
+        setLoading(false)
       }
     },
-    [loading, shouldFetch]
-  );
-  const navigate = useNavigate()
+    [searchTerm],
+  )
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100 &&
-        hasMore
-      ) {
-        setShouldFetch(true);
+    // Chỉ thực hiện search khi searchTerm thực sự thay đổi
+    if (searchTerm !== prevSearchTermRef.current) {
+      prevSearchTermRef.current = searchTerm
+
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
       }
-    };
 
-    window.addEventListener('scroll', handleScroll);
+      setPage(1)
+      setBooks([])
+      setHasMore(true)
+      setInitialLoad(true)
 
-    let searchTimeoutId;
-
-    if (searchTerm !== prevSearchTerm.current) {
-      prevSearchTerm.current = searchTerm;
-      if (searchTimeoutId) {
-        clearTimeout(searchTimeoutId);
+      // Chỉ search khi có searchTerm
+      if (searchTerm.trim()) {
+        searchTimeoutRef.current = setTimeout(() => {
+          fetchBooks(1, true)
+        }, 300)
       }
-      searchTimeoutId = setTimeout(() => {
-        setPage(1);
-        setBooks([]);
-        setShouldFetch(true);
-      }, 200);
-    }
-
-    if (shouldFetch) {
-      fetchBooks(searchTerm, page);
     }
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (searchTimeoutId) {
-        clearTimeout(searchTimeoutId);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
       }
-    };
-  }, [searchTerm, fetchBooks, page, shouldFetch, hasMore]);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [searchTerm])
 
-  const handleBookClick = (bookId, bookTitle) => {
-    navigate('/description-book', {state: {bookId, bookTitle}})
-  };
+  useEffect(() => {
+    if (page > 1 && searchTerm.trim()) {
+      fetchBooks(page, false)
+    }
+  }, [page])
+
+  const handleBookClick = useCallback(
+    (bookId, bookTitle) => {
+      navigate('/description-book', {state: {bookId, bookTitle}})
+    },
+    [navigate],
+  )
 
   if (error) {
     return (
-      <div className="m-4 p-4 bg-red-100/10 border border-red-400/20 text-red-400 rounded-lg backdrop-blur-sm">
-        {error}
+      <div className='flex items-center justify-center p-8'>
+        <div className='bg-red-500/10 border border-red-500/20 rounded-lg p-4'>
+          <p className='text-red-500'>{error}</p>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-200/30 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-grid-slate-200/[0.04] bg-[size:50px_50px] pointer-events-none" />
-
-        <div className="relative">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8">
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-white px-6 py-8'>
+      <div className='max-w-7xl mx-auto'>
+        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8'>
+          {/* Results */}
           {books.map((book, index) => (
-              <div
-                key={`${book.id}-${index}`}
-                onClick={() => handleBookClick(book.id, book.title)}
-                className="group relative flex flex-col transition-all duration-300 hover:scale-105"
-              >
-                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-slate-200/50 shadow-xl">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110"
-                    style={{
-                      backgroundImage: `url('${book.formats['image/jpeg']}')`
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <button className="px-6 py-3 rounded-full bg-white/90 text-sm font-medium text-gray-900 hover:bg-white transform -translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      View Details
-                    </button>
-                  </div>
-
-                  <div className="absolute -inset-px bg-gradient-to-r from-blue-300 to-purple-300 rounded-xl opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300" />
+            <div
+              ref={index === books.length - 1 ? lastBookElementRef : null}
+              key={`${book.id}-${index}`}
+              onClick={() => handleBookClick(book.id, book.title)}
+              className='group relative transition-all duration-300 hover:scale-105'
+              style={{
+                width: '100%',
+              }}>
+              <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
+                <div
+                  className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+                  style={{
+                    backgroundImage: `url('${book.formats['image/jpeg']}')`,
+                  }}
+                />
+                <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+                <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+                  <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
+                    View Details
+                  </button>
                 </div>
+              </div>
 
-                <div className="mt-4 p-3 rounded-lg bg-white/60 backdrop-blur-sm">
-                  <h3 className="text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-blue-700 transition-colors duration-300">
-                    {book.title}
-                  </h3>
-                  <p className="mt-2 text-center text-sm font-medium text-blue-600 group-hover:text-blue-800 transition-colors duration-300">
-                    {book.authors?.[0]?.name || 'Unknown Author'}
-                  </p>
+              <div className='mt-4 p-3'>
+                <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
+                  {book.title}
+                </h3>
+                <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
+                  {book.authors[0]?.name || 'Unknown Author'}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {/* Loading skeletons - Only show on initial load */}
+          {loading &&
+            books.length === 0 &&
+            [...Array(10)].map((_, i) => (
+              <div key={`skeleton-${i}`} className='animate-pulse'>
+                <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-gray-200'>
+                  <div className='absolute inset-0' />
+                </div>
+                <div className='mt-4 p-3'>
+                  <div className='h-4 bg-gray-200 rounded-full w-3/4 mx-auto mb-2' />
+                  <div className='h-3 bg-gray-200 rounded-full w-1/2 mx-auto' />
                 </div>
               </div>
             ))}
-
-            {/* Skeleton loading */}
-            {loading &&
-              [...Array(6)].map((_, index) => (
-                <div key={`skeleton-${index}`} className="flex flex-col">
-                  <div className="aspect-[2/3] rounded-xl bg-gray-800/50 animate-pulse ring-1 ring-white/10" />
-                  <div className="mt-4 p-3 rounded-lg bg-gray-800/20">
-                    <div className="h-4 bg-gray-700/50 rounded animate-pulse" />
-                    <div className="mt-2 h-4 w-2/3 mx-auto bg-gray-700/50 rounded animate-pulse" />
-                  </div>
-                </div>
-              ))}
-          </div>
-
-          {/* Loading indicator */}
-          {loading && (
-            <div className="flex items-center justify-center mt-12 mb-8">
-              <div className="relative">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500/20 border-t-emerald-500" />
-                <div className="absolute inset-0 animate-pulse rounded-full h-12 w-12 border-4 border-transparent border-t-emerald-400/50 blur" />
-              </div>
-              <span className="ml-4 text-gray-300 text-lg">Loading more books...</span>
-            </div>
-          )}
-
-          {/* No more books message */}
-          {!hasMore && books.length > 0 && (
-            <div className="text-center mt-12 mb-8">
-              <p className="text-gray-400 text-lg">
-                No more books to load
-              </p>
-            </div>
-          )}
-
-          {/* No results message */}
-          {!hasMore && books.length === 0 && !loading && (
-            <div className="text-center mt-20 mb-12">
-              <p className="text-xl text-gray-300">
-                No books found. Try a different search term.
-              </p>
-            </div>
-          )}
         </div>
+
+        {/* No Results */}
+        {!loading && searchTerm && books.length === 0 && (
+          <div className='text-center py-12'>
+            <p className='text-gray-600 text-lg'>
+              No books found for this search!
+            </p>
+            <p className='text-gray-500 mt-2'>
+              Try adjusting your search terms
+            </p>
+          </div>
+        )}
+
+        {/* Loading more indicator */}
+        {loading && books.length > 0 && (
+          <div className='flex items-center justify-center mt-8'>
+            <div className='animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent' />
+            <span className='ml-3 text-gray-600'>Loading more books...</span>
+          </div>
+        )}
+
+        {/* End of results message */}
+        {!loading && !hasMore && books.length > 0 && (
+          <div className='text-center py-8 mt-4 border-t border-gray-200'>
+            <p className='text-gray-500'>
+              No more books found for "{searchTerm}"
+            </p>
+          </div>
+        )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ListBook;
+export default React.memo(ListBook)

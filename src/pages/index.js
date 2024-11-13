@@ -12,6 +12,7 @@ import BookForum from './book_forum/views/BookForum'
 import CreateForum from './create_forum/views/CreateForum'
 import ForumDiscussion from './forum_discussion/views/ForumDiscussion'
 import SavedBooks from './SavedBooks'
+import SearchResult from './search_result/SearchResult'
 
 export {
   LoginAccount,
@@ -28,4 +29,5 @@ export {
   CreateForum,
   ForumDiscussion,
   SavedBooks,
+  SearchResult,
 }

@@ -18,19 +18,20 @@ const BOOKSHELVES = [
   {
     title: 'Mystery & Detective',
     topic: 'detective',
-    backgroundColor: '#EF4444', // Red - gợi sự hồi hộp
+    backgroundColor: '#EF4444',
   },
   {
     title: 'Science Fiction & Fantasy',
     topic: 'science-fiction',
-    backgroundColor: '#8B5CF6', // Purple - cho khoa học viễn tưởng
+    backgroundColor: '#8B5CF6',
   },
   {
     title: "Children's Literature",
     topic: 'children',
-    backgroundColor: '#10B981', // Emerald - màu vui tươi cho thiếu nhi
+    backgroundColor: '#10B981',
   },
 ]
+
 function App() {
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -43,9 +44,8 @@ function App() {
   const [user, setUser] = useState(null)
   const open = Boolean(anchorEl)
 
-  const handleSearch = event => {
-    const value = event.target.value
-    setSearchTerm(value)
+  const handleSearchChange = newSearchTerm => {
+    setSearchTerm(newSearchTerm)
   }
 
   const handleClick = event => {
@@ -97,34 +97,35 @@ function App() {
   }, [])
 
   return (
-    <div
-      className='App'
-      style={{
-        backgroundColor: colors.themeLight.color060d13,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-      }}>
-      <HeaderComponent />
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          marginTop: '64px',
-        }}>
-        <Banner />
-        {user && <BookRecommendations windowSize={windowSize} user={user} />}
-        <div className='bg-white'>
-          {BOOKSHELVES.map((shelf, index) => (
-            <BookshelfSection
-              key={shelf.topic}
-              windowSize={windowSize}
-              title={shelf.title}
-              topic={shelf.topic}
-              backgroundColor={shelf.backgroundColor}
-            />
-          ))}
+    <div className='App min-h-screen bg-[#060d13] flex flex-col'>
+      <HeaderComponent
+        onSearchChange={handleSearchChange}
+        searchTerm={searchTerm}
+      />
+      <div className='flex-1 overflow-y-auto mt-16'>
+        {/* Sử dụng hidden thay vì conditional rendering */}
+        <div className={searchTerm ? 'hidden' : 'block'}>
+          <Banner />
+          {user && <BookRecommendations windowSize={windowSize} user={user} />}
+          <div className='bg-white'>
+            {BOOKSHELVES.map(shelf => (
+              <BookshelfSection
+                key={shelf.topic}
+                windowSize={windowSize}
+                title={shelf.title}
+                topic={shelf.topic}
+                backgroundColor={shelf.backgroundColor}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* ListBook chỉ render khi có searchTerm */}
+        {searchTerm && (
+          <div className={searchTerm ? 'block' : 'hidden'}>
+            <ListBook searchTerm={searchTerm} windowSize={windowSize} />
+          </div>
+        )}
       </div>
     </div>
   )

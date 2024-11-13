@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import {toast} from 'react-toastify'
-import {Plus, Search, MessageSquare} from 'lucide-react'
+import {Plus, Search, MessageSquare, X} from 'lucide-react'
 import {images} from '../../constants'
 import {
   AccountCircle,
@@ -13,8 +13,12 @@ import {
 import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
 import LoginDialog from '../../component/dialogs/LoginDialog'
 
-const Header = ({centerContent, showSearch = true, onSearch}) => {
-  const [searchTerm, setSearchTerm] = useState('')
+const Header = ({
+  onSearchChange,
+  searchTerm,
+  centerContent,
+  showSearch = true,
+}) => {
   const [user, setUser] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
@@ -29,9 +33,14 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
 
   const handleSearch = event => {
     const value = event.target.value
-    setSearchTerm(value)
-    if (onSearch) {
-      onSearch(value)
+    if (onSearchChange) {
+      onSearchChange(value)
+    }
+  }
+
+  const clearSearch = () => {
+    if (onSearchChange) {
+      onSearchChange('')
     }
   }
 
@@ -89,19 +98,33 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
             </Link>
 
             <div className='flex items-center space-x-2'>
-  <button
-    onClick={() => {
-      if (!user) {
-        setShowLoginDialog(true);
-      } else {
-        navigate('/book-forum');
-      }
-    }}
-    className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
-    <MessageSquare className='w-4 h-4 mr-2' />
-    <span>Forums</span>
-  </button>
-</div>
+              <button
+                onClick={() => {
+                  if (!user) {
+                    setShowLoginDialog(true)
+                  } else {
+                    navigate('/book-forum')
+                  }
+                }}
+                className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
+                <MessageSquare className='w-4 h-4 mr-2' />
+                <span>Forums</span>
+              </button>
+            </div>
+            <div className='flex items-center space-x-2'>
+              <button
+                onClick={() => {
+                  if (!user) {
+                    setShowLoginDialog(true)
+                  } else {
+                    navigate('/search-result')
+                  }
+                }}
+                className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
+                <Search className='w-4 h-4 mr-2' />
+                <span>Advanced Search</span>
+              </button>
+            </div>
           </div>
 
           {showSearch && (
@@ -113,12 +136,18 @@ const Header = ({centerContent, showSearch = true, onSearch}) => {
                   placeholder='Search books, authors, or keywords...'
                   value={searchTerm}
                   onChange={handleSearch}
-                  className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                  className='w-full pl-10 pr-10 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 />
+                {searchTerm && (
+                  <button
+                    onClick={clearSearch}
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none'>
+                    <X className='h-5 w-5' />
+                  </button>
+                )}
               </div>
             </div>
           )}
-
           {centerContent && (
             <div className='flex-1 flex justify-center'>{centerContent}</div>
           )}
