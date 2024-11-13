@@ -1,14 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { MoreHorizontal, Flag, Trash2 } from 'lucide-react';
 
-const ForumItemCard = ({ forum }) => {
+const ForumItemCard = ({ forum, user }) => {
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [commentsCount, setCommentsCount] = useState(0);
   const navigate = useNavigate();
+  const [showOptions, setShowOptions] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const optionsRef = useRef(null);
+
+  const handleDeleteForum = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/forums/${forum.discussionId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Xóa diễn đàn thành công');
+        // Refresh danh sách forum
+        window.location.reload();
+      }
+    } catch (err) {
+      toast.error('Không thể xóa diễn đàn');
+    }
+    setShowDeleteDialog(false);
+  };
+
+  const handleReportForum = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/v1/forums/${forum.discussionId}/report`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ reason: reportReason }),
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Báo cáo diễn đàn thành công');
+      }
+    } catch (err) {
+      toast.error('Không thể báo cáo diễn đàn');
+    }
+    setShowReportDialog(false);
+    setReportReason('');
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     checkMembership();
@@ -90,10 +153,34 @@ const ForumItemCard = ({ forum }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-      {/* Forum Header */}
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
           <h2 className="text-xl font-bold">{forum.forumTitle}</h2>
+          <div className="relative" ref={optionsRef}>
+            <button
+              onClick={() => setShowOptions(!showOptions)}
+              className="p-2 hover:bg-gray-100 rounded-full">
+              <MoreHorizontal className="w-5 h-5" />
+            </button>
+            {showOptions && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                {(user?.role === 'ROLE_ADMIN' || forum.creator?.userId === user?.userId) && (
+                  <button
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete Forum
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowReportDialog(true)}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <Flag className="w-4 h-4" />
+                  Report Forum
+                </button>
+              </div>
+            )}
+          </div>
           {forum.trending && (
             <span className="flex items-center px-2 py-1 bg-red-100 text-red-600 text-sm rounded-full">
               <TrendingUp className="w-4 h-4 mr-1" />
@@ -182,6 +269,54 @@ const ForumItemCard = ({ forum }) => {
           {new Date(forum.updatedAt).toLocaleDateString()}
         </div>
       </div>
+      {showReportDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-bold mb-4">Report Forum</h3>
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Enter reason for reporting..."
+              className="w-full p-2 border rounded mb-4"
+              rows="4"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowReportDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                Cancel
+              </button>
+              <button
+                onClick={handleReportForum}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-bold mb-4">Delete Forum</h3>
+            <p className="mb-4">Are you sure you want to delete this forum? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteForum}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
