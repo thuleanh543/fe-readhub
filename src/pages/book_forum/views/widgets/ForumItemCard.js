@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Flag, Trash2 } from 'lucide-react';
+import ReportDialog from '../../../../component/dialogs/ReportDialog';
 
 const ForumItemCard = ({ forum, user }) => {
   const [isMember, setIsMember] = useState(false);
@@ -39,7 +40,7 @@ const ForumItemCard = ({ forum, user }) => {
     setShowDeleteDialog(false);
   };
 
-  const handleReportForum = async () => {
+  const handleReportForum = async (reportData) => {
     try {
       const response = await fetch(
         `http://localhost:8080/api/v1/forums/${forum.discussionId}/report`,
@@ -49,18 +50,18 @@ const ForumItemCard = ({ forum, user }) => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-          body: JSON.stringify({ reason: reportReason }),
+          body: JSON.stringify(reportData),
         }
       );
       const data = await response.json();
       if (data.success) {
-        toast.success('Báo cáo diễn đàn thành công');
+        toast.success('Report forum success');
+        setShowReportDialog(false);
       }
     } catch (err) {
-      toast.error('Không thể báo cáo diễn đàn');
+      console.error('Error:', err);
+      toast.error('Report forum failed');
     }
-    setShowReportDialog(false);
-    setReportReason('');
   };
 
   useEffect(() => {
@@ -270,30 +271,8 @@ const ForumItemCard = ({ forum, user }) => {
         </div>
       </div>
       {showReportDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-bold mb-4">Report Forum</h3>
-            <textarea
-              value={reportReason}
-              onChange={(e) => setReportReason(e.target.value)}
-              placeholder="Enter reason for reporting..."
-              className="w-full p-2 border rounded mb-4"
-              rows="4"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowReportDialog(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
-                Cancel
-              </button>
-              <button
-                onClick={handleReportForum}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Submit Report
-              </button>
-            </div>
-          </div>
-        </div>
+        <ReportDialog
+        isOpen={showReportDialog} onClose={() => setShowReportDialog(false)} onSubmit={handleReportForum} />
       )}
 
       {/* Delete Confirmation Dialog */}
