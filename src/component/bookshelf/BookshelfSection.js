@@ -3,81 +3,47 @@ import axios from 'axios'
 import {ChevronLeft, ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
 
-const BookRecommendations = ({windowSize, user}) => {
-  const [recommendations, setRecommendations] = useState([])
+const BookshelfSection = ({
+  windowSize,
+  title,
+  topic,
+  backgroundColor = '#4F46E5',
+}) => {
+  const [books, setBooks] = useState([])
   const [startIndex, setStartIndex] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
-  const [error, setError] = useState(null)
 
   const ITEMS_TO_SHOW = 5
   const scrollRef = useRef(null)
-  const autoScrollRef = useRef(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (user) {
-      fetchRecommendations()
-    }
-  }, [user])
+    fetchBooks()
+  }, [topic])
 
-  useEffect(() => {
-    startAutoScroll()
-    return () => stopAutoScroll()
-  }, [recommendations])
-
-  const fetchRecommendations = async () => {
+  const fetchBooks = async () => {
     try {
       setLoading(true)
       setError(null)
-
       const response = await axios.get(
-        'http://localhost:8080/api/v1/recommendations/user/' + user.userId,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
+        `https://gutendex.com/books?topic=${topic}&page=1`,
       )
-
-      const bookDetails = await Promise.all(
-        response.data.data.map(async bookId => {
-          const bookResponse = await axios.get(
-            `https://gutendex.com/books/${bookId}`,
-          )
-          return bookResponse.data
-        }),
-      )
-
-      setRecommendations(bookDetails)
+      setBooks(response.data.results.slice(0, 10)) // Get first 10 books for rotation
     } catch (error) {
-      console.error('Error fetching recommendations:', error)
-      setError('Failed to load recommendations')
+      console.error('Error fetching books:', error)
+      setError('Failed to load books')
     } finally {
       setLoading(false)
     }
   }
 
-  const startAutoScroll = () => {
-    stopAutoScroll()
-    autoScrollRef.current = setInterval(() => {
-      if (!isDragging) {
-        handleNext()
-      }
-    }, 5000)
-  }
-
-  const stopAutoScroll = () => {
-    if (autoScrollRef.current) {
-      clearInterval(autoScrollRef.current)
-    }
-  }
-
   const handleNext = () => {
     setStartIndex(prev => {
-      if (prev + ITEMS_TO_SHOW >= recommendations.length) return 0
+      if (prev + ITEMS_TO_SHOW >= books.length) return 0
       return prev + ITEMS_TO_SHOW
     })
   }
@@ -90,7 +56,6 @@ const BookRecommendations = ({windowSize, user}) => {
     setIsDragging(true)
     setStartX(e.pageX - scrollRef.current.offsetLeft)
     setScrollLeft(scrollRef.current.scrollLeft)
-    stopAutoScroll()
   }
 
   const handleMouseMove = e => {
@@ -103,28 +68,24 @@ const BookRecommendations = ({windowSize, user}) => {
 
   const handleMouseUp = () => {
     setIsDragging(false)
-    startAutoScroll()
   }
 
   const handleMouseLeave = () => {
     setIsDragging(false)
-    startAutoScroll()
   }
 
   const navigateToBookDetail = (bookId, title) => {
     navigate('/description-book', {state: {bookId, bookTitle: title}})
   }
 
-  if (!user) return null
-
   if (loading) {
     return (
-      <div className='bg-gradient-to-br from-violet-50 to-blue-50 py-10'>
+      <div className='py-10'>
         <div className='max-w-7xl mx-auto px-4'>
           <div className='flex items-center space-x-3 mb-8'>
-            <div className='h-8 w-1 bg-indigo-500 rounded-full' />
+            <div className='h-8 w-1 rounded-full' style={{backgroundColor}} />
             <span className='text-indigo-600 font-semibold uppercase tracking-wide'>
-              Recommendations For You
+              {title}
             </span>
           </div>
 
@@ -155,12 +116,12 @@ const BookRecommendations = ({windowSize, user}) => {
 
   if (error) {
     return (
-      <div className='bg-gradient-to-br from-violet-50 to-blue-50 py-10'>
+      <div className='py-10'>
         <div className='max-w-7xl mx-auto px-4'>
           <div className='flex items-center space-x-3 mb-8'>
-            <div className='h-8 w-1 bg-indigo-500 rounded-full' />
+            <div className='h-8 w-1 rounded-full' style={{backgroundColor}} />
             <span className='text-indigo-600 font-semibold uppercase tracking-wide'>
-              Recommendations For You
+              {title}
             </span>
           </div>
           <div className='text-center text-red-600 py-8 bg-red-50 rounded-lg border border-red-100'>
@@ -171,15 +132,15 @@ const BookRecommendations = ({windowSize, user}) => {
     )
   }
 
-  if (recommendations.length === 0) return null
+  if (books.length === 0) return null
 
   return (
-    <div className='bg-gradient-to-br from-violet-50 to-blue-50 py-10'>
+    <div className='py-10'>
       <div className='max-w-7xl mx-auto px-4'>
         <div className='flex items-center space-x-3 mb-8'>
-          <div className='h-8 w-1 bg-indigo-500 rounded-full' />
+          <div className='h-8 w-1 rounded-full' style={{backgroundColor}} />
           <span className='text-indigo-600 font-semibold uppercase tracking-wide'>
-            Recommendations For You
+            {title}
           </span>
         </div>
 
@@ -192,46 +153,44 @@ const BookRecommendations = ({windowSize, user}) => {
             onMouseLeave={handleMouseLeave}
             className='relative flex justify-between'
             style={{cursor: isDragging ? 'grabbing' : 'grab'}}>
-            {recommendations
-              .slice(startIndex, startIndex + ITEMS_TO_SHOW)
-              .map(book => (
+            {books.slice(startIndex, startIndex + ITEMS_TO_SHOW).map(book => (
+              <div
+                key={book.id}
+                className='group relative transition-all duration-300 hover:scale-105'
+                style={{
+                  width: '200px',
+                  margin: '0 18px',
+                }}
+                onClick={() =>
+                  !isDragging && navigateToBookDetail(book.id, book.title)
+                }>
                 <div
-                  key={book.id}
-                  className='group relative transition-all duration-300 hover:scale-105'
-                  style={{
-                    width: '200px',
-                    margin: '0 18px',
-                  }}
-                  onClick={() =>
-                    !isDragging && navigateToBookDetail(book.id, book.title)
-                  }>
+                  className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-white/20 shadow-xl group-hover:shadow-2xl transition-all duration-300'
+                  style={{height: '290px'}}>
                   <div
-                    className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-white/20 shadow-xl group-hover:shadow-2xl transition-all duration-300'
-                    style={{height: '290px'}}>
-                    <div
-                      className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
-                      style={{
-                        backgroundImage: `url('${book.formats['image/jpeg']}')`,
-                      }}
-                    />
-                    <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
-                    <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                      <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className='mt-4 p-3'>
-                    <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
-                      {book.title}
-                    </h3>
-                    <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
-                      {book.authors?.[0]?.name || 'Unknown Author'}
-                    </p>
+                    className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+                    style={{
+                      backgroundImage: `url('${book.formats['image/jpeg']}')`,
+                    }}
+                  />
+                  <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+                  <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+                    <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-opacity-90 transition-colors duration-300 shadow-lg'>
+                      View Details
+                    </button>
                   </div>
                 </div>
-              ))}
+
+                <div className='mt-4 p-3'>
+                  <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
+                    {book.title}
+                  </h3>
+                  <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
+                    {book.authors?.[0]?.name || 'Unknown Author'}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
           {startIndex > 0 && (
@@ -243,7 +202,7 @@ const BookRecommendations = ({windowSize, user}) => {
             </button>
           )}
 
-          {startIndex + ITEMS_TO_SHOW < recommendations.length && (
+          {startIndex + ITEMS_TO_SHOW < books.length && (
             <button
               onClick={handleNext}
               className='absolute right-0 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 group'
@@ -257,4 +216,4 @@ const BookRecommendations = ({windowSize, user}) => {
   )
 }
 
-export default BookRecommendations
+export default BookshelfSection

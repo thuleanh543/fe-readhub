@@ -14,9 +14,10 @@ import {
   CreateForum,
   ForumDiscussion,
   SavedBooks,
+  SearchResult,
 } from '../pages'
-import { PrivateRoute } from '../component/routing/PrivateRoute';
-import AdminLayout from '../component/layouts/AdminLayout';
+import {PrivateRoute} from '../component/routing/PrivateRoute'
+import AdminLayout from '../component/layouts/AdminLayout'
 
 function Stack() {
   return (
@@ -31,20 +32,24 @@ function Stack() {
       <Route path='/report' element={<Report />} />
       <Route path='/content-moderation' element={<ContentModeration />} />
       <Route path='/description-book' element={<DescriptionBook />} />
-      <Route path='/forum-discussion/:forumId' element={<ForumDiscussion/>} />
+      <Route path='/forum-discussion/:forumId' element={<ForumDiscussion />} />
       <Route path='/book-forum' element={<BookForum />} />
       <Route path='/create-forum' element={<CreateForum />} />
       <Route path='/saved-books' element={<SavedBooks />} />
+      <Route path='/search-result' element={<SearchResult />} />
       <Route
-        path="/admin/*"
+        path='/admin/*'
         element={
           <PrivateRoute allowedRoles={['ADMIN']}>
             <AdminLayout>
               <Routes>
-                <Route path="dashboard" element={<Dashboard />} />
+                <Route path='dashboard' element={<Dashboard />} />
                 {/* <Route path="forum-reports" element={<ForumReports />} />
                 <Route path="user-management" element={<UserManagement />} /> */}
-                <Route path="content-moderation" element={<ContentModeration />} />
+                <Route
+                  path='content-moderation'
+                  element={<ContentModeration />}
+                />
               </Routes>
             </AdminLayout>
           </PrivateRoute>
