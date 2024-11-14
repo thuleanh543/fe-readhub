@@ -53,7 +53,12 @@ const LoginAccount = () => {
     if (localStorage.getItem('token') !== null) {
       getUser()
       if (user !== null) {
-        navigate('/')
+        const userRole = localStorage.getItem('role')
+        if (userRole === 'ADMIN') {
+          navigate('/admin/dashboard')
+        } else {
+          navigate('/')
+        }
       }
     }
   }, [navigate])
@@ -122,7 +127,11 @@ const LoginAccount = () => {
         localStorage.setItem('role', response.data.role)
         toast.success(response.data.message)
         dispatch({type: actionTypes.SET_SUCCESS, payload: true})
-        navigate('/')
+        if (response.data.role === 'ADMIN') {
+          navigate('/admin/dashboard')
+        } else {
+          navigate('/')
+        }
       } else {
         toast.error(response.data.message || 'Login failed')
       }

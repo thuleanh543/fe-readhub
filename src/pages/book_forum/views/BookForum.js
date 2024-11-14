@@ -13,6 +13,7 @@ const BookForum = () => {
   const [forums, setForums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
   // Get token from localStorage
   const getAuthToken = () => {
@@ -40,6 +41,29 @@ const BookForum = () => {
       return Promise.reject(error);
     }
   );
+
+  const getUser = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:8080/api/v1/user/profile',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    getUser()
+  }, [])
 
   useEffect(() => {
     const fetchForums = async () => {
@@ -114,7 +138,10 @@ const BookForum = () => {
       {/* Forums Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {forums.map((forum) => (
-          <ForumItemCard key={forum.discussionId} forum={forum} />
+          <ForumItemCard key={forum.discussionId}
+          forum={forum}
+          user={user}
+          />
         ))}
       </div>
 

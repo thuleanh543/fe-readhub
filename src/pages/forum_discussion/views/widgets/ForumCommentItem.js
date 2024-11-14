@@ -513,11 +513,15 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
         {showReplyInput && user && (
           <div className="mt-4">
             <div className="flex gap-4">
-              <img
-                src={user?.urlAvatar || '/api/placeholder/32/32'}
-                alt="Your avatar"
-                className="w-8 h-8 rounded-full"
-              />
+            {user.urlAvatar ? (
+                  <Avatar src={user.urlAvatar} />
+                ) : (
+                  <Avatar>
+                    {user.username
+                      ? user.username.toUpperCase().charAt(0)
+                      : 'U'}
+                  </Avatar>
+                )}
               <div className="flex-1">
                 <textarea
                   value={replyContent}
