@@ -15,6 +15,7 @@ import {
   ForumDiscussion,
   SavedBooks,
   SearchResult,
+  ForumReports,
 } from '../pages'
 import {PrivateRoute} from '../component/routing/PrivateRoute'
 import AdminLayout from '../component/layouts/AdminLayout'
@@ -44,8 +45,8 @@ function Stack() {
             <AdminLayout>
               <Routes>
                 <Route path='dashboard' element={<Dashboard />} />
-                {/* <Route path="forum-reports" element={<ForumReports />} />
-                <Route path="user-management" element={<UserManagement />} /> */}
+                <Route path="forum-reports" element={<ForumReports />} />
+                {/* <Route path="user-management" element={<UserManagement />} /> */}
                 <Route
                   path='content-moderation'
                   element={<ContentModeration />}
