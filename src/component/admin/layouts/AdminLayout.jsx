@@ -1,16 +1,11 @@
-// src/components/layouts/AdminLayout.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  BarChart2,
-  Flag,
-  Users,
-  BookOpen,
-  LogOut,
-  Menu,
-  X,
-  Home
+  BarChart2, Flag, Users, BookOpen,
+  LogOut, Menu, X, Home, Bell
 } from 'lucide-react';
+import { images } from '../../../constants';
+import NotificationDropdown from '../ui/NotificationDropdown';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -48,6 +43,33 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="fixed top-0 right-0 left-0 bg-white shadow-sm z-10">
+        <div className={`flex items-center justify-between h-16 px-4 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
+          <div className="flex items-center">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+            >
+              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <NotificationDropdown />
+            <div className="h-8 w-px bg-gray-200"></div>
+            <div className="flex items-center space-x-3">
+              <img
+                src={images.imgOpenBook}
+                alt="Admin Avatar"
+                className="w-8 h-8 rounded-full"
+              />
+              <span className="font-medium">Admin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full bg-white shadow-lg transition-all duration-300 ${
@@ -56,15 +78,13 @@ const AdminLayout = ({ children }) => {
       >
         <div className="flex items-center justify-between p-4">
           <Link to="/admin/dashboard" className="flex items-center space-x-3">
-            <img src="/logo.png" alt="Logo" className="w-8 h-8" />
+            <img
+              src={images.imgOpenBook}
+              alt='ReadHub Logo'
+              className='h-8 w-8'
+            />
             {isSidebarOpen && <span className="text-xl font-bold">Admin</span>}
           </Link>
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
 
         <nav className="mt-8">
@@ -88,7 +108,7 @@ const AdminLayout = ({ children }) => {
               className="flex items-center px-4 py-3 space-x-3 text-gray-600 hover:bg-gray-50"
             >
               <Home className="w-5 h-5" />
-              {isSidebarOpen && <span>Back to Site</span>}
+              {isSidebarOpen && <span>Back to READHUB</span>}
             </Link>
             <button
               onClick={handleLogout}
@@ -102,7 +122,7 @@ const AdminLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
+      <div className={`pt-16 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
         <div className="p-8">
           {children}
         </div>

@@ -18,7 +18,7 @@ import {
   ForumReports,
 } from '../pages'
 import {PrivateRoute} from '../component/routing/PrivateRoute'
-import AdminLayout from '../component/layouts/AdminLayout'
+import AdminLayout from '../component/admin/layouts/AdminLayout'
 
 function Stack() {
   return (
