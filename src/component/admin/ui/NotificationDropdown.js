@@ -37,7 +37,7 @@ const NotificationDropdown = () => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/admin/notifications', {
+      const response = await fetch('sửa lại', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

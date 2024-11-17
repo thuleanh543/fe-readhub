@@ -317,7 +317,7 @@ export default function DescriptionBook() {
                 <Grid container spacing={3} sx={{mb: 3}}>
                   <Grid item xs={12} md={8}>
                     <Typography variant='h6' gutterBottom>
-                      Genres
+                      Subjects
                     </Typography>
                     <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
                       {bookDetails.subjects.map((subject, index) => (

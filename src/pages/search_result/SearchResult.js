@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react'
 import {ListBook} from '../../pages'
 import {Search, SlidersHorizontal, X, Check} from 'lucide-react'
-import Header from '../../component/header/HeaderComponent'
+import HeaderComponent from '../../component/header/HeaderComponent'
 import {languages, subjects} from '../../assets/searchData'
 
 const MultiSelect = ({value, onChange, options, placeholder}) => {
@@ -126,7 +126,7 @@ const SearchResult = () => {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <Header windowSize={windowSize} centerContent={''} showSearch={false} />
+      <HeaderComponent windowSize={windowSize} centerContent={''} showSearch={false} />
 
       <div className='pt-20 px-4'>
         <div className='max-w-7xl mx-auto'>

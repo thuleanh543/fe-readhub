@@ -79,10 +79,10 @@ const ForumReports = () => {
           <h1 className="text-2xl font-bold">Forum Reports</h1>
           <p className="text-gray-600">Manage and review reported forum content</p>
         </div>
-        <div className="relative">
+        {/* <div className="relative">
           <Bell className="w-6 h-6 text-gray-600" />
           <NotificationBadge count={notificationCount} />
-        </div>
+        </div> */}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">

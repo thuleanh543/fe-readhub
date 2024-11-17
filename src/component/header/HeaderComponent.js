@@ -12,12 +12,13 @@ import {
 } from '@mui/icons-material'
 import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
 import LoginDialog from '../../component/dialogs/LoginDialog'
+import NotificationDropdown from '../admin/ui/NotificationDropdown'
 
-const Header = ({
+const HeaderComponent = ({
   onSearchChange,
   searchTerm,
   centerContent,
-  showSearch = true,
+  showSearch = false,
 }) => {
   const [user, setUser] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -111,7 +112,7 @@ const Header = ({
                 <span>Forums</span>
               </button>
             </div>
-            <div className='flex items-center space-x-2'>
+        {showSearch &&  <div className='flex items-center space-x-2'>
               <button
                 onClick={() => {
                   if (!user) {
@@ -124,7 +125,7 @@ const Header = ({
                 <Search className='w-4 h-4 mr-2' />
                 <span>Advanced Search</span>
               </button>
-            </div>
+            </div>}
           </div>
 
           {showSearch && (
@@ -152,8 +153,9 @@ const Header = ({
             <div className='flex-1 flex justify-center'>{centerContent}</div>
           )}
 
-          <div className='flex items-center space-x-4'>
-            {user ? (
+        {user ? (  <div className='flex items-center space-x-4 ml-4'>
+
+              <NotificationDropdown />
               <Button
                 style={{
                   display: 'flex',
@@ -175,7 +177,7 @@ const Header = ({
                 )}
                 <span>{user.username}</span>
               </Button>
-            ) : (
+         </div>   ) : (
               <div className='flex items-center space-x-4'>
                 <Link
                   to='/register'
@@ -189,7 +191,7 @@ const Header = ({
                 </Link>
               </div>
             )}
-          </div>
+
         </div>
       </div>
       <Menu
@@ -242,4 +244,4 @@ const Header = ({
   )
 }
 
-export default Header
+export default HeaderComponent

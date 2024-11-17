@@ -274,7 +274,7 @@ export default function CreateForum() {
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label="Forum Categories"
+                            label="Forum Subjects"
                             error={!!errors.categories}
                             helperText={errors.categories}
                           />

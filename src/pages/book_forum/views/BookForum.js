@@ -108,8 +108,14 @@ const BookForum = () => {
     }
   ];
 
-  if (loading) return <div className="container mx-auto px-4 py-8">Loading...</div>;
-  if (error) return <div className="container mx-auto px-4 py-8">Error: {error}</div>;
+  if (loading) return
+  <div className='flex justify-center items-center min-h-screen'>
+  Loading...
+</div>;
+  if (error) return
+  <div className='flex justify-center items-center min-h-screen'>
+  Error: {error}
+</div>;
 
   return (
     <Box

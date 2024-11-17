@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { images } from '../../../constants';
 import NotificationDropdown from '../ui/NotificationDropdown';
+import HeaderComponent from '../../header/HeaderComponent';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -44,33 +45,10 @@ const AdminLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="fixed top-0 right-0 left-0 bg-white shadow-sm z-10">
-        <div className={`flex items-center justify-between h-16 px-4 ${isSidebarOpen ? 'ml-64' : 'ml-20'}`}>
-          <div className="flex items-center">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
-            >
-              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+      <HeaderComponent
+      centerContent= {"Admin"}
+      />
 
-          <div className="flex items-center space-x-4">
-            <NotificationDropdown />
-            <div className="h-8 w-px bg-gray-200"></div>
-            <div className="flex items-center space-x-3">
-              <img
-                src={images.imgOpenBook}
-                alt="Admin Avatar"
-                className="w-8 h-8 rounded-full"
-              />
-              <span className="font-medium">Admin</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full bg-white shadow-lg transition-all duration-300 ${
           isSidebarOpen ? 'w-64' : 'w-20'

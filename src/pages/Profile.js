@@ -34,7 +34,7 @@ import {
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
-import Header from '../component/header/HeaderComponent'
+import HeaderComponent from '../component/header/HeaderComponent'
 import {Visibility, VisibilityOff} from '@mui/icons-material'
 
 function Profile() {
@@ -209,7 +209,7 @@ function Profile() {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
-      <Header
+      <HeaderComponent
         windowSize={windowSize}
         centerContent={'MY PROFILE'}
         showSearch={false}

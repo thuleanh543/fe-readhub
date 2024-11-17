@@ -101,6 +101,7 @@ function App() {
       <HeaderComponent
         onSearchChange={handleSearchChange}
         searchTerm={searchTerm}
+        showSearch ={true}
       />
       <div className='flex-1 overflow-y-auto mt-16'>
         {/* Sử dụng hidden thay vì conditional rendering */}

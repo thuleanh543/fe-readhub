@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import Header from '../component/header/HeaderComponent'
+import HeaderComponent from '../component/header/HeaderComponent'
 import {
   Container,
   Grid,
@@ -418,7 +418,7 @@ function SavedBooks() {
         flexDirection: 'column',
         overflowY: 'auto',
       }}>
-      <Header
+      <HeaderComponent
         windowSize={windowSize}
         centerContent={'MY LIBRARY'}
         showSearch={false}
