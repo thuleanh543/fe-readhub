@@ -13,6 +13,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import HeaderComponent from './component/header/HeaderComponent'
 import BookRecommendations from './component/recommendations/BookRecommendations'
 import Banner from './component/banner/Banner'
+import {useUser} from './contexts/UserProvider'
 
 const BOOKSHELVES = [
   {
@@ -41,8 +42,13 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = useState(null)
-  const [user, setUser] = useState(null)
+  const {user} = useUser()
   const open = Boolean(anchorEl)
+  const [booksData, setBooksData] = useState({
+    detective: [],
+    'science-fiction': [],
+    children: [],
+  })
 
   const handleSearchChange = newSearchTerm => {
     setSearchTerm(newSearchTerm)
@@ -56,44 +62,26 @@ function App() {
     setAnchorEl(null)
   }
 
-  const handleLogout = () => {
-    handleClose()
-    localStorage.removeItem('token')
-    setUser(null)
-    navigate('/')
-    toast.success('Logout successfully')
-  }
-
-  const getUser = async () => {
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setUser(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
+    const fetchBooks = async () => {
+      try {
+        const responses = await Promise.all(
+          BOOKSHELVES.map(shelf =>
+            axios.get(`https://gutendex.com/books?topic=${shelf.topic}&page=1`),
+          ),
+        )
+
+        const booksMap = {}
+        BOOKSHELVES.forEach((shelf, index) => {
+          booksMap[shelf.topic] = responses[index].data.results.slice(0, 10)
+        })
+        setBooksData(booksMap)
+      } catch (error) {
+        console.error('Error fetching books:', error)
+      }
     }
 
-    getUser()
-
-    window.addEventListener('resize', handleResize)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
+    fetchBooks()
   }, [])
 
   return (
@@ -101,7 +89,6 @@ function App() {
       <HeaderComponent
         onSearchChange={handleSearchChange}
         searchTerm={searchTerm}
-        showSearch ={true}
       />
       <div className='flex-1 overflow-y-auto mt-16'>
         {/* Sử dụng hidden thay vì conditional rendering */}
@@ -116,6 +103,7 @@ function App() {
                 title={shelf.title}
                 topic={shelf.topic}
                 backgroundColor={shelf.backgroundColor}
+                books={booksData[shelf.topic]}
               />
             ))}
           </div>

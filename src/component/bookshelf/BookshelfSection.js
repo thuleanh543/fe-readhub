@@ -8,8 +8,8 @@ const BookshelfSection = ({
   title,
   topic,
   backgroundColor = '#4F46E5',
+  books = [],
 }) => {
-  const [books, setBooks] = useState([])
   const [startIndex, setStartIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -20,26 +20,6 @@ const BookshelfSection = ({
   const ITEMS_TO_SHOW = 5
   const scrollRef = useRef(null)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    fetchBooks()
-  }, [topic])
-
-  const fetchBooks = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await axios.get(
-        `https://gutendex.com/books?topic=${topic}&page=1`,
-      )
-      setBooks(response.data.results.slice(0, 10)) // Get first 10 books for rotation
-    } catch (error) {
-      console.error('Error fetching books:', error)
-      setError('Failed to load books')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleNext = () => {
     setStartIndex(prev => {

@@ -13,6 +13,7 @@ import {
 import {Avatar, Button, ListItemIcon, Menu, MenuItem} from '@mui/material'
 import LoginDialog from '../../component/dialogs/LoginDialog'
 import NotificationDropdown from '../admin/ui/NotificationDropdown'
+import {useUser} from '../../contexts/UserProvider'
 
 const HeaderComponent = ({
   onSearchChange,
@@ -20,12 +21,15 @@ const HeaderComponent = ({
   centerContent,
   showSearch = false,
 }) => {
-  const [user, setUser] = useState(null)
+  const {user, loading} = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
   const navigate = useNavigate()
   const [showLoginDialog, setShowLoginDialog] = useState(false)
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   const handleLogin = () => {
     setShowLoginDialog(false)
@@ -44,6 +48,12 @@ const HeaderComponent = ({
       onSearchChange('')
     }
   }
+  const handleLogout = () => {
+    setIsMenuOpen(false)
+    localStorage.removeItem('token')
+    navigate('/')
+    toast.success('Logout successfully')
+  }
 
   const handleClick = event => {
     setAnchorEl(event.currentTarget)
@@ -52,37 +62,6 @@ const HeaderComponent = ({
   const handleClose = () => {
     setAnchorEl(null)
   }
-
-  const handleLogout = () => {
-    setIsMenuOpen(false)
-    localStorage.removeItem('token')
-    setUser(null)
-    navigate('/')
-    toast.success('Logout successfully')
-  }
-
-  const getUser = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  useEffect(() => {
-    getUser()
-  }, [])
 
   return (
     <div className='fixed top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm'>
@@ -112,20 +91,18 @@ const HeaderComponent = ({
                 <span>Forums</span>
               </button>
             </div>
-        {showSearch &&  <div className='flex items-center space-x-2'>
-              <button
-                onClick={() => {
-                  if (!user) {
-                    setShowLoginDialog(true)
-                  } else {
+            {showSearch && (
+              <div className='flex items-center space-x-2'>
+                <button
+                  onClick={() => {
                     navigate('/search-result')
-                  }
-                }}
-                className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
-                <Search className='w-4 h-4 mr-2' />
-                <span>Advanced Search</span>
-              </button>
-            </div>}
+                  }}
+                  className='inline-flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
+                  <Search className='w-4 h-4 mr-2' />
+                  <span>Advanced Search</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {showSearch && (
@@ -153,8 +130,8 @@ const HeaderComponent = ({
             <div className='flex-1 flex justify-center'>{centerContent}</div>
           )}
 
-        {user ? (  <div className='flex items-center space-x-4 ml-4'>
-
+          {user ? (
+            <div className='flex items-center space-x-4 ml-4'>
               <NotificationDropdown />
               <Button
                 style={{
@@ -177,21 +154,21 @@ const HeaderComponent = ({
                 )}
                 <span>{user.username}</span>
               </Button>
-         </div>   ) : (
-              <div className='flex items-center space-x-4'>
-                <Link
-                  to='/register'
-                  className='px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
-                  Register
-                </Link>
-                <Link
-                  to='/login-account'
-                  className='px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors'>
-                  Login to ReadHub
-                </Link>
-              </div>
-            )}
-
+            </div>
+          ) : (
+            <div className='flex items-center space-x-4'>
+              <Link
+                to='/register'
+                className='px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors'>
+                Register
+              </Link>
+              <Link
+                to='/login-account'
+                className='px-6 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors'>
+                Login to ReadHub
+              </Link>
+            </div>
+          )}
         </div>
       </div>
       <Menu
