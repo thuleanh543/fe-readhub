@@ -13,6 +13,7 @@ import CreateForum from './create_forum/views/CreateForum'
 import ForumDiscussion from './forum_discussion/views/ForumDiscussion'
 import SavedBooks from './SavedBooks'
 import SearchResult from './search_result/SearchResult'
+import ForumReports from './forum_report/views/ForumReports'
 
 export {
   LoginAccount,
@@ -30,4 +31,5 @@ export {
   ForumDiscussion,
   SavedBooks,
   SearchResult,
+  ForumReports,
 }
