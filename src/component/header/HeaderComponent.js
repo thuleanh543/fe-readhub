@@ -147,12 +147,17 @@ const HeaderComponent = ({
                   <Avatar src={user.urlAvatar} />
                 ) : (
                   <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
+                    {user.fullName
+                      ? user.fullName.toUpperCase().charAt(0)
                       : 'U'}
                   </Avatar>
                 )}
-                <span>{user.username}</span>
+                <span
+                  style={{
+                    textTransform: 'none',
+                  }}>
+                  {user.fullName}
+                </span>
               </Button>
             </div>
           ) : (
