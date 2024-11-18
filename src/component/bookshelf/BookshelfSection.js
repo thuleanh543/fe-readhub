@@ -11,8 +11,6 @@ const BookshelfSection = ({
   books = [],
 }) => {
   const [startIndex, setStartIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
@@ -56,60 +54,6 @@ const BookshelfSection = ({
 
   const navigateToBookDetail = (bookId, title) => {
     navigate('/description-book', {state: {bookId, bookTitle: title}})
-  }
-
-  if (loading) {
-    return (
-      <div className='py-10'>
-        <div className='max-w-7xl mx-auto px-4'>
-          <div className='flex items-center space-x-3 mb-8'>
-            <div className='h-8 w-1 rounded-full' style={{backgroundColor}} />
-            <span className='text-indigo-600 font-semibold uppercase tracking-wide'>
-              {title}
-            </span>
-          </div>
-
-          <div className='relative px-11 flex space-x-8'>
-            {[...Array(5)].map((_, index) => (
-              <div
-                key={index}
-                className='group relative animate-pulse'
-                style={{
-                  width: '200px',
-                  margin: '0 18px',
-                }}>
-                <div
-                  className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-gray-200 shadow-lg'
-                  style={{height: '290px'}}
-                />
-                <div className='mt-4 p-3'>
-                  <div className='h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2' />
-                  <div className='h-3 bg-gray-200 rounded w-1/2 mx-auto' />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className='py-10'>
-        <div className='max-w-7xl mx-auto px-4'>
-          <div className='flex items-center space-x-3 mb-8'>
-            <div className='h-8 w-1 rounded-full' style={{backgroundColor}} />
-            <span className='text-indigo-600 font-semibold uppercase tracking-wide'>
-              {title}
-            </span>
-          </div>
-          <div className='text-center text-red-600 py-8 bg-red-50 rounded-lg border border-red-100'>
-            {error}
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (books.length === 0) return null
