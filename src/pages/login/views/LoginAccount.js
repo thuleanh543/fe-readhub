@@ -1,4 +1,4 @@
-import React, {useReducer, useEffect} from 'react'
+import React, {useReducer, useRef} from 'react'
 import {images} from '../../../constants'
 import {
   isValidEmailOrUsername,
@@ -10,11 +10,9 @@ import {Link, useNavigate} from 'react-router-dom'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import {toast} from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import {loginReducer, initialState, actionTypes} from '../redux/loginReducer'
-import {useRef} from 'react'
-import {useState} from 'react'
+import {useUser} from '../../../contexts/UserProvider'
 
 const theme = createTheme({
   palette: {
@@ -31,40 +29,7 @@ const LoginAccount = () => {
   const [state, dispatch] = useReducer(loginReducer, initialState)
   const navigate = useNavigate()
   const height = useRef(window.innerHeight).current
-  const [user, setUser] = useState(null)
-
-  const getUser = async () => {
-    if (!localStorage.getItem('token')) {
-      navigate('/login-account')
-    }
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setUser(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  useEffect(() => {
-    if (localStorage.getItem('token') !== null) {
-      getUser()
-      if (user !== null) {
-        const userRole = localStorage.getItem('role')
-        if (userRole === 'ADMIN') {
-          navigate('/admin/dashboard')
-        } else {
-          navigate('/')
-        }
-      }
-    }
-  }, [navigate])
+  const {loginUser} = useUser()
 
   const validateForm = (email, password) => {
     const isFormValid =
@@ -126,21 +91,29 @@ const LoginAccount = () => {
       )
 
       if (response.data.success) {
-        console.log(response.data)
-        localStorage.setItem('token', response.data.token)
+        // Lưu role cho admin routing
         localStorage.setItem('role', response.data.role)
-        toast.success(response.data.message)
-        dispatch({type: actionTypes.SET_SUCCESS, payload: true})
-        if (response.data.role === 'ADMIN') {
-          navigate('/admin/dashboard')
-        } else {
-          navigate('/')
+
+        // Login với token và update user state
+        const success = await loginUser(response.data.token)
+
+        if (success) {
+          dispatch({type: actionTypes.SET_SUCCESS, payload: true})
+          toast.success(response.data.message)
+
+          // Redirect dựa trên role
+          if (response.data.role === 'ADMIN') {
+            navigate('/admin/dashboard')
+          } else {
+            navigate('/')
+          }
         }
       } else {
         toast.error(response.data.message || 'Login failed')
       }
     } catch (error) {
       toast.error('Email or password is incorrect!')
+      console.error('Login error:', error)
     } finally {
       dispatch({type: actionTypes.SET_LOADING, payload: false})
     }
@@ -149,6 +122,7 @@ const LoginAccount = () => {
   return (
     <ThemeProvider theme={theme}>
       <div className='bg-[#141518] min-h-screen flex flex-col'>
+        {/* Header */}
         <div className='flex gap-2 items-center p-5'>
           <img
             src={images.imgOpenBook}
@@ -166,6 +140,7 @@ const LoginAccount = () => {
           </Link>
         </div>
 
+        {/* Login Form */}
         <div className='flex-grow flex flex-col items-center justify-center'>
           <img
             src={images.imgOpenBook}
@@ -176,6 +151,8 @@ const LoginAccount = () => {
             <h2 className='text-3xl font-bold text-[#f2f2f2] mb-7 text-center'>
               LOGIN
             </h2>
+
+            {/* Email/Username Input */}
             <input
               type='text'
               placeholder='Username or Email'
@@ -195,6 +172,7 @@ const LoginAccount = () => {
               <p className='text-red-500 text-sm mt-1'>{state.emailError}</p>
             )}
 
+            {/* Password Input */}
             <div className='relative mt-3 w-full'>
               <input
                 type={state.isShowPassword ? 'text' : 'password'}
@@ -228,12 +206,14 @@ const LoginAccount = () => {
               <p className='text-red-500 text-sm mt-1'>{state.passwordError}</p>
             )}
 
+            {/* Forgot Password */}
             <div className='w-full flex justify-end mt-3 mb-3'>
               <span className='text-sm text-[#67eab1] cursor-pointer'>
                 Forgot Password?
               </span>
             </div>
 
+            {/* Login Button */}
             <Button
               variant='contained'
               className='w-full h-12 mt-4 text-white font-bold'
@@ -243,6 +223,7 @@ const LoginAccount = () => {
               {state.loading ? 'Logging in...' : 'LOGIN'}
             </Button>
 
+            {/* Register Link */}
             <div className='mt-4 flex items-center justify-center'>
               <span className='text-lg text-[#f2f2f2] mr-2'>
                 Need an account?
@@ -254,6 +235,7 @@ const LoginAccount = () => {
           </div>
         </div>
 
+        {/* Footer */}
         <div className='w-full flex justify-center mt-5'>
           <span className='text-base text-[#dbdbdb] mx-3'>terms</span>
           <span className='text-base text-[#dbdbdb] mx-3'>privacy</span>
