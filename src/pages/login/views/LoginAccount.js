@@ -1,6 +1,9 @@
 import React, {useReducer, useEffect} from 'react'
 import {images} from '../../../constants'
-import {isValidEmail, isValidPassword} from '../../../utils/Validatations'
+import {
+  isValidEmailOrUsername,
+  isValidPassword,
+} from '../../../utils/Validatations'
 import {Button} from '@mui/material'
 import {createTheme, ThemeProvider} from '@mui/material/styles'
 import {Link, useNavigate} from 'react-router-dom'
@@ -64,7 +67,8 @@ const LoginAccount = () => {
   }, [navigate])
 
   const validateForm = (email, password) => {
-    const isFormValid = isValidEmail(email) && isValidPassword(password)
+    const isFormValid =
+      isValidEmailOrUsername(email) && isValidPassword(password)
     dispatch({type: actionTypes.SET_BUTTON_DISABLED, payload: !isFormValid})
   }
 
@@ -77,10 +81,10 @@ const LoginAccount = () => {
         type: actionTypes.SET_EMAIL_ERROR,
         payload: 'Email is required',
       })
-    } else if (!isValidEmail(value)) {
+    } else if (!isValidEmailOrUsername(value)) {
       dispatch({
         type: actionTypes.SET_EMAIL_ERROR,
-        payload: 'Invalid email address',
+        payload: 'Invalid email address or username',
       })
     } else {
       dispatch({type: actionTypes.SET_EMAIL_ERROR, payload: ''})

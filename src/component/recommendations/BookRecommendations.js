@@ -1,123 +1,147 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useCallback} from 'react'
 import axios from 'axios'
 import {ChevronLeft, ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
+import {useUser} from '../../contexts/UserProvider'
 
-const BookRecommendations = ({windowSize, user}) => {
+const ITEMS_TO_SHOW = 5
+
+const BookRecommendations = () => {
   const [recommendations, setRecommendations] = useState([])
   const [startIndex, setStartIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const {user, loading: userLoading} = useUser()
 
-  const ITEMS_TO_SHOW = 5
   const scrollRef = useRef(null)
   const autoScrollRef = useRef(null)
+  const recommendationsRef = useRef(null)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (user) {
-      fetchRecommendations()
+  // Define callbacks first
+  const handleNext = useCallback(() => {
+    setStartIndex(prev => {
+      if (prev + ITEMS_TO_SHOW >= recommendations.length) return 0
+      return prev + ITEMS_TO_SHOW
+    })
+  }, [recommendations.length])
+
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current)
     }
-  }, [user])
+  }, [])
 
-  useEffect(() => {
-    startAutoScroll()
-    return () => stopAutoScroll()
-  }, [recommendations])
-
-  const fetchRecommendations = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/recommendations/user/' + user.userId,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-
-      const bookDetails = await Promise.all(
-        response.data.data.map(async bookId => {
-          const bookResponse = await axios.get(
-            `https://gutendex.com/books/${bookId}`,
-          )
-          return bookResponse.data
-        }),
-      )
-
-      setRecommendations(bookDetails)
-    } catch (error) {
-      console.error('Error fetching recommendations:', error)
-      setError('Failed to load recommendations')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const startAutoScroll = () => {
+  const startAutoScroll = useCallback(() => {
     stopAutoScroll()
     autoScrollRef.current = setInterval(() => {
       if (!isDragging) {
         handleNext()
       }
     }, 5000)
-  }
+  }, [stopAutoScroll, isDragging, handleNext])
 
-  const stopAutoScroll = () => {
-    if (autoScrollRef.current) {
-      clearInterval(autoScrollRef.current)
-    }
-  }
-
-  const handleNext = () => {
-    setStartIndex(prev => {
-      if (prev + ITEMS_TO_SHOW >= recommendations.length) return 0
-      return prev + ITEMS_TO_SHOW
-    })
-  }
-
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     setStartIndex(prev => Math.max(0, prev - ITEMS_TO_SHOW))
-  }
+  }, [])
 
-  const handleMouseDown = e => {
-    setIsDragging(true)
-    setStartX(e.pageX - scrollRef.current.offsetLeft)
-    setScrollLeft(scrollRef.current.scrollLeft)
-    stopAutoScroll()
-  }
+  const handleMouseDown = useCallback(
+    e => {
+      setIsDragging(true)
+      setStartX(e.pageX - scrollRef.current.offsetLeft)
+      setScrollLeft(scrollRef.current.scrollLeft)
+      stopAutoScroll()
+    },
+    [stopAutoScroll],
+  )
 
-  const handleMouseMove = e => {
-    if (!isDragging) return
-    e.preventDefault()
-    const x = e.pageX - scrollRef.current.offsetLeft
-    const dist = x - startX
-    scrollRef.current.scrollLeft = scrollLeft - dist
-  }
+  const handleMouseMove = useCallback(
+    e => {
+      if (!isDragging) return
+      e.preventDefault()
+      const x = e.pageX - scrollRef.current.offsetLeft
+      const dist = x - startX
+      scrollRef.current.scrollLeft = scrollLeft - dist
+    },
+    [isDragging, startX, scrollLeft],
+  )
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false)
     startAutoScroll()
-  }
+  }, [startAutoScroll])
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsDragging(false)
     startAutoScroll()
-  }
+  }, [startAutoScroll])
 
-  const navigateToBookDetail = (bookId, title) => {
-    navigate('/description-book', {state: {bookId, bookTitle: title}})
-  }
+  const navigateToBookDetail = useCallback(
+    (bookId, title) => {
+      navigate('/description-book', {state: {bookId, bookTitle: title}})
+    },
+    [navigate],
+  )
+
+  // Fetch recommendations
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!user?.userId || recommendationsRef.current) return
+
+      try {
+        setError(null)
+        setLoading(true)
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/recommendations/user/${user.userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          },
+        )
+
+        if (response.data.data.length > 0) {
+          const bookIds = response.data.data.join(',')
+          const booksResponse = await axios.get(
+            `https://gutendex.com/books?ids=${bookIds}`,
+          )
+
+          recommendationsRef.current = booksResponse.data.results
+          setRecommendations(booksResponse.data.results)
+        }
+      } catch (error) {
+        console.error('Error fetching recommendations:', error)
+        setError('Failed to load recommendations')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRecommendations()
+  }, [user?.userId])
+
+  // Auto scroll effect
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      startAutoScroll()
+    }
+    return () => stopAutoScroll()
+  }, [recommendations.length, isDragging, startAutoScroll, stopAutoScroll])
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      recommendationsRef.current = null
+      stopAutoScroll()
+    }
+  }, [stopAutoScroll])
 
   if (!user) return null
 
-  if (loading) {
+  if (userLoading || loading) {
     return (
       <div className='bg-gradient-to-br from-violet-50 to-blue-50 py-10'>
         <div className='max-w-7xl mx-auto px-4'>

@@ -45,7 +45,7 @@ function Stack() {
             <AdminLayout>
               <Routes>
                 <Route path='dashboard' element={<Dashboard />} />
-                <Route path="forum-reports" element={<ForumReports />} />
+                <Route path='forum-reports' element={<ForumReports />} />
                 {/* <Route path="user-management" element={<UserManagement />} /> */}
                 <Route
                   path='content-moderation'

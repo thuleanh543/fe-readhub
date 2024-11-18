@@ -1,10 +1,17 @@
-import {isValidEmail, isValidPassword} from '../../../utils/Validatations'
+import {
+  isValidEmail,
+  isValidPassword,
+  isValidFullName,
+  isValidUsername,
+} from '../../../utils/Validatations'
 
 export const initialState = {
   username: '',
   email: '',
+  fullName: '',
   password: '',
   confirmPassword: '',
+  fullNameError: '',
   usernameError: '',
   emailError: '',
   passwordError: '',
@@ -15,6 +22,7 @@ export const initialState = {
   isFocused2: false,
   isFocused3: false,
   isFocused4: false,
+  isFocused5: false,
   buttonDisabled: true,
   otp: '',
   otpError: '',
@@ -70,6 +78,8 @@ export const validateForm = state => {
   const isValid =
     isValidEmail(state.email) &&
     isValidPassword(state.password) &&
+    isValidFullName(state.fullName) &&
+    isValidUsername(state.username) &&
     state.username.length >= 6 &&
     state.password === state.confirmPassword
   return !isValid
@@ -80,8 +90,15 @@ export const validateField = (field, value, state) => {
   switch (field) {
     case 'username':
       if (value === '') error = 'Username is required'
-      else if (value.length < 6)
-        error = 'Username must be at least 6 characters long'
+      else if (value.length < 6 || !isValidUsername(value))
+        error =
+          'Username must be at least 6 characters long and contain only letters, numbers, and underscores'
+      break
+
+    case 'fullName':
+      if (value === '') error = 'Full name is required'
+      else if (!isValidFullName(value))
+        error = 'Full name must contain only letters and spaces'
       break
     case 'email':
       if (value === '') error = 'Email is required'
