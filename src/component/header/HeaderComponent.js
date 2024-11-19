@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import {toast} from 'react-toastify'
-import {Plus, Search, MessageSquare, X} from 'lucide-react'
+import {Plus, Search, MessageSquare, X, Bell} from 'lucide-react'
 import {images} from '../../constants'
 import {
   AccountCircle,
@@ -154,7 +154,6 @@ const HeaderComponent = ({
           )}
 
         {user ? (  <div className='flex items-center space-x-4 ml-4'>
-
               <NotificationDropdown />
               <Button
                 style={{
@@ -177,7 +176,7 @@ const HeaderComponent = ({
                 )}
                 <span>{user.username}</span>
               </Button>
-         </div>   ) : (
+        </div>   ) : (
               <div className='flex items-center space-x-4'>
                 <Link
                   to='/register'

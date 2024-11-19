@@ -1,5 +1,6 @@
-// src/components/notifications/NotificationDropdown.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { getToken, onMessage } from 'firebase/messaging';
+import { messaging } from '../../../config/firebase'; // Import từ file config
 import {
   Bell,
   Flag,
@@ -21,9 +22,65 @@ const NotificationDropdown = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    fetchNotifications();
+    const initializeNotifications = async () => {
+      try {
+        setLoading(true);
+
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          // Get FCM token
+          const token = await getToken(messaging, {
+            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
+          });
+
+          if (token) {
+
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/notifications/register-device`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({ fcmToken: token })
+            });
+
+          }
+
+          // Listen for foreground messages
+          const unsubscribe = onMessage(messaging, (payload) => {
+            console.log('Received foreground message:', payload);
+            const newNotification = {
+              id: Date.now().toString(),
+              title: payload.notification.title,
+              message: payload.notification.body,
+              type: payload.data?.type || 'DEFAULT',
+              data: JSON.parse(payload.data?.extraData || '{}'),
+              createdAt: new Date().toISOString(),
+              read: false
+            };
+
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+          });
+
+          return () => {
+            unsubscribe();
+          };
+        }
+      } catch (error) {
+        console.error('Error initializing notifications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeNotifications();
+  }, []);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -34,52 +91,22 @@ const NotificationDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('sửa lại', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setNotifications(data.data);
-        setUnreadCount(data.data.filter(n => !n.read).length);
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const markAsRead = async (notificationId) => {
-    try {
-      await fetch(`http://localhost:8080/api/v1/admin/notifications/${notificationId}/read`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-    }
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
-  const markAllAsRead = async () => {
-    try {
-      await fetch('http://localhost:8080/api/v1/admin/notifications/mark-all-read', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
-    }
+  const markAllAsRead = () => {
+    setNotifications(prev =>
+      prev.map(notification => ({ ...notification, read: true }))
+    );
+    setUnreadCount(0);
   };
 
   const getNotificationIcon = (type) => {
@@ -99,41 +126,18 @@ const NotificationDropdown = () => {
     }
   };
 
-  const getNotificationAction = (notification) => {
+  const getNotificationLink = (notification) => {
     switch (notification.type) {
       case 'FORUM_REPORT':
-        return (
-          <Link
-            to={`/admin/forum-reports/${notification.data.reportId}`}
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
-            View Report <ExternalLink className="w-4 h-4" />
-          </Link>
-        );
+        return `/admin/forum-reports/${notification.data.reportId}`;
       case 'USER_BANNED':
-        return (
-          <Link
-            to={`/admin/user-management/${notification.data.userId}`}
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-          >
-            View User <ExternalLink className="w-4 h-4" />
-          </Link>
-        );
+        return `/admin/users/${notification.data.userId}`;
+      case 'NEW_COMMENT':
+        return `/forums/${notification.data.forumId}`;
+      case 'NEW_MEMBER':
+        return `/forums/${notification.data.forumId}/members`;
       default:
         return null;
-    }
-  };
-
-  const dropdownVariants = {
-    hidden: {
-      opacity: 0,
-      y: -10,
-      scale: 0.95
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1
     }
   };
 
@@ -154,20 +158,20 @@ const NotificationDropdown = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={dropdownVariants}
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 border border-gray-200"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Thông báo</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
                     className="text-sm text-blue-600 hover:text-blue-800"
+                    title="Đánh dấu tất cả là đã đọc"
                   >
                     <Check className="w-5 h-5" />
                   </button>
@@ -181,52 +185,51 @@ const NotificationDropdown = () => {
               </div>
             </div>
 
-            <div className="overflow-y-auto max-h-[480px]">
+            <div className="overflow-y-auto max-h-96">
               {loading ? (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex justify-center items-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-gray-500">
                   <Bell className="w-12 h-12 mb-2" />
-                  <p>No notifications yet</p>
+                  <p>Chưa có thông báo nào</p>
                 </div>
               ) : (
-                notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors
-                      ${!notification.read ? 'bg-blue-50' : ''}`}
-                  >
-                    <div className="flex gap-3">
-                      <div className="flex-shrink-0 mt-1">
-                        {getNotificationIcon(notification.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <p className="text-sm font-semibold text-gray-900">
-                            {notification.title}
-                          </p>
-                          <span className="text-xs text-gray-500">
-                            {format(new Date(notification.createdAt), 'MMM d, h:mm a')}
-                          </span>
+                notifications.map((notification) => {
+                  const notificationLink = getNotificationLink(notification);
+                  const NotificationWrapper = notificationLink ? Link : 'div';
+                  const wrapperProps = notificationLink ? { to: notificationLink } : {};
+
+                  return (
+                    <NotificationWrapper
+                      key={notification.id}
+                      {...wrapperProps}
+                      className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors block
+                        ${!notification.read ? 'bg-blue-50' : ''}`}
+                      onClick={() => !notification.read && markAsRead(notification.id)}
+                    >
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {getNotificationIcon(notification.type)}
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {notification.message}
-                        </p>
-                        {getNotificationAction(notification)}
-                        {!notification.read && (
-                          <button
-                            onClick={() => markAsRead(notification.id)}
-                            className="mt-2 text-xs text-blue-600 hover:text-blue-800"
-                          >
-                            Mark as read
-                          </button>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {notification.title}
+                            </p>
+                            <span className="text-xs text-gray-500">
+                              {format(new Date(notification.createdAt), 'dd/MM/yyyy HH:mm')}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {notification.message}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))
+                    </NotificationWrapper>
+                  );
+                })
               )}
             </div>
           </motion.div>

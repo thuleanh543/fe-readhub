@@ -54,6 +54,7 @@ const ForumItemCard = ({ forum, user }) => {
         }
       );
       const data = await response.json();
+      console.log(data);
       if (data.success) {
         toast.success('Report forum success');
         setShowReportDialog(false);
@@ -165,7 +166,7 @@ const ForumItemCard = ({ forum, user }) => {
             </button>
             {showOptions && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                {(user?.role === 'ROLE_ADMIN' || forum.creator?.userId === user?.userId) && (
+                {(user?.role === 'ADMIN' || forum.creator?.userId === user?.userId) && (
                   <button
                     onClick={() => setShowDeleteDialog(true)}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2">
@@ -173,12 +174,15 @@ const ForumItemCard = ({ forum, user }) => {
                     Delete Forum
                   </button>
                 )}
-                <button
+                {
+                  user?.userId !== forum.creator?.userId &&  <button
                   onClick={() => setShowReportDialog(true)}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                   <Flag className="w-4 h-4" />
                   Report Forum
                 </button>
+                }
+
               </div>
             )}
           </div>
