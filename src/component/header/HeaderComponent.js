@@ -21,7 +21,7 @@ const HeaderComponent = ({
   centerContent,
   showSearch = false,
 }) => {
-  const {user, loading} = useUser()
+  const {user, loading, logoutUser} = useUser()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
@@ -49,10 +49,9 @@ const HeaderComponent = ({
     }
   }
   const handleLogout = () => {
-    setIsMenuOpen(false)
-    localStorage.removeItem('token')
-    navigate('/')
-    toast.success('Logout successfully')
+    handleClose()
+    logoutUser()
+    toast.success('Logged out successfully')
   }
 
   const handleClick = event => {
@@ -61,6 +60,9 @@ const HeaderComponent = ({
 
   const handleClose = () => {
     setAnchorEl(null)
+  }
+  if (loading) {
+    return <div className='w-10 h-10 rounded-full bg-gray-200 animate-pulse' />
   }
 
   return (
