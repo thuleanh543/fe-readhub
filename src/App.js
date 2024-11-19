@@ -37,7 +37,11 @@ function App() {
 
   return (
     <div className='App min-h-screen bg-[#060d13] flex flex-col'>
-      <HeaderComponent onSearchChange={setSearchTerm} searchTerm={searchTerm} />
+      <HeaderComponent
+        onSearchChange={setSearchTerm}
+        searchTerm={searchTerm}
+        showSearch={true}
+      />
       <div className='flex-1 overflow-y-auto mt-16'>
         <div className={searchTerm ? 'hidden' : 'block'}>
           <Banner />
