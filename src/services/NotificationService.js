@@ -1,10 +1,10 @@
 import { getDatabase, ref, onChildAdded } from "firebase/database";
 import { toast } from "react-toastify";
+import { database } from '../config/firebase';
 
 export const NotificationService = {
   subscribeToNotifications: (userId) => {
-    const db = getDatabase();
-    const notificationsRef = ref(db, `notifications/${userId}`);
+    const notificationsRef = ref(database, `notifications/${userId}`);
 
     onChildAdded(notificationsRef, (snapshot) => {
       const notification = snapshot.val();
@@ -14,4 +14,4 @@ export const NotificationService = {
       });
     });
   }
-}
+};
