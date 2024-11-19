@@ -2,10 +2,11 @@ import React, {useState, useRef, useEffect} from 'react'
 import {ListBook} from '../../pages'
 import {Search, SlidersHorizontal, X, Check} from 'lucide-react'
 import HeaderComponent from '../../component/header/HeaderComponent'
-import {languages, subjects} from '../../assets/searchData'
+import {languages, subjects} from '../../constants/searchData'
 
 const MultiSelect = ({value, onChange, options, placeholder}) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const wrapperRef = useRef(null)
 
   useEffect(() => {
@@ -21,40 +22,100 @@ const MultiSelect = ({value, onChange, options, placeholder}) => {
     }
   }, [wrapperRef])
 
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
+  const selectedValues = Array.isArray(value) ? value : []
+
   return (
     <div className='relative' ref={wrapperRef}>
       <div
         className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer flex justify-between items-center'
         onClick={() => setIsOpen(!isOpen)}>
-        <span className='truncate'>
-          {value.length ? `${value.length} selected` : placeholder}
-        </span>
+        <div className='flex flex-wrap gap-2'>
+          {selectedValues.map(selectedValue => {
+            const selectedOption = options.find(
+              option => option.value === selectedValue,
+            )
+            return (
+              <div
+                key={selectedValue}
+                className='px-2 py-1 bg-blue-500 text-white rounded-full flex items-center'>
+                <span>{selectedOption.label}</span>
+                <button
+                  type='button'
+                  className='ml-2 focus:outline-none'
+                  onClick={e => {
+                    e.stopPropagation()
+                    onChange(selectedValues.filter(v => v !== selectedValue))
+                  }}>
+                  <X className='w-4 h-4 text-white' />
+                </button>
+              </div>
+            )
+          })}
+          {!selectedValues.length && (
+            <span className='text-gray-400'>{placeholder}</span>
+          )}
+        </div>
         <span className='transform transition-transform duration-200'>
           {isOpen ? '▲' : '▼'}
         </span>
       </div>
 
       {isOpen && (
-        <div className='absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto'>
-          {options.map(option => (
-            <div
-              key={option.value}
-              className='flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer'
-              onClick={() => {
-                onChange(
-                  value.includes(option.value)
-                    ? value.filter(v => v !== option.value)
-                    : [...value, option.value],
-                )
-              }}>
-              <div className='w-5 h-5 border border-gray-300 rounded mr-3 flex items-center justify-center'>
-                {value.includes(option.value) && (
-                  <Check className='w-4 h-4 text-blue-600' />
-                )}
-              </div>
-              <span>{option.label}</span>
+        <div
+          className={`absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-hidden ${
+            wrapperRef.current &&
+            wrapperRef.current.getBoundingClientRect().bottom + 240 >
+              window.innerHeight
+              ? 'bottom-full mb-1'
+              : 'top-full'
+          }`}>
+          <div className='sticky top-0 bg-white px-4 py-2'>
+            <div className='relative'>
+              <input
+                type='text'
+                placeholder='Search...'
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className='w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              />
+              {searchTerm && (
+                <button
+                  type='button'
+                  className='absolute right-2 top-1/2 transform -translate-y-1/2 focus:outline-none'
+                  onClick={() => setSearchTerm('')}>
+                  <X className='w-4 h-4 text-gray-400' />
+                </button>
+              )}
             </div>
-          ))}
+          </div>
+          <div className='overflow-auto max-h-48'>
+            {filteredOptions.map(option => (
+              <div
+                key={option.value}
+                className='flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer'
+                onClick={() => {
+                  onChange(
+                    selectedValues.includes(option.value)
+                      ? selectedValues.filter(v => v !== option.value)
+                      : [...selectedValues, option.value],
+                  )
+                }}>
+                <div className='w-6 h-6 flex items-center justify-center mr-2'>
+                  <input
+                    type='checkbox'
+                    checked={selectedValues.includes(option.value)}
+                    readOnly
+                    className='form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out'
+                  />
+                </div>
+                <span className='ml-2'>{option.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -126,11 +187,15 @@ const SearchResult = () => {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <HeaderComponent windowSize={windowSize} centerContent={''} showSearch={false} />
+      <HeaderComponent
+        windowSize={windowSize}
+        centerContent={''}
+        showSearch={false}
+      />
 
       <div className='pt-20 px-4'>
         <div className='max-w-7xl mx-auto'>
-          <div className='bg-white rounded-xl shadow-lg mb-8 overflow-hidden'>
+          <div className='bg-white rounded-xl shadow-lg mb-8 overflow-visible'>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h2 className='text-2xl font-bold text-gray-800'>
