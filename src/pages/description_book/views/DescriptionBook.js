@@ -20,6 +20,8 @@ import BookReviews from './BookReviews'
 import LoginDialog from '../../../component/dialogs/LoginDialog'
 import ReviewDialog from './ReviewDialog'
 import {Download} from '@mui/icons-material'
+import SimilarAuthorBooks from '../../../component/recommendations/SimilarAuthorBooks'
+import Footer from '../../../component/footer/Footer'
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
@@ -162,6 +164,10 @@ export default function DescriptionBook() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [bookId]) // Thêm bookId vào dependencies
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [bookDetails])
 
   if (loading)
     return (
@@ -400,6 +406,7 @@ export default function DescriptionBook() {
             </Card>
           </Grid>
         </Grid>
+        <SimilarAuthorBooks bookId={bookId} />
 
         <BookReviews
           bookId={bookId}
@@ -432,6 +439,7 @@ export default function DescriptionBook() {
         bookId={bookId}
         currentUser={user}
       />
+      <Footer />
     </Box>
   )
 }

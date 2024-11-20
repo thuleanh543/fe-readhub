@@ -28,94 +28,48 @@ import {colors} from '../constants'
 
 // Book Card Component
 const BookCard = ({book, onUnsave, showUnsave = true, onClick}) => (
-  <Card
-    sx={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'transform 0.2s',
-      bgcolor: 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(10px)',
-      '&:hover': {
-        transform: 'scale(1.05)',
-        bgcolor: 'rgba(255, 255, 255, 0.1)',
-      },
-    }}>
-    <Box sx={{position: 'relative', pt: '150%'}}>
-      <CardMedia
-        component='img'
-        image={book.formats['image/jpeg']}
-        alt={book.title}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
+  <div className='group relative transition-all duration-300 hover:scale-105'>
+    <div className='relative aspect-[2/3] rounded-xl md:rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300'>
+      <div
+        className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+        style={{
+          backgroundImage: `url('${book.formats['image/jpeg']}')`,
         }}
       />
+      <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+
       {showUnsave && (
-        <Box sx={{position: 'absolute', top: 0, right: 0, p: 1}}>
-          <IconButton
+        <div className='absolute top-0 right-0 p-2'>
+          <button
             onClick={e => {
               e.stopPropagation()
               onUnsave(book.id)
             }}
-            sx={{
-              bgcolor: 'rgba(0, 0, 0, 0.5)',
-              '&:hover': {bgcolor: 'rgba(0, 0, 0, 0.7)'},
-            }}>
+            title='Remove from saved books'
+            className='w-8 h-8 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 transition-colors duration-300'>
             <BookmarkMinus size={20} color='white' />
-          </IconButton>
-        </Box>
+          </button>
+        </div>
       )}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          bgcolor: 'rgba(0, 0, 0, 0.7)',
-          p: 1,
-          display: 'flex',
-          justifyContent: 'center',
-        }}>
-        <IconButton onClick={onClick} sx={{color: 'white'}}>
-          <BookOpen size={20} />
-        </IconButton>
-      </Box>
-    </Box>
-    <CardContent sx={{flexGrow: 1, p: 1.5}}>
-      <Typography
-        variant='subtitle2'
-        component='h2'
-        color='black'
-        sx={{
-          fontSize: '0.875rem',
-          fontWeight: 'bold',
-          mb: 0.5,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          lineHeight: 1.2,
-        }}>
+
+      <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+        <button
+          onClick={onClick}
+          className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-opacity-90 transition-colors duration-300 shadow-lg'>
+          View Details
+        </button>
+      </div>
+    </div>
+
+    <div className='mt-2 md:mt-3 px-2'>
+      <h3 className='text-center text-xs font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
         {book.title}
-      </Typography>
-      <Typography
-        variant='caption'
-        color='grey.400'
-        sx={{
-          display: '-webkit-box',
-          WebkitLineClamp: 1,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}>
+      </h3>
+      <p className='mt-1 text-center text-[10px] font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
         {book.authors.map(author => author.name).join(', ')}
-      </Typography>
-    </CardContent>
-  </Card>
+      </p>
+    </div>
+  </div>
 )
 
 // Recently Read Books Component
@@ -138,12 +92,11 @@ const RecentlyReadBooks = ({userId, maxBooks = 20}) => {
 
         if (historyResponse.data.success) {
           const bookIds = historyResponse.data.data.slice(0, maxBooks)
-          const bookPromises = bookIds.map(bookId =>
-            fetch(`https://gutendex.com/books/${bookId}/`).then(res =>
-              res.json(),
-            ),
+          const booksResponse = await axios.get(
+            `https://gutendex.com/books?ids=${bookIds}`,
           )
-          const books = await Promise.all(bookPromises)
+
+          const books = await Promise.all(booksResponse.data.results)
           setRecentBooks(books)
         }
         setLoading(false)
@@ -223,15 +176,11 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
         )
 
         if (response.data.success) {
-          const bookPromises = response.data.data
-            .slice(0, maxBooks)
-            .map(bookId =>
-              fetch(`https://gutendex.com/books/${bookId}/`).then(res =>
-                res.json(),
-              ),
-            )
-          const books = await Promise.all(bookPromises)
-          setRecommendedBooks(books)
+          const bookPromises = response.data.data.slice(0, maxBooks)
+          const recommendedBooks = await axios.get(
+            `https://gutendex.com/books?ids=${bookPromises}`,
+          )
+          setRecommendedBooks(recommendedBooks.data.results)
         }
         setLoading(false)
       } catch (error) {
