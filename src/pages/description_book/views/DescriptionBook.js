@@ -380,18 +380,18 @@ export default function DescriptionBook() {
                     fullWidth>
                     {isSaved ? 'Unsave Book' : 'Save for Later'}
                   </Button>
-                  <Button
+                  {/* <Button
                     variant='outlined'
                     startIcon={<Download />}
                     fullWidth
                     onClick={() => {
                       window.open(
-                        bookDetails.formats['image/jpeg'],
-                        `${bookDetails.title}.txt`,
+                        bookDetails.formats['application/x-mobipocket-ebook'],
+                        `_blank`,
                       )
                     }}>
                     Downloads
-                  </Button>
+                  </Button> */}
                   <Button variant='outlined' startIcon={<Share2 />} fullWidth>
                     Share
                   </Button>
