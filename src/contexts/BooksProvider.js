@@ -35,7 +35,9 @@ export const BooksProvider = ({children}) => {
 
         const responses = await Promise.all(
           BOOKSHELVES.map(shelf =>
-            axios.get(`https://gutendex.com/books?topic=${shelf.topic}&page=1`),
+            axios.get(
+              `https://gutendex.com/books?topic=${shelf.topic}&page=1&sort=popular `,
+            ),
           ),
         )
 

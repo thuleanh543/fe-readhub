@@ -19,6 +19,7 @@ import HeaderComponent from '../../../component/header/HeaderComponent'
 import BookReviews from './BookReviews'
 import LoginDialog from '../../../component/dialogs/LoginDialog'
 import ReviewDialog from './ReviewDialog'
+import {Download} from '@mui/icons-material'
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
@@ -197,10 +198,7 @@ export default function DescriptionBook() {
         display: 'flex',
         flexDirection: 'column',
       }}>
-      <HeaderComponent
-        centerContent={bookTitle}
-        showSearch={false}
-      />
+      <HeaderComponent centerContent={bookTitle} showSearch={false} />
 
       <Container sx={{pt: 12, pb: 6}}>
         <Grid container spacing={4}>
@@ -381,6 +379,18 @@ export default function DescriptionBook() {
                     onClick={handleSaveBook}
                     fullWidth>
                     {isSaved ? 'Unsave Book' : 'Save for Later'}
+                  </Button>
+                  <Button
+                    variant='outlined'
+                    startIcon={<Download />}
+                    fullWidth
+                    onClick={() => {
+                      window.open(
+                        bookDetails.formats['image/jpeg'],
+                        `${bookDetails.title}.txt`,
+                      )
+                    }}>
+                    Downloads
                   </Button>
                   <Button variant='outlined' startIcon={<Share2 />} fullWidth>
                     Share
