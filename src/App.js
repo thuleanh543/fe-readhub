@@ -10,6 +10,7 @@ import {useUser} from './contexts/UserProvider'
 import {useBooks} from './contexts/BooksProvider'
 import LoadingSkeleton from './component/bookshelf/LoadingSkeleton'
 import ErrorMessage from './component/common/ErrorMessage'
+import Footer from './component/footer/Footer'
 
 function App() {
   const [windowSize, setWindowSize] = useState({
@@ -63,6 +64,7 @@ function App() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }

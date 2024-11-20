@@ -186,10 +186,6 @@ export const subjects = [
     value: 'History%20-%20Warfare',
   },
   {
-    label: 'How To...',
-    value: 'How%20To...',
-  },
-  {
     label: 'Humour',
     value: 'Humour',
   },

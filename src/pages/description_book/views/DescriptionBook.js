@@ -19,6 +19,9 @@ import HeaderComponent from '../../../component/header/HeaderComponent'
 import BookReviews from './BookReviews'
 import LoginDialog from '../../../component/dialogs/LoginDialog'
 import ReviewDialog from './ReviewDialog'
+import {Download} from '@mui/icons-material'
+import SimilarAuthorBooks from '../../../component/recommendations/SimilarAuthorBooks'
+import Footer from '../../../component/footer/Footer'
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
@@ -162,6 +165,10 @@ export default function DescriptionBook() {
     return () => window.removeEventListener('resize', handleResize)
   }, [bookId]) // Thêm bookId vào dependencies
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [bookDetails])
+
   if (loading)
     return (
       <Box
@@ -197,10 +204,7 @@ export default function DescriptionBook() {
         display: 'flex',
         flexDirection: 'column',
       }}>
-      <HeaderComponent
-        centerContent={bookTitle}
-        showSearch={false}
-      />
+      <HeaderComponent centerContent={bookTitle} showSearch={false} />
 
       <Container sx={{pt: 12, pb: 6}}>
         <Grid container spacing={4}>
@@ -382,6 +386,18 @@ export default function DescriptionBook() {
                     fullWidth>
                     {isSaved ? 'Unsave Book' : 'Save for Later'}
                   </Button>
+                  {/* <Button
+                    variant='outlined'
+                    startIcon={<Download />}
+                    fullWidth
+                    onClick={() => {
+                      window.open(
+                        bookDetails.formats['application/x-mobipocket-ebook'],
+                        `_blank`,
+                      )
+                    }}>
+                    Downloads
+                  </Button> */}
                   <Button variant='outlined' startIcon={<Share2 />} fullWidth>
                     Share
                   </Button>
@@ -390,6 +406,7 @@ export default function DescriptionBook() {
             </Card>
           </Grid>
         </Grid>
+        <SimilarAuthorBooks bookId={bookId} />
 
         <BookReviews
           bookId={bookId}
@@ -422,6 +439,7 @@ export default function DescriptionBook() {
         bookId={bookId}
         currentUser={user}
       />
+      <Footer />
     </Box>
   )
 }

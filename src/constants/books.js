@@ -15,4 +15,29 @@ export const BOOKSHELVES = [
     topic: 'children',
     backgroundColor: '#10B981',
   },
+  {
+    title: 'History',
+    topic: 'history',
+    backgroundColor: '#2563EB',
+  },
+  {
+    title: 'Cooking & Drinking',
+    topic: 'cooking drinking',
+    backgroundColor: '#F59E0B',
+  },
+  {
+    title: 'Economics',
+    topic: 'economics',
+    backgroundColor: '#3B82F6',
+  },
+  {
+    title: 'Music',
+    topic: 'music',
+    backgroundColor: '#F472B6',
+  },
+  {
+    title: 'Sports & Hobbies & Motoring',
+    topic: 'Sports FHobbies Motoring',
+    backgroundColor: '#FBBF24',
+  },
 ]

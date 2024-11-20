@@ -1,14 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react'
 import {ChevronLeft, ChevronRight} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
+import axios from 'axios'
 
-const BookshelfSection = ({
-  windowSize,
-  title,
-  topic,
-  backgroundColor = '#4F46E5',
-  books = [],
-}) => {
+const SimilarAuthorBooks = ({bookId, backgroundColor = '#4F46E5'}) => {
+  const [books, setBooks] = useState([])
   const [startIndex, setStartIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -16,6 +12,29 @@ const BookshelfSection = ({
   const [itemsToShow, setItemsToShow] = useState(5)
   const scrollRef = useRef(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const fetchSimilarBooks = async () => {
+      try {
+        const response = await axios.get(`https://gutendex.com/books/${bookId}`)
+        const book = response.data
+        const authorName = book.authors[0]?.name
+
+        if (authorName) {
+          const encodedAuthor = encodeURIComponent(authorName)
+          const similarBooksResponse = await axios.get(
+            `https://gutendex.com/books?search=${encodedAuthor}`,
+          )
+          const similarBooks = similarBooksResponse.data.results
+          setBooks(similarBooks.filter(book => book.id !== bookId))
+        }
+      } catch (error) {
+        console.error('Error fetching similar books:', error)
+      }
+    }
+
+    fetchSimilarBooks()
+  }, [bookId])
 
   useEffect(() => {
     const handleResize = () => {
@@ -31,11 +50,13 @@ const BookshelfSection = ({
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Navigation handlers
   const handleNext = () => {
     setStartIndex(prev => {
-      if (prev + itemsToShow >= books.length) return 0
-      return prev + itemsToShow
+      const nextIndex = prev + itemsToShow
+      if (nextIndex >= books.length) {
+        return books.length - itemsToShow
+      }
+      return nextIndex
     })
   }
 
@@ -84,11 +105,9 @@ const BookshelfSection = ({
             style={{backgroundColor}}
           />
           <span className='text-indigo-600 font-semibold uppercase tracking-wide text-sm md:text-base'>
-            {title}
+            Similar Books by Author
           </span>
         </div>
-
-        {/* Books Carousel Container */}
         <div className='relative px-2 md:px-12'>
           {' '}
           {/* Reduced side padding on mobile */}
@@ -103,7 +122,7 @@ const BookshelfSection = ({
             {books.slice(startIndex, startIndex + itemsToShow).map(book => (
               <div
                 key={book.id}
-                className='flex-1'
+                className='flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-[18.1%]' // Thêm các class CSS để đảm bảo kích thước đồng nhất
                 onClick={() => navigateToBookDetail(book.id, book.title)}>
                 <div className='group relative transition-all duration-300 hover:scale-105'>
                   <div className='relative aspect-[2/3] rounded-xl md:rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-white/20 shadow-lg group-hover:shadow-xl transition-all duration-300'>
@@ -174,4 +193,4 @@ const BookshelfSection = ({
   )
 }
 
-export default BookshelfSection
+export default SimilarAuthorBooks

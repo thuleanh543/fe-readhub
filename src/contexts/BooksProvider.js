@@ -35,13 +35,15 @@ export const BooksProvider = ({children}) => {
 
         const responses = await Promise.all(
           BOOKSHELVES.map(shelf =>
-            axios.get(`https://gutendex.com/books?topic=${shelf.topic}&page=1`),
+            axios.get(
+              `https://gutendex.com/books?topic=${shelf.topic}&page=1&sort=popular `,
+            ),
           ),
         )
 
         const booksMap = {}
         BOOKSHELVES.forEach((shelf, index) => {
-          booksMap[shelf.topic] = responses[index].data.results.slice(0, 10)
+          booksMap[shelf.topic] = responses[index].data.results.slice(0, 20)
         })
 
         setBooksData(booksMap)
