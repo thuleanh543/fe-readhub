@@ -50,11 +50,7 @@ const NotePopover = ({
         onChange={e => setComment(e.target.value)}
         style={{marginBottom: '10px'}}
       />
-      <Button
-        onClick={onSave}
-        disabled={!comment}
-        color='primary'
-        variant='contained'>
+      <Button onClick={onSave} color='primary' variant='contained'>
         Save
       </Button>
     </div>

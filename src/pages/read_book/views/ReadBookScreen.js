@@ -546,11 +546,11 @@ function ReadBookScreen() {
   }, [rendition, selections])
 
   const handleSave = async () => {
-    if (comment && selectedCfiRange) {
+    if (selectedCfiRange) {
       const newNote = {
         userId: user.userId,
         bookId: bookId,
-        content: comment,
+        content: comment || '',
         selectedText: selectedText,
         cfiRange: selectedCfiRange,
         color: highlightColor,
@@ -757,7 +757,19 @@ function ReadBookScreen() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditingNote(null)}>Cancel</Button>
-          <Button onClick={handleSaveEdit}>Save</Button>
+          <Button
+            color='primary'
+            variant='contained'
+            disabled={
+              !editingNote ||
+              (selections.find(note => note.noteId === editingNote.noteId)
+                ?.content === editingNote.content &&
+                selections.find(note => note.noteId === editingNote.noteId)
+                  ?.color === editingNote.color)
+            }
+            onClick={handleSaveEdit}>
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
 
