@@ -45,6 +45,10 @@ const BookForum = () => {
     }
   );
 
+  const handleForumDeleted = (deletedId) => {
+    setForums(prevForums => prevForums.filter(forum => forum.discussionId !== deletedId));
+  };
+
   const getUser = async () => {
     try {
       const response = await fetch(
@@ -180,9 +184,11 @@ const BookForum = () => {
       {/* Forums Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {forums.map((forum) => (
-          <ForumItemCard key={forum.discussionId}
+          <ForumItemCard
+          key={forum.discussionId}
           forum={forum}
           user={user}
+          onForumDeleted={handleForumDeleted}
           />
         ))}
       </div>

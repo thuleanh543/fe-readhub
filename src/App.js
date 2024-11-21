@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, Suspense} from 'react'
 import './App.css'
 import {ListBook} from './pages'
 import BookshelfSection from './component/bookshelf/BookshelfSection'
@@ -33,8 +33,6 @@ function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  if (loading) return <LoadingSkeleton />
-  if (error) return <ErrorMessage error={error} />
 
   return (
     <div className='App min-h-screen bg-[#060d13] flex flex-col'>
@@ -48,13 +46,20 @@ function App() {
           <Banner />
           {user && <BookRecommendations user={user} />}
           <div className='bg-white'>
-            {bookshelves.map(shelf => (
-              <BookshelfSection
-                key={shelf.topic}
-                {...shelf}
-                books={booksData[shelf.topic]}
-              />
-            ))}
+          {error ? (
+              <ErrorMessage error={error} />
+            ) : (
+              bookshelves.map(shelf => (
+                <Suspense key={shelf.topic} fallback={<LoadingSkeleton />}>
+                  <BookshelfSection
+                    key={shelf.topic}
+                    {...shelf}
+                    books={loading ? [] : booksData[shelf.topic]}
+                    isLoading={loading}
+                  />
+                </Suspense>
+              ))
+            )}
           </div>
         </div>
 
