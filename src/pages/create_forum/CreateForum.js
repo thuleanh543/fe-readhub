@@ -84,9 +84,7 @@ export default function CreateForum() {
     if (!formData.description.trim()) {
       newErrors.description = 'Forum description is required';
     }
-    if (formData.selectedCategories.length === 0) {
-      newErrors.categories = 'Please select at least one category';
-    }
+
     if (!formData.coverImage) {
       newErrors.coverImage = 'Forum cover image is required';
       toast.error('Please upload a forum cover image');
