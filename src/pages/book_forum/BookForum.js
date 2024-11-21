@@ -6,8 +6,8 @@ import {
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ForumItemCard from './widgets/ForumItemCard';
-import HeaderComponent from '../../../component/header/HeaderComponent';
-import {colors} from '../../../constants'
+import HeaderComponent from '../../component/header/HeaderComponent';
+import {colors} from '../../constants'
 
 const BookForum = () => {
   const [forums, setForums] = useState([]);
@@ -68,6 +68,7 @@ const BookForum = () => {
   useEffect(() => {
     const fetchForums = async () => {
       try {
+        setLoading(true);
         const response = await api.get('/api/v1/forums');
         if (response.data.success) {
           setForums(response.data.data);
@@ -108,14 +109,41 @@ const BookForum = () => {
     }
   ];
 
-  if (loading) return
-  <div className='flex justify-center items-center min-h-screen'>
-  Loading...
-</div>;
-  if (error) return
-  <div className='flex justify-center items-center min-h-screen'>
-  Error: {error}
-</div>;
+  if (loading) return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: colors.themeLight.color060d13,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+      <HeaderComponent
+        centerContent=""
+        showSearch={false}
+      />
+      <div className='flex justify-center items-center flex-1'>
+        Loading...
+      </div>
+    </Box>
+  );
+
+  if (error) return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: colors.themeLight.color060d13,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+      <HeaderComponent
+        centerContent=""
+        showSearch={false}
+      />
+      <div className='flex justify-center items-center flex-1'>
+        Error: {error}
+      </div>
+    </Box>
+  );
 
   return (
     <Box
