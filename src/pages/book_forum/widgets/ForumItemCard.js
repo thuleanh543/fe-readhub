@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Flag, Trash2 } from 'lucide-react';
-import ReportDialog from '../../../../component/dialogs/ReportDialog';
+import ReportDialog from '../../../component/dialogs/ReportDialog';
 
 const ForumItemCard = ({ forum, user }) => {
   const [isMember, setIsMember] = useState(false);

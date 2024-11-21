@@ -6,14 +6,17 @@ import {
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ForumItemCard from './widgets/ForumItemCard';
-import HeaderComponent from '../../../component/header/HeaderComponent';
-import {colors} from '../../../constants'
+import HeaderComponent from '../../component/header/HeaderComponent';
+import {colors} from '../../constants'
+import { useNavigate } from 'react-router-dom';
+import { SEARCH_MODE } from '../../constants/enums';
 
 const BookForum = () => {
   const [forums, setForums] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // Get token from localStorage
   const getAuthToken = () => {
@@ -68,6 +71,7 @@ const BookForum = () => {
   useEffect(() => {
     const fetchForums = async () => {
       try {
+        setLoading(true);
         const response = await api.get('/api/v1/forums');
         if (response.data.success) {
           setForums(response.data.data);
@@ -108,14 +112,41 @@ const BookForum = () => {
     }
   ];
 
-  if (loading) return
-  <div className='flex justify-center items-center min-h-screen'>
-  Loading...
-</div>;
-  if (error) return
-  <div className='flex justify-center items-center min-h-screen'>
-  Error: {error}
-</div>;
+  if (loading) return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: colors.themeLight.color060d13,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+      <HeaderComponent
+        centerContent=""
+        showSearch={false}
+      />
+      <div className='flex justify-center items-center flex-1'>
+        Loading...
+      </div>
+    </Box>
+  );
+
+  if (error) return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: colors.themeLight.color060d13,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+      <HeaderComponent
+        centerContent=""
+        showSearch={false}
+      />
+      <div className='flex justify-center items-center flex-1'>
+        Error: {error}
+      </div>
+    </Box>
+  );
 
   return (
     <Box
@@ -135,10 +166,15 @@ const BookForum = () => {
           <h1 className="text-4xl font-bold mb-2">Book Forums</h1>
           <p className="text-gray-600">Join thoughtful discussions about books with fellow readers</p>
         </div>
-        <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          <PlusCircle className="w-5 h-5 mr-2" />
-          Create New Forum
-        </button>
+        <button
+  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+  onClick={() => navigate('/search-result', {
+    state: { mode: SEARCH_MODE.SELECT_BOOK }
+  })}
+>
+  <PlusCircle className="w-5 h-5 mr-2" />
+  Create New Forum
+</button>
       </div>
 
       {/* Forums Grid */}

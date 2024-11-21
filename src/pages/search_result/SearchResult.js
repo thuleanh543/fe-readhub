@@ -3,6 +3,8 @@ import {ListBook} from '../../pages'
 import {Search, SlidersHorizontal, X, Check} from 'lucide-react'
 import HeaderComponent from '../../component/header/HeaderComponent'
 import {languages, subjects} from '../../constants/searchData'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { SEARCH_MODE } from '../../constants/enums'
 
 const MultiSelect = ({value, onChange, options, placeholder}) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -137,6 +139,23 @@ const SearchResult = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   }
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const mode = location.state?.mode || SEARCH_MODE.ADVANCED_SEARCH;
+
+  const handleBookSelect = (book) => {
+    if (mode === SEARCH_MODE.SELECT_BOOK) {
+      navigate('/create-forum', {
+        state: {
+          bookId: book.id,
+          bookTitle: book.title,
+          authors: book.authors,
+          subjects: book.subjects
+        }
+      });
+    }
+  };
 
   const handleSearch = e => {
     e.preventDefault()
@@ -199,7 +218,7 @@ const SearchResult = () => {
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h2 className='text-2xl font-bold text-gray-800'>
-                  Advanced Search
+                {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book For Create Forum' : 'Advanced Search'}
                 </h2>
                 <button
                   onClick={() => setIsFilterExpanded(!isFilterExpanded)}
@@ -321,7 +340,12 @@ const SearchResult = () => {
           {/* Results Section */}
           {showResults && finalSearchTerm && (
             <div className='mt-6'>
-              <ListBook searchTerm={finalSearchTerm} windowSize={windowSize} />
+              <ListBook
+              searchTerm={finalSearchTerm}
+              windowSize={windowSize}
+              mode={mode}
+              onBookSelect={handleBookSelect}
+              />
             </div>
           )}
 

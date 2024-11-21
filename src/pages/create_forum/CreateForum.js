@@ -20,7 +20,7 @@ import {
   Image as ImageIcon,
   Send as SendIcon,
 } from 'lucide-react';
-import HeaderComponent from '../../../component/header/HeaderComponent';
+import HeaderComponent from '../../component/header/HeaderComponent';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -84,9 +84,7 @@ export default function CreateForum() {
     if (!formData.description.trim()) {
       newErrors.description = 'Forum description is required';
     }
-    if (formData.selectedCategories.length === 0) {
-      newErrors.categories = 'Please select at least one category';
-    }
+
     if (!formData.coverImage) {
       newErrors.coverImage = 'Forum cover image is required';
       toast.error('Please upload a forum cover image');
@@ -144,7 +142,7 @@ export default function CreateForum() {
           toast.success(result.message);
           setTimeout(() => {
             navigate('/book-forum');
-          }, 1500);
+          }, 500);
         } else {
           toast.error(result.message || 'Failed to create forum');
         }
