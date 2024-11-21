@@ -5,7 +5,6 @@ import {
   LogOut, Menu, X, Home, Bell
 } from 'lucide-react';
 import { images } from '../../../constants';
-import NotificationDropdown from '../ui/NotificationDropdown';
 import HeaderComponent from '../../header/HeaderComponent';
 
 const AdminLayout = ({ children }) => {

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { MoreHorizontal, Flag, Trash2 } from 'lucide-react';
 import ReportDialog from '../../../component/dialogs/ReportDialog';
 
-const ForumItemCard = ({ forum, user }) => {
+const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(true);
   const [commentsCount, setCommentsCount] = useState(0);
@@ -16,9 +16,11 @@ const ForumItemCard = ({ forum, user }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const optionsRef = useRef(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteForum = async () => {
     try {
+      setIsDeleting(true);
       const response = await fetch(
         `http://localhost:8080/api/v1/forums/${forum.discussionId}`,
         {
@@ -32,11 +34,12 @@ const ForumItemCard = ({ forum, user }) => {
       if (data.success) {
         toast.success('Xóa diễn đàn thành công');
         // Refresh danh sách forum
-        window.location.reload();
+        onForumDeleted(forum.discussionId);
       }
     } catch (err) {
       toast.error('Không thể xóa diễn đàn');
     }
+    setIsDeleting(false);
     setShowDeleteDialog(false);
   };
 
@@ -292,10 +295,18 @@ const ForumItemCard = ({ forum, user }) => {
                 Cancel
               </button>
               <button
-                onClick={handleDeleteForum}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete
-              </button>
+            onClick={handleDeleteForum}
+            disabled={isDeleting}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-2">
+            {isDeleting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
+          </button>
             </div>
           </div>
         </div>

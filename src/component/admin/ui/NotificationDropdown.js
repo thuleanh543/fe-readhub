@@ -22,63 +22,6 @@ const NotificationDropdown = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const userId = localStorage.getItem('userId');
-
-  useEffect(() => {
-    const initializeNotifications = async () => {
-      try {
-        setLoading(true);
-
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          // Get FCM token
-          const token = await getToken(messaging, {
-            vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY
-          });
-
-          if (token) {
-
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/notifications/register-device`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({ fcmToken: token })
-            });
-
-          }
-
-          // Listen for foreground messages
-          const unsubscribe = onMessage(messaging, (payload) => {
-            console.log('Received foreground message:', payload);
-            const newNotification = {
-              id: Date.now().toString(),
-              title: payload.notification.title,
-              message: payload.notification.body,
-              type: payload.data?.type || 'DEFAULT',
-              data: JSON.parse(payload.data?.extraData || '{}'),
-              createdAt: new Date().toISOString(),
-              read: false
-            };
-
-            setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
-          });
-
-          return () => {
-            unsubscribe();
-          };
-        }
-      } catch (error) {
-        console.error('Error initializing notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeNotifications();
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
