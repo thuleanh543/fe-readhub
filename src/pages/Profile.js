@@ -36,6 +36,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
 import HeaderComponent from '../component/header/HeaderComponent'
 import {Visibility, VisibilityOff} from '@mui/icons-material'
+import {useUser} from '../contexts/UserProvider'
 
 function Profile() {
   const [windowSize, setWindowSize] = useState({
@@ -43,7 +44,7 @@ function Profile() {
     height: window.innerHeight,
   })
   const [anchorEl, setAnchorEl] = useState(null)
-  const [user, setUser] = useState(null)
+  const {user, refreshUser} = useUser()
   const [value, setValue] = useState('1')
   const [username, setUsername] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -59,6 +60,37 @@ function Profile() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
+
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 70,
+        height: 70,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   const handleResetPassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -103,7 +135,8 @@ function Profile() {
         formData,
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
-      getUser() // Refresh user info
+      refreshUser()
+      user.urlAvatar = avatarUrl
       toast.success('Avatar uploaded successfully')
     } catch (error) {
       console.error(error)
@@ -136,8 +169,7 @@ function Profile() {
           {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
         )
       }
-
-      getUser() // Refresh user info
+      refreshUser()
       toast.success('Update profile successfully')
     } catch (error) {
       console.error(error)
@@ -160,32 +192,6 @@ function Profile() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    navigate('/')
-    toast.success('Logout successfully')
-  }
-
-  const getUser = async () => {
-    if (!localStorage.getItem('token')) {
-      navigate('/login-account')
-      return
-    }
-
-    try {
-      const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
-        {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
-      )
-      setUser(response.data)
-      setUsername(response.data.username)
-      setFullname(response.data.fullName)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   useEffect(() => {
     const handleResize = () => {
       setWindowSize({
@@ -193,9 +199,6 @@ function Profile() {
         height: window.innerHeight,
       })
     }
-
-    getUser()
-
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -260,24 +263,12 @@ function Profile() {
                   />
                   <label htmlFor='avatar-upload'>
                     <IconButton
-                      sx={{width: 100, height: 100, position: 'relative'}}
+                      sx={{width: 90, height: 90, position: 'relative'}}
                       component='span'>
-                      {avatarUrl ? (
-                        <Avatar
-                          src={avatarUrl}
-                          sx={{width: 100, height: 100}}
-                        />
-                      ) : user.urlAvatar ? (
-                        <Avatar
-                          src={user.urlAvatar}
-                          sx={{width: 100, height: 100}}
-                        />
+                      {user.urlAvatar ? (
+                        <Avatar src={user.urlAvatar} alt={user.fullName} />
                       ) : (
-                        <Avatar>
-                          {user.username
-                            ? user.username.toUpperCase().charAt(0)
-                            : 'U'}
-                        </Avatar>
+                        <Avatar {...stringAvatar(user?.fullName)} />
                       )}
                       <PhotoCamera
                         sx={{
@@ -296,7 +287,7 @@ function Profile() {
                     label='Username'
                     variant='outlined'
                     fullWidth
-                    value={username}
+                    value={user.username}
                     onChange={e => setUsername(e.target.value)}
                     sx={{marginTop: 2}}
                   />
@@ -304,7 +295,7 @@ function Profile() {
                     label='Full name'
                     variant='outlined'
                     fullWidth
-                    value={fullName}
+                    value={user.fullName}
                     onChange={e => setFullname(e.target.value)}
                     sx={{marginTop: 2}}
                   />

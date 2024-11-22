@@ -16,6 +16,7 @@ import {images} from '../../constants'
 import LoginDialog from '../dialogs/LoginDialog'
 import NotificationDropdown from '../admin/ui/NotificationDropdown'
 import {useUser} from '../../contexts/UserProvider'
+import {Avatar} from '@mui/material'
 
 const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
   const {user, loading, logoutUser} = useUser()
@@ -28,6 +29,37 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
   const mobileProfileRef = useRef(null)
   const mobileNotificationRef = useRef(null)
   const navigate = useNavigate()
+
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 33,
+        height: 33,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   // Handle window resize
   useEffect(() => {
@@ -168,15 +200,13 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
                 className='flex items-center gap-2 p-2 rounded-full hover:bg-gray-100'>
                 <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center'>
                   {user.urlAvatar ? (
-                    <img
+                    <Avatar
+                      sx={{width: 25, height: 25}}
                       src={user.urlAvatar}
                       alt={user.fullName}
-                      className='w-full h-full object-cover rounded-full'
                     />
                   ) : (
-                    <span className='text-sm font-medium text-white'>
-                      {user.fullName?.charAt(0).toUpperCase() || 'U'}
-                    </span>
+                    <Avatar {...stringAvatar(user?.fullName)} />
                   )}
                 </div>
                 <span className='text-sm font-medium text-gray-700'>
@@ -294,19 +324,21 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
                   setShowMobileNotifications(false)
                 }}
                 className='p-1 hover:bg-gray-100 rounded-lg'>
-                <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center'>
-                  {user.urlAvatar ? (
-                    <img
-                      src={user.urlAvatar}
-                      alt={user.fullName}
-                      className='w-full h-full object-cover rounded-full'
-                    />
-                  ) : (
-                    <span className='text-sm font-medium text-white'>
-                      {user.fullName?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  )}
-                </div>
+                {loading ? (
+                  <div className='animate-pulse w-8 h-8 bg-gray-200 rounded-full' />
+                ) : (
+                  <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center'>
+                    {user.urlAvatar ? (
+                      <Avatar
+                        sx={{width: 30, height: 30}}
+                        src={user.urlAvatar}
+                        alt={user.fullName}
+                      />
+                    ) : (
+                      <Avatar {...stringAvatar(user?.fullName)} />
+                    )}
+                  </div>
+                )}
               </button>
 
               {isMobileProfileOpen && (
@@ -349,17 +381,6 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
       </div>
     </div>
   )
-
-  if (loading) {
-    return (
-      <div className='h-16 bg-white shadow-sm animate-pulse'>
-        <div className='h-full max-w-7xl mx-auto px-4 flex items-center justify-between'>
-          <div className='w-32 h-8 bg-gray-200 rounded' />
-          <div className='w-48 h-8 bg-gray-200 rounded' />
-        </div>
-      </div>
-    )
-  }
 
   return (
     <header className='fixed top-0 inset-x-0 z-50 bg-white border-b border-gray-200'>

@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import {Typography, Box, IconButton, Tooltip} from '@mui/material'
+import {Typography, Box, IconButton, Tooltip, Avatar} from '@mui/material' // Thêm Avatar
 import {Star, ThumbsUp, Flag} from 'lucide-react'
 import axios from 'axios'
 
@@ -9,6 +9,34 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
   const [likeCount, setLikeCount] = useState(review.likeCount)
 
   const isOwnReview = currentUser && currentUser.userId === review.userId
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   const handleLike = async () => {
     if (isOwnReview) return
@@ -60,9 +88,20 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
         borderColor: 'divider',
       }}>
       <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
-        <Typography variant='subtitle1' fontWeight='bold'>
-          {review.fullname}
-        </Typography>
+        <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+          {review.urlAvatar ? (
+            <Avatar
+              src={review.urlAvatar}
+              alt={review.fullname}
+              sx={{width: 32, height: 32}}
+            />
+          ) : (
+            <Avatar {...stringAvatar(review.fullname)} />
+          )}
+          <Typography variant='subtitle1' fontWeight='bold'>
+            {review.fullname}
+          </Typography>
+        </Box>
         <Typography variant='body2' color='text.secondary'>
           {new Date(review.createdAt).toLocaleDateString()}
         </Typography>
