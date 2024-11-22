@@ -30,7 +30,7 @@ const ProtectedForumRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  const isBanned = user?.forumInteractionBanned &&
+  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
     (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
 
   if (isBanned) {

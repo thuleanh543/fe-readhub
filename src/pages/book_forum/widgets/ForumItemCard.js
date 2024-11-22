@@ -18,7 +18,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const optionsRef = useRef(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const isBanned = user?.forumInteractionBanned &&
+  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
     (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
