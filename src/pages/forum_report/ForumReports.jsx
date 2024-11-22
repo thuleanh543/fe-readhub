@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Flag, Check, X, AlertCircle, MoreHorizontal, ExternalLink, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
-import NotificationBadge from '../../../component/admin/ui/NotificationBadge';
-import ActionMenu from '../../../component/admin/ui/ActionMenu';
-import ReportStatusBadge from '../../../component/admin/ui/ReportStatusBadge';
+import NotificationBadge from '../../component/admin/ui/NotificationBadge';
+import ActionMenu from '../../component/admin/ui/ActionMenu';
+import ReportStatusBadge from '../../component/admin/ui/ReportStatusBadge';
 import { format } from 'date-fns';
 
 const ForumReports = () => {
@@ -11,7 +11,6 @@ const ForumReports = () => {
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -34,7 +33,6 @@ const ForumReports = () => {
       const data = await response.json();
       if (data.success) {
         setReports(data.data);
-        setNotificationCount(data.data.filter(report => report.status === 'PENDING').length);
       }
     } catch (error) {
       toast.error('Failed to fetch reports');

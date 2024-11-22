@@ -13,7 +13,7 @@ import CreateForum from './create_forum/CreateForum'
 import ForumDiscussion from './forum_discussion/views/ForumDiscussion'
 import SavedBooks from './SavedBooks'
 import SearchResult from './search_result/SearchResult'
-import ForumReports from './forum_report/views/ForumReports'
+import ForumReports from './forum_report/ForumReports'
 
 export {
   LoginAccount,
