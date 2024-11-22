@@ -167,7 +167,7 @@ const NotificationDropdown = () => {
   const markAllAsRead = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/v1/notifications/mark-all-read`,
+        `${process.env.REACT_APP_API_BASE_URL}/notifications/mark-all-read`,
         {
           method: 'POST',
           headers: {

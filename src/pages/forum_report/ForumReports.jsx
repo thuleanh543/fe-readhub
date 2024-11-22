@@ -73,27 +73,6 @@ const ForumReports = () => {
     }
   };
 
-  const handleAction = async (reportId, action) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/v1/admin/forum-reports/${reportId}/action`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ action })
-      });
-
-      if (response.ok) {
-        toast.success('Action applied successfully');
-        fetchReports();
-        setShowActionMenu(false);
-      }
-    } catch (error) {
-      toast.error('Failed to apply action');
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -207,7 +186,7 @@ const ForumReports = () => {
                       )}
                       {selectedReport?.id === report.id && showActionMenu && (
                         <ActionMenu
-                          onSelect={(action) => handleAction(report.id, action)}
+                          reportId={report.id}
                         />
                       )}
                     </div>
