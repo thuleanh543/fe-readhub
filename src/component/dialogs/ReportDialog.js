@@ -3,6 +3,7 @@ import { useState } from "react";
 const ReportDialog = ({ isOpen, onClose, onSubmit }) => {
   const [selectedReason, setSelectedReason] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   const REPORT_REASONS = [
     { value: 'INAPPROPRIATE_CONTENT', label: 'Inappropriate book forum content' },
@@ -45,12 +46,19 @@ const ReportDialog = ({ isOpen, onClose, onSubmit }) => {
     // Lý do khác
  ];
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedReason) return;
-    onSubmit({
-      reason: selectedReason,
-      additionalInfo: selectedReason === 'OTHER' ? additionalInfo : null
-    });
+    try {
+      setIsReporting(true);
+      await onSubmit({
+        reason: selectedReason,
+        additionalInfo: selectedReason === 'OTHER' ? additionalInfo : null
+      });
+      setIsReporting(false);
+      onClose();
+    } catch (error) {
+      setIsReporting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -99,13 +107,14 @@ const ReportDialog = ({ isOpen, onClose, onSubmit }) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedReason}
+            disabled={!selectedReason || isReporting}
             className={`px-4 py-2 rounded ${
-              selectedReason
+              selectedReason && !isReporting
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}>
-            Sent report
+            }`}
+          >
+            {isReporting ? 'Reporting...' : 'Sent report'}
           </button>
         </div>
       </div>
