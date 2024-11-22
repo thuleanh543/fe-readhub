@@ -7,15 +7,14 @@ import Stack from './router/Stack'
 import {ToastContainer} from 'react-toastify'
 import {UserProvider} from './contexts/UserProvider'
 import {BooksProvider} from './contexts/BooksProvider'
-import useFCM from './hooks/useFCM'
+import FCMInitializer from './component/FCMInitializer'
 
 function Root() {
-  useFCM(); // Initialize FCM once
-
   return (
     <BrowserRouter>
       <UserProvider>
         <BooksProvider>
+          <FCMInitializer />
           <ToastContainer />
           <Stack />
         </BooksProvider>

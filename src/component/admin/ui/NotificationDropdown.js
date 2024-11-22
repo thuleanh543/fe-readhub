@@ -13,8 +13,11 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast, Slide, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../css/NotificationDropdown.css';
 
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
@@ -22,6 +25,83 @@ const NotificationDropdown = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      try {
+        setLoading(true);
+
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          // Listen for foreground messages
+          const unsubscribe = onMessage(messaging, (payload) => {
+            console.log('Received foreground message:', payload);
+
+            const newNotification = {
+              id: Date.now().toString(),
+              title: payload.notification.title,
+              message: payload.notification.body,
+              type: payload.data?.type || 'DEFAULT',
+              data: payload.data || {},
+              createdAt: new Date().toISOString(),
+              read: false
+            };
+
+            // Show toast notification
+            toast(
+              <div
+                onClick={() => {
+                  const link = getNotificationLink(newNotification);
+                  if (link) navigate(link);
+                }}
+                className="cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-1">
+                    {getNotificationIcon(newNotification.type)}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1">
+                      {newNotification.title}
+                    </h4>
+                    <p className="text-sm opacity-90">
+                      {newNotification.message}
+                    </p>
+                  </div>
+                </div>
+              </div>,
+              {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                className: `toast-notification ${getToastClassName(newNotification.type)}`,
+                icon: false,
+              }
+            );
+
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+          });
+
+          return () => {
+            unsubscribe();
+          };
+        }
+      } catch (error) {
+        console.error('Error initializing notifications:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeNotifications();
+  }, [navigate]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -84,8 +164,25 @@ const NotificationDropdown = () => {
     }
   };
 
+  const getToastClassName = (type) => {
+    switch (type) {
+      case 'FORUM_REPORT':
+        return 'bg-red-50 border-l-4 border-red-500';
+      case 'WARNING':
+        return 'bg-yellow-50 border-l-4 border-yellow-500';
+      case 'USER_BANNED':
+        return 'bg-purple-50 border-l-4 border-purple-500';
+      case 'NEW_COMMENT':
+        return 'bg-blue-50 border-l-4 border-blue-500';
+      case 'NEW_MEMBER':
+        return 'bg-green-50 border-l-4 border-green-500';
+      default:
+        return 'bg-gray-50 border-l-4 border-gray-500';
+    }
+  };
+
   return (
-    <div className="relative" ref={dropdownRef}>
+    <><div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full"
@@ -179,6 +276,20 @@ const NotificationDropdown = () => {
         )}
       </AnimatePresence>
     </div>
+    <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </>
+
   );
 };
 
