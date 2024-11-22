@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart } from 'lucide-react';
+import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart, Ban } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,28 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const [reportReason, setReportReason] = useState('');
   const optionsRef = useRef(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
+    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+
+  const getBanMessage = () => {
+    if (!user?.forumInteractionBanned) return '';
+    if (!user.forumBanExpiresAt) {
+      return `You are permanently banned: ${user.forumBanReason}`;
+    }
+    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+  };
+
+  const getButtonStyle = () => {
+    if (isBanned) {
+      return "bg-gray-200 text-gray-500 cursor-not-allowed opacity-75 flex items-center gap-2 border border-gray-300";
+    }
+    if (isMember) {
+      return "bg-green-100 text-green-700 hover:bg-green-200 flex items-center gap-2";
+    }
+    return "bg-blue-100 text-blue-900 hover:bg-blue-400 flex items-center gap-2";
+  };
+
 
   const handleDeleteForum = async () => {
     try {
@@ -127,7 +149,12 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const handleForumAction = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-      toast.error('Vui lòng đăng nhập để tham gia diễn đàn');
+      toast.error('Please log in to join the forum');
+      return;
+    }
+
+    if (isBanned) {
+      toast.error(getBanMessage());
       return;
     }
 
@@ -146,15 +173,16 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
         );
         const data = await response.json();
         if (data.success) {
-          toast.success('Tham gia diễn đàn thành công');
+          toast.success('Successfully joined the forum');
           setIsMember(true);
           navigate(`/forum-discussion/${forum.discussionId}`);
         }
       } catch (err) {
-        toast.error(err.response?.data?.message || 'Có lỗi xảy ra');
+        toast.error(err.response?.data?.message || 'An error occurred');
       }
     }
   };
+
 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
@@ -198,28 +226,40 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
         </div>
         <div className="flex justify-between items-start mb-4">
           <p className="text-gray-600 mb-4">{forum.forumDescription}</p>
-          <button
-            onClick={handleForumAction}
-            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2
-              ${isMember
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-blue-100 text-blue-900 hover:bg-blue-400'
-              }`}
-          >
-            {loading ? (
-              <span>Loading...</span>
-            ) : isMember ? (
-              <>
-                <MessageCircle className="w-4 h-4" />
-                <span>Enter Discussion</span>
-              </>
-            ) : (
-              <>
-                <Users className="w-4 h-4" />
-                <span>Join Forum</span>
-              </>
+          <div className="flex flex-col items-end">
+            <button
+              onClick={handleForumAction}
+              disabled={isBanned}
+              className={`px-4 py-2 rounded-lg transition-colors ${getButtonStyle()}`}
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                  <span>Loading...</span>
+                </div>
+              ) : isBanned ? (
+                <>
+                  <Ban className="w-4 h-4" />
+                  <span>Access Restricted</span>
+                </>
+              ) : isMember ? (
+                <>
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Enter Discussion</span>
+                </>
+              ) : (
+                <>
+                  <Users className="w-4 h-4" />
+                  <span>Join Forum</span>
+                </>
+              )}
+            </button>
+            {isBanned && (
+              <div className="mt-2 text-xs text-red-600 italic max-w-[200px] text-right">
+                {getBanMessage()}
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </div>
 

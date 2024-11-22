@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart } from 'lucide-react';
+import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart, Ban } from 'lucide-react';
 import {
   Box,
 } from '@mui/material'
@@ -17,6 +17,17 @@ const BookForum = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
+    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+
+  const getBanMessage = () => {
+    if (!user?.forumInteractionBanned) return '';
+    if (!user.forumBanExpiresAt) {
+      return `You are permanently banned: ${user.forumBanReason}`;
+    }
+    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+  };
 
   // Get token from localStorage
   const getAuthToken = () => {
@@ -96,6 +107,21 @@ const BookForum = () => {
     fetchForums();
   }, []);
 
+  const handleCreateForum = () => {
+    if (!user) {
+      toast.error('Please login to create a forum');
+      return;
+    }
+
+    if (isBanned) {
+      toast.error(getBanMessage());
+      return;
+    }
+
+    navigate('/search-result', {
+      state: { mode: SEARCH_MODE.SELECT_BOOK }
+    });
+  };
 
   const readingChallenges = [
     {
@@ -171,14 +197,26 @@ const BookForum = () => {
           <p className="text-gray-600">Join thoughtful discussions about books with fellow readers</p>
         </div>
         <button
-  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-  onClick={() => navigate('/search-result', {
-    state: { mode: SEARCH_MODE.SELECT_BOOK }
-  })}
->
-  <PlusCircle className="w-5 h-5 mr-2" />
-  Create New Forum
-</button>
+            onClick={handleCreateForum}
+            disabled={isBanned}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              isBanned
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-75'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {isBanned ? (
+              <>
+                <Ban className="w-5 h-5 mr-2" />
+                <span>Restricted</span>
+              </>
+            ) : (
+              <>
+                <PlusCircle className="w-5 h-5 mr-2" />
+                <span>Create New Forum</span>
+              </>
+            )}
+          </button>
       </div>
 
       {/* Forums Grid */}

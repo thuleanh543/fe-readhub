@@ -12,7 +12,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { DialogConfirmation } from '../../../../component/dialogs/DialogConfirmation';
+import { DialogConfirmation } from '../../../component/dialogs/DialogConfirmation';
 import { Avatar } from '@mui/material';
 
 const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
@@ -344,6 +344,37 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
     }
   };
 
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 33,
+        height: 33,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
+
   const canModifyComment = user && (user.userId === comment.user.userId || user.role === 'ROLE_ADMIN');
   const canModifyReply = (reply) => user && (user.userId === reply.user.userId || user.role === 'ROLE_ADMIN');
 
@@ -352,16 +383,16 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
         {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                  <Avatar
+                  sx={{width: 25, height: 25}}
+                  src={user.urlAvatar}
+                  alt={user.fullName}
+                />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(user?.fullName)} />
                 )}
           <div>
-            <h3 className="font-semibold text-lg">{comment.user.username}</h3>
+            <h3 className="font-semibold text-lg">{comment.user.fullName}</h3>
             <p className="text-gray-500 text-sm">
               {new Date(comment.createdAt).toLocaleString()}
             </p>
@@ -514,13 +545,13 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
           <div className="mt-4">
             <div className="flex gap-4">
             {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                  <Avatar
+                  sx={{width: 25, height: 25}}
+                  src={user.urlAvatar}
+                  alt={user.fullName}
+                />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(user?.fullName)} />
                 )}
               <div className="flex-1">
                 <textarea
@@ -608,13 +639,13 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
                 {replies.map((reply) => (
                   <div key={reply.id} className="flex gap-4">
                     {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                  <Avatar
+                  sx={{width: 25, height: 25}}
+                  src={user.urlAvatar}
+                  alt={user.fullName}
+                />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(user?.fullName)} />
                 )}
                     <div className="flex-1">
                       <div className="bg-gray-50 p-4 rounded-lg">

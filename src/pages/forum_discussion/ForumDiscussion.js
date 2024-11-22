@@ -10,15 +10,17 @@ import {
   MoreHorizontal,
   Send,
   Image,
+  Ban,
 } from 'lucide-react'
 import {useNavigate, useParams} from 'react-router-dom'
-import HeaderComponent from '../../../component/header/HeaderComponent'
+import HeaderComponent from '../../component/header/HeaderComponent'
 import {Avatar, Box} from '@mui/material'
-import {colors} from '../../../constants'
+import {colors} from '../../constants'
 import SockJS from 'sockjs-client'
 import {Stomp, Client} from '@stomp/stompjs'
 import ForumCommentItem from './widgets/ForumCommentItem'
 import ForumInteractionButtons from './widgets/ForumInteractionButtons'
+import { toast } from 'react-toastify';
 
 const ForumDiscussion = () => {
   const {forumId} = useParams()
@@ -34,6 +36,38 @@ const ForumDiscussion = () => {
   const fileInputRef = useRef(null)
   const webSocketRef = useRef(null)
   const [isSending, setIsSending] = useState(false);
+
+
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 33,
+        height: 33,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   const getUser = async () => {
     try {
@@ -101,6 +135,13 @@ const ForumDiscussion = () => {
   }
 
   const handleImageSelect = event => {
+
+    if (isBanned) {
+      event.preventDefault();
+      toast.error(getBanMessage());
+      return;
+    }
+
     const file = event.target.files[0]
     if (file) {
       setSelectedImage(file)
@@ -110,6 +151,11 @@ const ForumDiscussion = () => {
   const handleSubmitComment = async () => {
     if (!newComment.trim() && !selectedImage) return
     if (isSending) return;
+
+    if (isBanned) {
+      toast.error(getBanMessage());
+      return;
+    }
     try {
       let imageUrl = null
       if (selectedImage) {
@@ -160,6 +206,18 @@ console.log('Posting comment:', commentData)
       setIsSending(false);
   }
   }
+
+  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned )&&
+    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+
+  const getBanMessage = () => {
+    if (!user?.forumInteractionBanned) return '';
+    if (!user.forumBanExpiresAt) {
+      return `You are permanently banned: ${user.forumBanReason}`;
+    }
+    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+  };
+
   useEffect(() => {
     const fetchForumData = async () => {
       try {
@@ -273,17 +331,17 @@ console.log('Posting comment:', commentData)
                   <div>
                     <h3 className='text-white/60 text-sm mb-1'>Created By</h3>
                     <div className='flex items-center gap-2'>
-                    {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                    {forum?.creator?.urlAvatar ? (
+                  <Avatar
+                      sx={{width: 25, height: 25}}
+                      src={forum?.creator?.urlAvatar}
+                      alt={forum?.creator?.urlAvatar?.fullName}
+                    />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(forum?.creator?.fullName)} />
                 )}
                       <span className='text-lg font-medium'>
-                        {forum?.creator?.username}
+                       {forum?.creator?.fullName && forum.creator.fullName.trim() !== '' ? forum.creator.fullName :'user'}
                       </span>
                     </div>
                   </div>
@@ -304,100 +362,128 @@ console.log('Posting comment:', commentData)
           </div>
         </div>
         <div className='container mx-auto px-4 py-8'>
-          <div className='max-w-4xl mx-auto'>
-            <div className='bg-white rounded-lg shadow-md p-4 mb-8'>
-              <div className='flex gap-4'>
-              {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
-                ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
-                )}
-                <div className='flex-1'>
-                  <textarea
-                    value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
-                    placeholder='Share your thoughts about this book...'
-                    className='w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none'
-                    rows='3'
+      <div className='max-w-4xl mx-auto'>
+        <div className='bg-white rounded-lg shadow-md p-4 mb-8'>
+          <div className='flex gap-4'>
+            {user.urlAvatar ? (
+              <Avatar
+                sx={{width: 25, height: 25}}
+                src={user.urlAvatar}
+                alt={user.fullName}
+              />
+            ) : (
+              <Avatar {...stringAvatar(user?.fullName)} />
+            )}
+            <div className='flex-1'>
+              <textarea
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                placeholder={isBanned ? 'You are currently banned from commenting' : 'Share your thoughts about this book...'}
+                className={`w-full p-4 border rounded-lg transition-all resize-none ${
+                  isBanned
+                    ? 'bg-gray-100 cursor-not-allowed opacity-75'
+                    : 'focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                }`}
+                rows='3'
+                disabled={isBanned}
+              />
+              <div className='flex justify-between items-center mt-4'>
+                <div className='flex gap-2'>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={handleImageSelect}
+                    ref={fileInputRef}
+                    className='hidden'
+                    id='image-upload'
+                    disabled={isBanned}
                   />
-                  <div className='flex justify-between items-center mt-4'>
-                    <div className='flex gap-2'>
-                      <input
-                        type='file'
-                        accept='image/*'
-                        onChange={handleImageSelect}
-                        ref={fileInputRef}
-                        className='hidden'
-                        id='image-upload'
-                      />
-                      <label
-                        htmlFor='image-upload'
-                        className='cursor-pointer flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors'>
-                        <Image className='w-5 h-5' />
-                        <span>Add Image</span>
-                      </label>
-                      {selectedImage && (
-                        <div className='flex items-center gap-2'>
-                          <span className='text-sm text-gray-500'>
-                            {selectedImage.name}
-                          </span>
-                          <button
-                            onClick={() => {
-                              setSelectedImage(null)
-                              if (fileInputRef.current) {
-                                fileInputRef.current.value = ''
-                              }
-                            }}
-                            className='text-red-500 hover:text-red-700'>
-                            ×
-                          </button>
-                        </div>
-                      )}
+                  <label
+                    htmlFor='image-upload'
+                    className={`flex items-center gap-2 transition-colors ${
+                      isBanned
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'cursor-pointer text-gray-600 hover:text-blue-600'
+                    }`}
+                  >
+                    {isBanned ? (
+                      <Ban className='w-5 h-5' />
+                    ) : (
+                      <Image className='w-5 h-5' />
+                    )}
+                    <span>{isBanned ? 'Restricted' : 'Add Image'}</span>
+                  </label>
+                  {selectedImage && !isBanned && (
+                    <div className='flex items-center gap-2'>
+                      <span className='text-sm text-gray-500'>
+                        {selectedImage.name}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedImage(null);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }}
+                        className='text-red-500 hover:text-red-700'
+                      >
+                        ×
+                      </button>
                     </div>
-                    <button
-    onClick={handleSubmitComment}
-    disabled={isSending}
-    className={`${
-        isSending
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700'
-    } text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2`}
->
-    {isSending ? (
-        <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            <span>Sending...</span>
-        </>
-    ) : (
-        <>
-            <Send className="w-4 h-4" />
-            <span>Post</span>
-        </>
-    )}
-</button>
-                  </div>
+                  )}
                 </div>
+                <button
+                  onClick={handleSubmitComment}
+                  disabled={isSending || isBanned}
+                  className={`text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                    isBanned
+                      ? 'bg-gray-400 cursor-not-allowed opacity-75'
+                      : isSending
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  {isBanned ? (
+                    <>
+                      <Ban className='w-4 h-4' />
+                      <span>Restricted</span>
+                    </>
+                  ) : isSending ? (
+                    <>
+                      <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className='w-4 h-4' />
+                      <span>Post</span>
+                    </>
+                  )}
+                </button>
               </div>
-            </div>
-
-            {/* Comments List */}
-            <div className='space-y-6'>
-              {comments.map(comment => (
-                <ForumCommentItem
-                  key={comment.id}
-                  comment={comment}
-                  stompClient={stompClient}
-                  user={user}
-                  onCommentDeleted={handleCommentDeleted}
-               />
-              ))}
+              {isBanned && (
+                <div className='mt-2 text-xs text-red-500 italic'>
+                  {getBanMessage()}
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Comments List */}
+        <div className='space-y-6'>
+          {comments.map(comment => (
+            <ForumCommentItem
+              key={comment.id}
+              comment={comment}
+              stompClient={stompClient}
+              user={user}
+              onCommentDeleted={handleCommentDeleted}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
       </div>
     </Box>
   )
