@@ -22,7 +22,7 @@ const ReaderHeader = ({
   onToggleSettings,
   user,
   onToggleBookmark,
-  hasBookmark = false,
+  hasBookmark,
   currentLocation,
 }) => (
   <AppBar position='static'>

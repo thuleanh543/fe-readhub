@@ -72,7 +72,7 @@ function ReadBookScreen() {
   const updateReadingHistory = async () => {
     const currentTime = Date.now()
     const timeSpent = Math.floor((currentTime - lastReadingUpdate) / 1000)
-
+    if (!user || !bookId) return
     try {
       await axios.post(
         'http://localhost:8080/api/v1/reading-history',
@@ -424,7 +424,7 @@ function ReadBookScreen() {
 
   useEffect(() => {
     getBookmark()
-  }, [user])
+  }, [])
 
   useEffect(() => {
     if (user && bookId) {
