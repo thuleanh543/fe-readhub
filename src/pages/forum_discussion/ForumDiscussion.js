@@ -12,9 +12,9 @@ import {
   Image,
 } from 'lucide-react'
 import {useNavigate, useParams} from 'react-router-dom'
-import HeaderComponent from '../../../component/header/HeaderComponent'
+import HeaderComponent from '../../component/header/HeaderComponent'
 import {Avatar, Box} from '@mui/material'
-import {colors} from '../../../constants'
+import {colors} from '../../constants'
 import SockJS from 'sockjs-client'
 import {Stomp, Client} from '@stomp/stompjs'
 import ForumCommentItem from './widgets/ForumCommentItem'
@@ -34,6 +34,38 @@ const ForumDiscussion = () => {
   const fileInputRef = useRef(null)
   const webSocketRef = useRef(null)
   const [isSending, setIsSending] = useState(false);
+
+
+  function stringToColor(string) {
+    let hash = 0
+    let i
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+
+    let color = '#'
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    /* eslint-enable no-bitwise */
+
+    return color
+  }
+
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 33,
+        height: 33,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   const getUser = async () => {
     try {
@@ -273,17 +305,17 @@ console.log('Posting comment:', commentData)
                   <div>
                     <h3 className='text-white/60 text-sm mb-1'>Created By</h3>
                     <div className='flex items-center gap-2'>
-                    {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                    {forum?.creator?.urlAvatar ? (
+                  <Avatar
+                      sx={{width: 25, height: 25}}
+                      src={forum?.creator?.urlAvatar}
+                      alt={forum?.creator?.urlAvatar?.fullName}
+                    />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(forum?.creator?.fullName)} />
                 )}
                       <span className='text-lg font-medium'>
-                        {forum?.creator?.username}
+                       {forum?.creator?.fullName && forum.creator.fullName.trim() !== '' ? forum.creator.fullName :'user'}
                       </span>
                     </div>
                   </div>
@@ -308,13 +340,13 @@ console.log('Posting comment:', commentData)
             <div className='bg-white rounded-lg shadow-md p-4 mb-8'>
               <div className='flex gap-4'>
               {user.urlAvatar ? (
-                  <Avatar src={user.urlAvatar} />
+                   <Avatar
+                   sx={{width: 25, height: 25}}
+                   src={user.urlAvatar}
+                   alt={user.fullName}
+                 />
                 ) : (
-                  <Avatar>
-                    {user.username
-                      ? user.username.toUpperCase().charAt(0)
-                      : 'U'}
-                  </Avatar>
+                  <Avatar {...stringAvatar(user?.fullName)} />
                 )}
                 <div className='flex-1'>
                   <textarea
