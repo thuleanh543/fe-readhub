@@ -73,6 +73,7 @@ const NotificationDropdown = () => {
                 </div>
               </div>,
               {
+                containerId: "root",
                 position: "top-right",
                 autoClose: 5000,
                 hideProgressBar: false,
@@ -336,20 +337,8 @@ const NotificationDropdown = () => {
         )}
       </AnimatePresence>
     </div>
-    <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-    </>
 
+    </>
   );
 };
 
