@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Share2, Bookmark } from 'lucide-react';
+import { Heart, Share2, Bookmark, Ban } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 const ForumInteractionButtons = ({ forumId, user }) => {
@@ -10,6 +10,17 @@ const ForumInteractionButtons = ({ forumId, user }) => {
     saveCount: 0
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  const isBanned = user?.forumInteractionBanned &&
+    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+
+  const getBanMessage = () => {
+    if (!user?.forumInteractionBanned) return '';
+    if (!user.forumBanExpiresAt) {
+      return `You are permanently banned: ${user.forumBanReason}`;
+    }
+    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+  };
 
   useEffect(() => {
     fetchInteractions();
@@ -41,6 +52,12 @@ const ForumInteractionButtons = ({ forumId, user }) => {
       toast.error('Please login to like this forum');
       return;
     }
+
+    if (isBanned) {
+      toast.error(getBanMessage());
+      return;
+    }
+
     if (isLoading) return;
 
     try {
@@ -75,6 +92,12 @@ const ForumInteractionButtons = ({ forumId, user }) => {
       toast.error('Please login to save this forum');
       return;
     }
+
+    if (isBanned) {
+      toast.error(getBanMessage());
+      return;
+    }
+
     if (isLoading) return;
 
     try {
@@ -104,6 +127,16 @@ const ForumInteractionButtons = ({ forumId, user }) => {
     }
   };
 
+  const getButtonStyle = (isActive) => {
+    if (isBanned) {
+      return "bg-gray-300 text-gray-500 cursor-not-allowed opacity-75";
+    }
+    if (isActive) {
+      return isActive === 'like' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white';
+    }
+    return 'bg-white/10 hover:bg-white/20 text-white';
+  };
+
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -118,19 +151,19 @@ const ForumInteractionButtons = ({ forumId, user }) => {
     <div className="flex justify-between mt-4">
       <button
         onClick={handleLike}
-        disabled={isLoading}
+        disabled={isLoading || isBanned}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-          interactions.isLiked
-            ? 'bg-red-500 text-white'
-            : 'bg-white/10 hover:bg-white/20 text-white'
+          getButtonStyle(interactions.isLiked ? 'like' : false)
         }`}
       >
-        <Heart
-          className={`w-5 h-5 ${interactions.isLiked ? 'fill-current' : ''}`}
-        />
+        {isBanned ? (
+          <Ban className="w-5 h-5" />
+        ) : (
+          <Heart className={`w-5 h-5 ${interactions.isLiked ? 'fill-current' : ''}`} />
+        )}
         <span>
-          {interactions.isLiked ? 'Liked' : 'Like'}{' '}
-          {interactions.likeCount > 0 && `(${interactions.likeCount})`}
+          {isBanned ? 'Restricted' : interactions.isLiked ? 'Liked' : 'Like'}{' '}
+          {interactions.likeCount > 0 && !isBanned && `(${interactions.likeCount})`}
         </span>
       </button>
 
@@ -144,17 +177,19 @@ const ForumInteractionButtons = ({ forumId, user }) => {
 
       <button
         onClick={handleSave}
-        disabled={isLoading}
+        disabled={isLoading || isBanned}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-          interactions.isSaved
-            ? 'bg-blue-500 text-white'
-            : 'bg-white/10 hover:bg-white/20 text-white'
+          getButtonStyle(interactions.isSaved ? 'save' : false)
         }`}
       >
-        <Bookmark
-          className={`w-5 h-5 ${interactions.isSaved ? 'fill-current' : ''}`}
-        />
-        <span>{interactions.isSaved ? 'Saved' : 'Save'}</span>
+        {isBanned ? (
+          <Ban className="w-5 h-5" />
+        ) : (
+          <Bookmark className={`w-5 h-5 ${interactions.isSaved ? 'fill-current' : ''}`} />
+        )}
+        <span>
+          {isBanned ? 'Restricted' : interactions.isSaved ? 'Saved' : 'Save'}
+        </span>
       </button>
     </div>
   );

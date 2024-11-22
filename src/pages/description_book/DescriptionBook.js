@@ -13,15 +13,15 @@ import {
   Grid,
   CircularProgress,
 } from '@mui/material'
-import {colors} from '../../../constants'
+import {colors} from '../../constants'
 import axios from 'axios'
-import HeaderComponent from '../../../component/header/HeaderComponent'
+import HeaderComponent from '../../component/header/HeaderComponent'
 import BookReviews from './BookReviews'
-import LoginDialog from '../../../component/dialogs/LoginDialog'
+import LoginDialog from '../../component/dialogs/LoginDialog'
 import ReviewDialog from './ReviewDialog'
 import {Download} from '@mui/icons-material'
-import SimilarAuthorBooks from '../../../component/recommendations/SimilarAuthorBooks'
-import Footer from '../../../component/footer/Footer'
+import SimilarAuthorBooks from '../../component/recommendations/SimilarAuthorBooks'
+import Footer from '../../component/footer/Footer'
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
