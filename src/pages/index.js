@@ -14,6 +14,7 @@ import ForumDiscussion from './forum_discussion/ForumDiscussion'
 import SavedBooks from './SavedBooks'
 import SearchResult from './search_result/SearchResult'
 import ForumReports from './forum_report/ForumReports'
+import CreateForumChallenge from './create_forum_challenge/CreateForumChallenge'
 
 export {
   LoginAccount,
@@ -32,4 +33,5 @@ export {
   SavedBooks,
   SearchResult,
   ForumReports,
+  CreateForumChallenge,
 }

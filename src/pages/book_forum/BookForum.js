@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart, Ban } from 'lucide-react';
+import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart, Ban, Trophy } from 'lucide-react';
 import {
   Box,
 } from '@mui/material'
@@ -196,6 +196,14 @@ const BookForum = () => {
           <h1 className="text-4xl font-bold mb-2">Book Forums</h1>
           <p className="text-gray-600">Join thoughtful discussions about books with fellow readers</p>
         </div>
+        <div className="flex gap-4">
+        <button
+            onClick={() => navigate('/create-forum-challenge')}
+            className="flex items-center px-4 py-2 rounded-lg transition-colors bg-purple-600 text-white hover:bg-purple-700"
+            >
+          <Trophy className="w-5 h-5 mr-2" />
+          <span>Create Challenge</span>
+        </button>
         <button
             onClick={handleCreateForum}
             disabled={isBanned}
@@ -217,6 +225,7 @@ const BookForum = () => {
               </>
             )}
           </button>
+          </div>
       </div>
 
       {/* Forums Grid */}

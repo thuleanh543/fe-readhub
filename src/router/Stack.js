@@ -16,6 +16,7 @@ import {
   SavedBooks,
   SearchResult,
   ForumReports,
+  CreateForumChallenge,
 } from '../pages'
 import {PrivateRoute} from '../component/routing/PrivateRoute'
 import AdminLayout from '../component/admin/layouts/AdminLayout'
@@ -44,13 +45,13 @@ function Stack() {
       />
       <Route path='/book-forum' element={<BookForum />} />
       <Route
-  path='/create-forum'
-  element={
-    <ProtectedForumRoute>
-      <CreateForum />
-    </ProtectedForumRoute>
-  }
-/>
+          path='/create-forum'
+          element={
+            <ProtectedForumRoute>
+            <CreateForum />
+            </ProtectedForumRoute>
+          }
+      />
       <Route path='/saved-books' element={<SavedBooks />} />
       <Route path='/search-result' element={<SearchResult />} />
       <Route
@@ -69,6 +70,12 @@ function Stack() {
               </Routes>
             </AdminLayout>
           </PrivateRoute>
+        }
+      />
+      <Route
+        path='/create-forum-challenge'
+        element={
+          <CreateForumChallenge />
         }
       />
     </Routes>
