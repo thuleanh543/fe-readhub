@@ -158,41 +158,37 @@ const SearchResult = () => {
   };
 
   const handleSearch = e => {
-    e.preventDefault()
-    const terms = []
+    e.preventDefault();
+    const searchTerms = [];
 
-    if (searchParams.title) terms.push(searchParams.title)
-
-    // Add author to baseQuery if it exists
-    if (searchParams.author) {
-      if (terms.length > 0) {
-        terms.push(`%20${searchParams.author}`)
-      } else {
-        terms.push(searchParams.author)
-      }
+    // Xử lý title
+    if (searchParams.title.trim()) {
+      searchTerms.push(searchParams.title.trim());
     }
 
-    // Join multiple subjects with commas
-    const subjectsQuery =
-      searchParams.subjects.length > 0
-        ? `&topic=${searchParams.subjects.join(',')}`
-        : ''
-
-    // Add language if selected
-    const languageQuery =
-      searchParams.language.length > 0
-        ? `&languages=${searchParams.language}`
-        : ''
-
-    const baseQuery = terms.join('')
-    const finalQuery = `${baseQuery}${subjectsQuery}${languageQuery}`
-
-    if (finalQuery.trim()) {
-      setFinalSearchTerm(finalQuery)
-      setShowResults(true)
+    // Xử lý author
+    if (searchParams.author.trim()) {
+      searchTerms.push(searchParams.author.trim());
     }
-  }
 
+    // Tạo query string cho API
+    let query = searchTerms.join(' ');
+
+    // Thêm topics nếu có
+    if (searchParams.subjects.length > 0) {
+      query += `&topic=${searchParams.subjects.join(',')}`;
+    }
+
+    // Thêm language nếu có
+    if (searchParams.language.length > 0) {
+      query += `&languages=${searchParams.language}`;
+    }
+
+    if (query) {
+      setFinalSearchTerm(query);
+      setShowResults(true);
+    }
+  };
   const clearSearch = () => {
     setSearchParams({
       title: '',
