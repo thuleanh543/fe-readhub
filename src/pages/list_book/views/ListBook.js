@@ -15,7 +15,6 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
   const observerRef = useRef(null)
   const prevSearchTermRef = useRef(searchTerm)
 
-  // Last element observer for infinite scroll
   const lastBookElementRef = useCallback(
     node => {
       if (loading) return
@@ -32,17 +31,26 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
 
   const fetchBooks = useCallback(
     async (pageNum = 1, isNewSearch = false) => {
-      if (!searchTerm.trim()) return
+      // Không fetch nếu searchTerm trống
+      if (!searchTerm?.trim()) {
+        setBooks([])
+        setHasMore(false)
+        setInitialLoad(false)
+        return
+      }
 
+      // Cancel previous request if any
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
 
+      // Create new abort controller
       abortControllerRef.current = new AbortController()
-      setLoading(true)
-      setError(null)
 
       try {
+        setLoading(true)
+        setError(null)
+
         const formattedSearchTerm = searchTerm.replace(/ /g, '&')
         const response = await fetch(
           `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`,
@@ -50,6 +58,7 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
         )
 
         if (!response.ok) throw new Error('Failed to fetch books')
+
         const data = await response.json()
 
         const validBooks = data.results.filter(
@@ -74,27 +83,23 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
   )
 
   useEffect(() => {
-    // Chỉ thực hiện search khi searchTerm thực sự thay đổi
-    if (searchTerm !== prevSearchTermRef.current) {
-      prevSearchTermRef.current = searchTerm
-
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current)
-      }
-
-      setPage(1)
-      setBooks([])
-      setHasMore(true)
-      setInitialLoad(true)
-
-      // Chỉ search khi có searchTerm
-      if (searchTerm.trim()) {
-        searchTimeoutRef.current = setTimeout(() => {
-          fetchBooks(1, true)
-        }, 300)
-      }
+    // Clear timeout cũ nếu có
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
     }
 
+    // Reset states
+    setPage(1)
+    setBooks([])
+    setHasMore(true)
+    setInitialLoad(true)
+
+    // Debounce search khi searchTerm thay đổi
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchBooks(1, true)
+    }, 300)
+
+    // Cleanup function
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current)
@@ -103,35 +108,34 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
         abortControllerRef.current.abort()
       }
     }
-  }, [searchTerm])
+  }, [searchTerm, fetchBooks])
 
   useEffect(() => {
-    if (page > 1 && searchTerm.trim()) {
+    if (page > 1 && searchTerm?.trim()) {
       fetchBooks(page, false)
     }
-  }, [page])
+  }, [page, fetchBooks])
 
   const handleBookClick = useCallback(
     (book) => {
       if (mode === SEARCH_MODE.SELECT_BOOK) {
-        onBookSelect({
+        onBookSelect?.({
           id: book.id,
           title: book.title,
           authors: book.authors[0]?.name || 'Unknown Author',
           subjects: book.bookshelves || []
-        });
+        })
       } else {
         navigate('/description-book', {
           state: {
             bookId: book.id,
             bookTitle: book.title
           }
-        });
+        })
       }
     },
     [navigate, mode, onBookSelect],
   )
-
   if (error) {
     return (
       <div className='flex items-center justify-center p-8'>
