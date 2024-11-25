@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, MessageCircle, Users, Book, TrendingUp, Star, BookOpen, Clock, Heart, Ban, Trophy } from 'lucide-react';
+import { PlusCircle, BookOpen, Clock, Heart, Ban, Trophy, Target, Calendar } from 'lucide-react';
 import {
   Box,
 } from '@mui/material'
@@ -10,6 +10,8 @@ import HeaderComponent from '../../component/header/HeaderComponent';
 import {colors} from '../../constants'
 import { useNavigate } from 'react-router-dom';
 import { SEARCH_MODE } from '../../constants/enums';
+import { formatDistanceToNow } from 'date-fns';
+import ChallengeCard from './widgets/ChallengeCard';
 
 const BookForum = () => {
   const [forums, setForums] = useState([]);
@@ -17,6 +19,7 @@ const BookForum = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [challenges, setChallenges] = useState([]);
 
   const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
     (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
@@ -60,51 +63,56 @@ const BookForum = () => {
     setForums(prevForums => prevForums.filter(forum => forum.discussionId !== deletedId));
   };
 
-  const getUser = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:8080/api/v1/user/profile',
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  const getProgressColor = (startDate, endDate) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const total = end - start;
+    const elapsed = now - start;
+    const progress = (elapsed / total) * 100;
+
+    if (progress < 30) return 'bg-emerald-600';
+    if (progress < 70) return 'bg-yellow-600';
+    return 'bg-red-600';
+  };
+
+  const getChallengeStatus = (challenge) => {
+    const now = new Date();
+    const startDate = new Date(challenge.startDate);
+    const endDate = new Date(challenge.endDate);
+
+    if (now < startDate) return 'Upcoming';
+    if (now > endDate) return 'Completed';
+    return 'In Progress';
+  };
 
   useEffect(() => {
-    getUser()
-  }, [])
-
-  useEffect(() => {
-    const fetchForums = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await api.get('/api/v1/forums');
-        if (response.data.success) {
-          setForums(response.data.data);
-        } else {
-          setError('Failed to fetch forums');
-        }
+        const [userResponse, forumsResponse, challengesResponse] = await Promise.all([
+          fetch('http://localhost:8080/api/v1/user/profile', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          }),
+          api.get('/api/v1/forums'),
+          api.get('/api/v1/challenges')
+        ]);
+
+        const userData = await userResponse.json();
+
+        if (userData) setUser(userData);
+        if (forumsResponse.data.success) setForums(forumsResponse.data.data);
+        if (challengesResponse.data.success) setChallenges(challengesResponse.data.data);
       } catch (err) {
-        if (err.response?.status === 403) {
-          setError('You need to login to access this content');
-        } else {
-          setError(err.message);
-        }
+        setError(err.response?.status === 403
+          ? 'You need to login to access this content'
+          : err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchForums();
+    fetchData();
   }, []);
 
   const handleCreateForum = () => {
@@ -122,25 +130,6 @@ const BookForum = () => {
       state: { mode: SEARCH_MODE.SELECT_BOOK }
     });
   };
-
-  const readingChallenges = [
-    {
-      id: 1,
-      title: "Summer Reading Challenge",
-      description: "Read 5 classics in 3 months and earn your badge",
-      daysRemaining: 15,
-      gradient: "from-blue-500 to-blue-600",
-      icon: Book
-    },
-    {
-      id: 2,
-      title: "Author Spotlight",
-      description: "This month featuring: Haruki Murakami",
-      subtitle: "Join the reading marathon",
-      gradient: "from-purple-500 to-purple-600",
-      icon: Heart
-    }
-  ];
 
   if (loading) return (
     <Box
@@ -242,28 +231,30 @@ const BookForum = () => {
 
       {/* Featured Reading Challenge - Hardcoded Section */}
       <div className="mt-12">
-        <h2 className="text-3xl font-bold mb-6">Featured Reading Challenge</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {readingChallenges.map((challenge) => (
-            <div key={challenge.id} className={`bg-gradient-to-r ${challenge.gradient} text-white rounded-lg p-6`}>
-              <h3 className="text-2xl font-bold mb-2">{challenge.title}</h3>
-              <p className="text-blue-100 mb-4">{challenge.description}</p>
-              <div className="flex items-center mb-6">
-                <challenge.icon className="w-6 h-6 mr-2" />
-                <span>{challenge.subtitle || `${challenge.daysRemaining} days remaining`}</span>
-              </div>
-              <div className="flex gap-4">
-                <button className="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors">
-                  {challenge.id === 1 ? 'Join Challenge' : 'View Collection'}
-                </button>
-                <button className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors">
-                  {challenge.id === 1 ? 'View Books' : 'Join Discussion'}
-                </button>
-              </div>
-            </div>
-          ))}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold text-white">Reading Challenges</h2>
+        <div className="flex gap-2">
+          <div className="flex items-center px-3 py-1 rounded-full bg-emerald-600/20 text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+            Active
+          </div>
+          <div className="flex items-center px-3 py-1 rounded-full bg-yellow-600/20 text-yellow-400">
+            <span className="w-2 h-2 rounded-full bg-yellow-400 mr-2"></span>
+            Mid-way
+          </div>
+          <div className="flex items-center px-3 py-1 rounded-full bg-red-600/20 text-red-400">
+            <span className="w-2 h-2 rounded-full bg-red-400 mr-2"></span>
+            Ending Soon
+          </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {challenges.map((challenge) => (
+          <ChallengeCard key={challenge.challengeId} challenge={challenge} />
+        ))}
+      </div>
+    </div>
     </div>
     </Box>
   );
