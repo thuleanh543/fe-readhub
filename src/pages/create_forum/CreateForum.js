@@ -45,7 +45,6 @@ export default function CreateForum() {
   });
 
   const [errors, setErrors] = useState({});
-  const [showPreview, setShowPreview] = useState(false);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -341,14 +340,6 @@ export default function CreateForum() {
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Creating...' : 'Create Forum'}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<Save />}
-                      size="large"
-                      onClick={() => setShowPreview(true)}
-                    >
-                      Preview
                     </Button>
                   </Box>
                 </Box>

@@ -47,19 +47,19 @@ function App() {
           {user && <BookRecommendations user={user} />}
           <div className='bg-white'>
           {error ? (
-              <ErrorMessage error={error} />
-            ) : (
-              bookshelves.map(shelf => (
-                <Suspense key={shelf.topic} fallback={<LoadingSkeleton />}>
-                  <BookshelfSection
-                    key={shelf.topic}
-                    {...shelf}
-                    books={loading ? [] : booksData[shelf.topic]}
-                    isLoading={loading}
-                  />
-                </Suspense>
-              ))
-            )}
+  <ErrorMessage error={error} />
+) : loading ? (
+  <LoadingSkeleton />
+) : (
+  bookshelves.map(shelf => (
+    <BookshelfSection
+      key={shelf.topic}
+      {...shelf}
+      books={booksData[shelf.topic] || []}
+      isLoading={false}
+    />
+  ))
+)}
           </div>
         </div>
 
