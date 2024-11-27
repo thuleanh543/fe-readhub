@@ -1,79 +1,144 @@
 import React, { useState } from 'react';
-import { Flag, Check, X, AlertCircle, Clock, Ban, Bell } from 'lucide-react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import { Flag, Check, X, AlertCircle, Clock, Ban, Trash2 } from 'lucide-react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, FormGroup, Alert } from '@mui/material';
 import { toast } from 'react-toastify';
-import { format } from 'date-fns';
 
-const ActionMenu = ({ reportId }) => {
+const ActionMenu = ({ reportId, forumId }) => {
   const [showBanDialog, setShowBanDialog] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [banReason, setBanReason] = useState('');
+  const [banTypes, setBanTypes] = useState({
+    noInteraction: false,
+    noComment: false,
+    noJoin: false,
+    noForumCreation: false,
+    deleteForum: false
+  });
 
   const actions = [
     { id: 'DISMISS', label: 'Dismiss Report', icon: <X className="w-4 h-4" /> },
     { id: 'WARN', label: 'Warn User', icon: <AlertCircle className="w-4 h-4" /> },
-    { id: 'BAN_1H', label: 'Ban Forum Creation (1h)', icon: <Clock className="w-4 h-4" /> },
-    { id: 'BAN_3H', label: 'Ban Forum Creation (3h)', icon: <Clock className="w-4 h-4" /> },
-    { id: 'BAN_24H', label: 'Ban Forum Creation (24h)', icon: <Clock className="w-4 h-4" /> },
+    { id: 'BAN_1H', label: 'Ban User (1h)', icon: <Clock className="w-4 h-4" /> },
+    { id: 'BAN_3H', label: 'Ban User (3h)', icon: <Clock className="w-4 h-4" /> },
+    { id: 'BAN_24H', label: 'Ban User (24h)', icon: <Clock className="w-4 h-4" /> },
     { id: 'BAN_PERMANENT', label: 'Permanent Ban', icon: <Ban className="w-4 h-4" /> },
   ];
 
   const handleActionClick = (actionId) => {
-    if (actionId.startsWith('BAN_')) {
-      setSelectedAction(actionId);
-      setShowBanDialog(true);
-    } else if (actionId === 'WARN') {
-      setSelectedAction(actionId);
-      setShowBanDialog(true);
-    } else {
+    if (actionId === 'DISMISS') {
       handleAction(actionId);
+    } else {
+      setSelectedAction(actionId);
+      setBanTypes({
+        noInteraction: false,
+        noComment: false,
+        noJoin: false,
+        noForumCreation: false,
+        deleteForum: false
+      });
+      setShowBanDialog(true);
+    }
+  };
+
+  const handleBanTypeChange = (event) => {
+    setBanTypes({
+      ...banTypes,
+      [event.target.name]: event.target.checked
+    });
+  };
+
+  const handleReasonSubmit = async () => {
+    if (!banReason.trim() && selectedAction !== 'DISMISS') {
+      toast.error('Please provide a reason');
+      return;
+    }
+
+    if (selectedAction?.includes('BAN') && !Object.values(banTypes).some(value => value)) {
+      toast.error('Please select at least one ban type');
+      return;
+    }
+
+    try {
+      await handleAction(selectedAction, banReason);
+
+      setShowBanDialog(false);
+      setBanReason('');
+      setBanTypes({
+        noInteraction: false,
+        noComment: false,
+        noJoin: false,
+        deleteForum: false
+      });
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error(error.message);
     }
   };
 
   const handleAction = async (actionId, reason = '') => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/forums/reports/${reportId}/action`, {
-        method: 'POST',
+      console.log('Applying action:', actionId, 'to report:', reportId, 'reason:', reason, 'banTypes:', banTypes);
+        const body = {
+            action: actionId,
+            reason: reason || null,
+            // Chỉ thêm banTypes nếu là action ban và có ít nhất 1 loại ban được chọn
+            banTypes: actionId.startsWith('BAN_') ? banTypes : null
+        };
+
+        const response = await fetch(`http://localhost:8080/api/v1/forums/reports/${reportId}/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to apply action');
+        }
+
+        // Đợi xử lý xong action trước khi xóa forum
+        await response.json();
+
+        // Thêm delay nhỏ trước khi xóa forum
+        if (banTypes.deleteForum) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await handleDeleteForum();
+        }
+
+        toast.success('Action applied successfully');
+
+        // Thêm delay trước khi reload trang
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+
+    } catch (error) {
+        console.error('Action error:', error);
+        toast.error(error.message);
+        throw error;
+    }
+  };
+
+  const handleDeleteForum = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/forums/${forumId}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          action: actionId,
-          reason: reason || null
-        })
+        }
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to apply action');
+        throw new Error('Failed to delete forum');
       }
-
-      toast.success('Action applied successfully');
     } catch (error) {
-      console.error('Action error:', error);
-      toast.error(error.message);
+      throw new Error('Failed to delete forum: ' + error.message);
     }
-  };
-
-  const handleReasonSubmit = () => {
-    if (!banReason.trim() && selectedAction !== 'DISMISS') {
-      toast.error('Please provide a reason');
-      return;
-    }
-    handleAction(selectedAction, banReason);
-    setShowBanDialog(false);
-    setBanReason('');
-  };
-
-  // Avoid aria-hidden issues with Dialog
-  const dialogProps = {
-    slotProps: {
-      backdrop: {
-        'aria-hidden': 'false'
-      }
-    },
-    keepMounted: true,
   };
 
   return (
@@ -99,14 +164,71 @@ const ActionMenu = ({ reportId }) => {
         onClose={() => setShowBanDialog(false)}
         maxWidth="sm"
         fullWidth
-        {...dialogProps}
       >
         <DialogTitle>
           {selectedAction?.includes('BAN') ? 'Ban User' : 'Warning User'}
         </DialogTitle>
         <DialogContent>
+          {selectedAction?.includes('BAN') && (
+            <>
+              <Alert severity="info" className="mb-4 mt-4">
+                Please select at least one restriction type
+              </Alert>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={banTypes.noInteraction}
+                      onChange={handleBanTypeChange}
+                      name="noInteraction"
+                    />
+                  }
+                  label="Ban user from forum interactions (like, save)"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={banTypes.noComment}
+                      onChange={handleBanTypeChange}
+                      name="noComment"
+                    />
+                  }
+                  label="Ban user from commenting"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={banTypes.noJoin}
+                      onChange={handleBanTypeChange}
+                      name="noJoin"
+                    />
+                  }
+                  label="Ban user from joining forums"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={banTypes.noForumCreation}
+                      onChange={handleBanTypeChange}
+                      name="noForumCreation"
+                    />
+                  }
+                  label="Ban user from creating forums"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={banTypes.deleteForum}
+                      onChange={handleBanTypeChange}
+                      name="deleteForum"
+                    />
+                  }
+                  label="Delete this forum"
+                />
+              </FormGroup>
+            </>
+          )}
           <TextField
-            autoFocus
             margin="dense"
             label={selectedAction?.includes('BAN') ? "Reason for ban" : "Warning message"}
             fullWidth
@@ -116,7 +238,6 @@ const ActionMenu = ({ reportId }) => {
             onChange={(e) => setBanReason(e.target.value)}
             variant="outlined"
             required
-            sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -124,6 +245,13 @@ const ActionMenu = ({ reportId }) => {
             onClick={() => {
               setShowBanDialog(false);
               setBanReason('');
+              setBanTypes({
+                noInteraction: false,
+                noComment: false,
+                noJoin: false,
+                noForumCreation: false,
+                deleteForum: false
+              });
             }}
             color="inherit"
           >
@@ -131,7 +259,7 @@ const ActionMenu = ({ reportId }) => {
           </Button>
           <Button
             onClick={handleReasonSubmit}
-            disabled={!banReason.trim()}
+            disabled={!banReason.trim() || (selectedAction?.includes('BAN') && !Object.values(banTypes).some(value => value))}
             variant="contained"
             color="error"
           >

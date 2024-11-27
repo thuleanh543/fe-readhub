@@ -124,11 +124,6 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
       icon: <BookOpen className='w-4 h-4' />,
       path: '/saved-books',
     },
-    {
-      label: 'Settings',
-      icon: <SettingsIcon className='w-4 h-4' />,
-      path: '/settings',
-    },
     user?.role === 'ADMIN' && {
       label: 'Admin',
       icon: <SettingsIcon className='w-4 h-4' />,
