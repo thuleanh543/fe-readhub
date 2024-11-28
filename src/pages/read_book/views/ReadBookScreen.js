@@ -218,7 +218,7 @@ function ReadBookScreen() {
         },
       )
 
-      if (response.data) {
+      if (response.data.data) {
         setHasBookmark(true)
         setBookmarkId(response.data.data.bookmarkId)
         setLocation(response.data.data.location)
@@ -423,8 +423,10 @@ function ReadBookScreen() {
   }, [])
 
   useEffect(() => {
-    getBookmark()
-  }, [])
+    if (user && bookId) {
+      getBookmark()
+    }
+  }, [user && bookId])
 
   useEffect(() => {
     if (user && bookId) {
