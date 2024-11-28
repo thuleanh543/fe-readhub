@@ -21,15 +21,15 @@ const BookForum = () => {
   const navigate = useNavigate();
   const [challenges, setChallenges] = useState([]);
 
-  const isBanned = (user?.forumInteractionBanned) &&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+  const isBanned = (user?.forumCreationBanned) &&
+    (user?.forumCreationBanExpiresAt === null || new Date(user?.forumCreationBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
-    if (!user?.forumInteractionBanned) return '';
-    if (!user.forumBanExpiresAt) {
-      return `You are permanently banned: ${user.forumBanReason}`;
+    if (!user?.forumCreationBanned) return '';
+    if (!user?.forumCreationBanExpiresAt) {
+      return `You are permanently banned: ${user?.forumCreationBanReason}`;
     }
-    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+    return `You are banned until ${new Date(user?.forumCreationBanExpiresAt).toLocaleString()}: ${user?.forumCreationBanReason}`;
   };
 
   // Get token from localStorage

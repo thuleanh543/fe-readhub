@@ -18,15 +18,15 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const optionsRef = useRef(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const isBanned = (user?.forumInteractionBanned) &&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+  const isBanned = (user?.forumJoinBanned) &&
+    (user?.forumJoinBanExpiresAt === null || new Date(user?.forumJoinBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
-    if (!user?.forumInteractionBanned) return '';
-    if (!user.forumBanExpiresAt) {
-      return `You are permanently banned: ${user.forumBanReason}`;
+    if (!user?.forumJoinBanned) return '';
+    if (!user?.forumJoinBanExpiresAt) {
+      return `You are permanently banned: Ban join`;
     }
-    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+    return `You are banned until ${new Date(user?.forumJoinBanExpiresAt).toLocaleString()}: Ban join`;
   };
 
   const getButtonStyle = () => {
