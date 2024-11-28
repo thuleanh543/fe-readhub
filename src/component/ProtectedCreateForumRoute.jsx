@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const ProtectedForumRoute = ({ children }) => {
+const ProtectedCreateForumRoute = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,16 +27,20 @@ const ProtectedForumRoute = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
-  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+  const isBanned = (user?.forumCreationBanned) &&
+    (user?.forumCreationBanExpiresAt === null || new Date(user?.forumCreationBanExpiresAt) > new Date());
 
   if (isBanned) {
-    const banMessage = user.forumBanExpiresAt
-      ? `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`
-      : `You are permanently banned: ${user.forumBanReason}`;
+    const banMessage = user?.forumCreationBanExpiresAt
+      ? `You are banned until ${new Date(user?.forumCreationBanExpiresAt).toLocaleString()}: ${user?.forumCreationBanReason}`
+      : `You are permanently banned: ${user?.forumCreationBanReason}`;
 
     toast.error(banMessage);
     return <Navigate to="/book-forum" replace />;
@@ -45,4 +49,4 @@ const ProtectedForumRoute = ({ children }) => {
   return children;
 };
 
-export default ProtectedForumRoute;
+export default ProtectedCreateForumRoute;

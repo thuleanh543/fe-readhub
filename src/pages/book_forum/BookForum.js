@@ -21,15 +21,15 @@ const BookForum = () => {
   const navigate = useNavigate();
   const [challenges, setChallenges] = useState([]);
 
-  const isBanned = (user?.forumInteractionBanned || user?.forumInteractionBanned ) &&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+  const isBanned = (user?.forumCreationBanned) &&
+    (user?.forumCreationBanExpiresAt === null || new Date(user?.forumCreationBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
-    if (!user?.forumInteractionBanned) return '';
-    if (!user.forumBanExpiresAt) {
-      return `You are permanently banned: ${user.forumBanReason}`;
+    if (!user?.forumCreationBanned) return '';
+    if (!user?.forumCreationBanExpiresAt) {
+      return `You are permanently banned: ${user?.forumCreationBanReason}`;
     }
-    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+    return `You are banned until ${new Date(user?.forumCreationBanExpiresAt).toLocaleString()}: ${user?.forumCreationBanReason}`;
   };
 
   // Get token from localStorage
@@ -63,29 +63,6 @@ const BookForum = () => {
     setForums(prevForums => prevForums.filter(forum => forum.discussionId !== deletedId));
   };
 
-  const getProgressColor = (startDate, endDate) => {
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const total = end - start;
-    const elapsed = now - start;
-    const progress = (elapsed / total) * 100;
-
-    if (progress < 30) return 'bg-emerald-600';
-    if (progress < 70) return 'bg-yellow-600';
-    return 'bg-red-600';
-  };
-
-  const getChallengeStatus = (challenge) => {
-    const now = new Date();
-    const startDate = new Date(challenge.startDate);
-    const endDate = new Date(challenge.endDate);
-
-    if (now < startDate) return 'Upcoming';
-    if (now > endDate) return 'Completed';
-    return 'In Progress';
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -99,7 +76,7 @@ const BookForum = () => {
         ]);
 
         const userData = await userResponse.json();
-
+        console.log(`User: ${userData?.fullName} ${userData?.forumInteractionBanned} + ${userData?.forumCommentBanned} + ${userData?.forumJoinBanned}`);
         if (userData) setUser(userData);
         if (forumsResponse.data.success) setForums(forumsResponse.data.data);
         if (challengesResponse.data.success) setChallenges(challengesResponse.data.data);
@@ -186,13 +163,13 @@ const BookForum = () => {
           <p className="text-gray-600">Join thoughtful discussions about books with fellow readers</p>
         </div>
         <div className="flex gap-4">
-        <button
+        {user?.role === 'ADMIN' &&  <button
             onClick={() => navigate('/create-forum-challenge')}
             className="flex items-center px-4 py-2 rounded-lg transition-colors bg-purple-600 text-white hover:bg-purple-700"
             >
           <Trophy className="w-5 h-5 mr-2" />
           <span>Create Challenge</span>
-        </button>
+        </button>}
         <button
             onClick={handleCreateForum}
             disabled={isBanned}

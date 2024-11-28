@@ -20,7 +20,8 @@ import {
 } from '../pages'
 import {PrivateRoute} from '../component/routing/PrivateRoute'
 import AdminLayout from '../component/admin/layouts/AdminLayout'
-import ProtectedForumRoute from '../component/ProtectedForumRoute'
+import ProtectedCreateForumRoute from '../component/ProtectedCreateForumRoute'
+import ProtectedJoinForumRoute from '../component/ProtectedJoinForumRoute'
 
 function Stack() {
   return (
@@ -38,18 +39,18 @@ function Stack() {
       <Route
         path='/forum-discussion/:forumId'
         element={
-          <ProtectedForumRoute>
+          <ProtectedJoinForumRoute>
             <ForumDiscussion />
-          </ProtectedForumRoute>
+          </ProtectedJoinForumRoute>
         }
       />
       <Route path='/book-forum' element={<BookForum />} />
       <Route
           path='/create-forum'
           element={
-            <ProtectedForumRoute>
+            <ProtectedCreateForumRoute>
             <CreateForum />
-            </ProtectedForumRoute>
+            </ProtectedCreateForumRoute>
           }
       />
       <Route path='/saved-books' element={<SavedBooks />} />

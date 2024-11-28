@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CalendarDays, BookOpen, Trophy, Clock } from 'lucide-react';
 import HeaderComponent from '../../component/header/HeaderComponent';
 
@@ -13,6 +13,27 @@ const CreateReadingChallenge = () => {
     targetBooks: '',
     reward: ''
   });
+  const [user, setUser] = useState(null)
+
+  const getUser = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:8080/api/v1/user/profile',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
 
   const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
   const months = [
@@ -56,6 +77,10 @@ const CreateReadingChallenge = () => {
       alert(error.message || 'Error creating challenge');
     }
   };
+
+  useEffect(() => {
+    getUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Flag, Check, X, AlertCircle, MoreHorizontal, ExternalLink, Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
-import NotificationBadge from '../../component/admin/ui/NotificationBadge';
 import ActionMenu from '../../component/admin/ui/ActionMenu';
 import ReportStatusBadge from '../../component/admin/ui/ReportStatusBadge';
 import { format } from 'date-fns';
@@ -187,6 +185,7 @@ const ForumReports = () => {
                       {selectedReport?.id === report.id && showActionMenu && (
                         <ActionMenu
                           reportId={report.id}
+                          forumId={report.forum.discussionId}
                         />
                       )}
                     </div>
