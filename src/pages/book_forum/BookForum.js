@@ -10,7 +10,6 @@ import HeaderComponent from '../../component/header/HeaderComponent';
 import {colors} from '../../constants'
 import { useNavigate } from 'react-router-dom';
 import { SEARCH_MODE } from '../../constants/enums';
-import { formatDistanceToNow } from 'date-fns';
 import ChallengeCard from './widgets/ChallengeCard';
 
 const BookForum = () => {
@@ -76,7 +75,6 @@ const BookForum = () => {
         ]);
 
         const userData = await userResponse.json();
-        console.log(`User: ${userData?.fullName} ${userData?.forumInteractionBanned} + ${userData?.forumCommentBanned} + ${userData?.forumJoinBanned}`);
         if (userData) setUser(userData);
         if (forumsResponse.data.success) setForums(forumsResponse.data.data);
         if (challengesResponse.data.success) setChallenges(challengesResponse.data.data);

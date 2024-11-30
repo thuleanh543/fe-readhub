@@ -105,6 +105,10 @@ export default function DescriptionBook() {
     }
   }
 
+  const isBanned = (user?.forumCreationBanned) &&
+  (user?.forumCreationBanExpiresAt === null || new Date(user?.forumCreationBanExpiresAt) > new Date());
+
+
   useEffect(() => {
     const getUser = async () => {
       if (!localStorage.getItem('token')) return
@@ -294,28 +298,42 @@ export default function DescriptionBook() {
                     </Typography>
                   </Box>
                   <Button
-                    variant='contained'
-                    startIcon={<MessageCircle />}
-                    onClick={() => {
-                      if (!user) {
-                        setShowLoginDialog(true)
-                      } else
-                        navigate('/create-forum', {
-                          state: {
-                            bookId,
-                            bookTitle,
-                            authors: bookDetails.authors
-                              .map(author => author.name)
-                              .join(', '),
-                            defaultCoverImage:
-                              bookDetails.formats['image/jpeg'],
-                            subjects: bookDetails.subjects,
-                          },
-                        })
-                    }}
-                    sx={{bgcolor: 'primary.main'}}>
-                    Create Forum
-                  </Button>
+  variant='contained'
+  startIcon={<MessageCircle />}
+  onClick={() => {
+    if (!user) {
+      setShowLoginDialog(true)
+    } else if (isBanned) {
+      // You could add a toast notification here to inform the user why they can't create a forum
+      return;
+    } else {
+      navigate('/create-forum', {
+        state: {
+          bookId,
+          bookTitle,
+          authors: bookDetails.authors
+            .map(author => author.name)
+            .join(', '),
+          defaultCoverImage:
+            bookDetails.formats['image/jpeg'],
+          subjects: bookDetails.subjects,
+        },
+      })
+    }
+  }}
+  disabled={isBanned}
+  sx={{
+    bgcolor: isBanned ? 'grey.500' : 'primary.main',
+    '&:hover': {
+      bgcolor: isBanned ? 'grey.600' : 'primary.dark',
+    },
+    '&.Mui-disabled': {
+      bgcolor: 'grey.500',
+      color: 'white'
+    }
+  }}>
+  {isBanned ? 'Forum Creation Restricted' : 'Create Forum'}
+</Button>
                 </Box>
 
                 <Grid container spacing={3} sx={{mb: 3}}>
