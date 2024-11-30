@@ -382,14 +382,14 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
     <div className="bg-white rounded-lg shadow-md p-6 mb-4">
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
-        {user.urlAvatar ? (
+        {comment.user.urlAvatar ? (
                   <Avatar
                   sx={{width: 25, height: 25}}
-                  src={user.urlAvatar}
-                  alt={user.fullName}
+                  src={comment.user.urlAvatar}
+                  alt={comment.user.fullName}
                 />
                 ) : (
-                  <Avatar {...stringAvatar(user?.fullName)} />
+                  <Avatar {...stringAvatar(comment.user?.fullName)} />
                 )}
           <div>
             <h3 className="font-semibold text-lg">{comment.user.fullName}</h3>
@@ -638,14 +638,14 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
               <div className="space-y-4">
                 {replies.map((reply) => (
                   <div key={reply.id} className="flex gap-4">
-                    {user.urlAvatar ? (
+                    {reply.user.urlAvatar ? (
                   <Avatar
                   sx={{width: 25, height: 25}}
-                  src={user.urlAvatar}
-                  alt={user.fullName}
+                  src={reply.user.urlAvatar}
+                  alt={reply.user.fullName}
                 />
                 ) : (
-                  <Avatar {...stringAvatar(user?.fullName)} />
+                  <Avatar {...stringAvatar(reply.user?.fullName)} />
                 )}
                     <div className="flex-1">
                       <div className="bg-gray-50 p-4 rounded-lg">
