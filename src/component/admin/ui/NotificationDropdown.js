@@ -55,6 +55,21 @@ const useNotificationCount = () => {
   return [unreadCount, setUnreadCount, fetchUnreadCount];
 };
 
+const getNotificationLink = (notification) => {
+  switch (notification.type) {
+    case 'FORUM_REPORT':
+      return '/admin/forum-reports';
+    case 'USER_BANNED':
+      return `/admin/users/${notification.data.userId}`;
+    case 'NEW_COMMENT':
+      return `/forums/${notification.data.forumId}`;
+    case 'NEW_MEMBER':
+      return `/forums/${notification.data.forumId}/members`;
+    default:
+      return null;
+  }
+};
+
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -242,13 +257,13 @@ const NotificationDropdown = () => {
   const getNotificationLink = (notification) => {
     switch (notification.type) {
       case 'FORUM_REPORT':
-        return `/admin/forum-reports/${notification.data.reportId}`;
+        return `/admin/forum-reports`;
       case 'USER_BANNED':
         return `/admin/users/${notification.data.userId}`;
       case 'NEW_COMMENT':
         return `/forums/${notification.data.forumId}`;
       case 'NEW_MEMBER':
-        return `/forums/${notification.data.forumId}/members`;
+        return `/forum-discussion/${notification.data.forumId}`;
       default:
         return null;
     }
@@ -277,6 +292,17 @@ const NotificationDropdown = () => {
     }
   };
 
+  const handleNotificationClick = (notification) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    const link = getNotificationLink(notification);
+    if (link) {
+      navigate(link);
+      setIsOpen(false);
+    }
+  };
+
   return (
     <><div className="relative" ref={dropdownRef}>
       <button
@@ -301,7 +327,7 @@ const NotificationDropdown = () => {
             className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 border border-gray-200"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Thông báo</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Notification</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
@@ -329,7 +355,7 @@ const NotificationDropdown = () => {
               ) : notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-gray-500">
                   <Bell className="w-12 h-12 mb-2" />
-                  <p>Chưa có thông báo nào</p>
+                  <p>No have notifications</p>
                 </div>
               ) : (
                 notifications.map((notification) => {
@@ -343,7 +369,7 @@ const NotificationDropdown = () => {
                       {...wrapperProps}
                       className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors block
                         ${!notification.read ? 'bg-blue-50' : ''}`}
-                      onClick={() => !notification.read && markAsRead(notification.id)}
+                        onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex gap-3">
                         <div className="flex-shrink-0 mt-1">
@@ -358,7 +384,7 @@ const NotificationDropdown = () => {
                               {format(new Date(notification.createdAt), 'dd/MM/yyyy HH:mm')}
                             </span>
                           </div>
-                          <p className="mt-1 text-sm text-gray-600">
+                          <p className="mt-1 text-sm text-gray-600 text-left">
                             {notification.message}
                           </p>
                         </div>
