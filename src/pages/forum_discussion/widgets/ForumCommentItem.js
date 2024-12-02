@@ -375,6 +375,10 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
     }
   }
 
+  const isBanned = (user?.forumCommentBanned)&&
+    (user?.forumCommentBanExpiresAt === null || new Date(user?.forumCommentBanExpiresAt) > new Date());
+
+
   const canModifyComment = user && (user?.userId === comment?.user?.userId || user?.role === 'ROLE_ADMIN');
   const canModifyReply = (reply) => user && (user.userId === reply.user.userId || user.role === 'ROLE_ADMIN');
 
@@ -526,6 +530,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
             <span>{likeCount}</span>
           </button>
 
+          {!isBanned && (
           <button
             onClick={() => setShowReplyInput(!showReplyInput)}
             className="flex items-center gap-2 hover:text-blue-600 transition-colors"
@@ -533,6 +538,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
             <MessageCircle className="w-5 h-5" />
             <span>Reply{replies.length > 0 && ` (${replies.length})`}</span>
           </button>
+        )}
 
           <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
             <Share2 className="w-5 h-5" />

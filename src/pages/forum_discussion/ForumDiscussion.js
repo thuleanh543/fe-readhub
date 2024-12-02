@@ -207,7 +207,7 @@ console.log('Posting comment:', commentData)
   }
   }
 
-  const isBanned = (user?.forumInteractionBanned)&&
+  const isBanned = (user?.forumCommentBanned)&&
     (user?.forumBanExpiresAt === null || new Date(user?.forumBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
