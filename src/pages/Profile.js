@@ -100,7 +100,7 @@ function Profile() {
 
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/user/${user.userId}/reset-password`,
+        `http://localhost:8080/api/v1/user/${user?.userId}/reset-password`,
         {password, newPassword},
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -131,7 +131,7 @@ function Profile() {
       const formData = new FormData()
       formData.append('avatar', file)
       await axios.post(
-        `http://localhost:8080/api/v1/user/${user.userId}/upload-avatar`,
+        `http://localhost:8080/api/v1/user/${user?.userId}/upload-avatar`,
         formData,
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -155,7 +155,7 @@ function Profile() {
   const handleUpdateProfile = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/user/${user.userId}`,
+        `http://localhost:8080/api/v1/user/${user?.userId}`,
         {username: username, fullName: fullName},
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -265,8 +265,8 @@ function Profile() {
                     <IconButton
                       sx={{width: 90, height: 90, position: 'relative'}}
                       component='span'>
-                      {user.urlAvatar ? (
-                        <Avatar src={user.urlAvatar} alt={user.fullName} />
+                      {user?.urlAvatar ? (
+                        <Avatar src={user?.urlAvatar} alt={user?.fullName} />
                       ) : (
                         <Avatar {...stringAvatar(user?.fullName)} />
                       )}
@@ -287,7 +287,7 @@ function Profile() {
                     label='Username'
                     variant='outlined'
                     fullWidth
-                    value={user.username}
+                    value={user?.username}
                     onChange={e => setUsername(e.target.value)}
                     sx={{marginTop: 2}}
                   />

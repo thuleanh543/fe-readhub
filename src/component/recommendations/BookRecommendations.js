@@ -108,7 +108,7 @@ const BookRecommendations = () => {
         setError(null)
         setLoading(true)
         const response = await axios.get(
-          `http://localhost:8080/api/v1/recommendations/user/${user.userId}`,
+          `http://localhost:8080/api/v1/recommendations/user/${user?.userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -262,7 +262,7 @@ const BookRecommendations = () => {
                 <button
                   onClick={handlePrevious}
                   className='absolute left-0 top-1/2 -translate-y-1/2
-                           w-8 h-8 md:w-10 md:h-10 
+                           w-8 h-8 md:w-10 md:h-10
                            flex items-center justify-center
                            rounded-full
                            bg-white/90
@@ -277,7 +277,7 @@ const BookRecommendations = () => {
                 <button
                   onClick={handleNext}
                   className='absolute right-0 top-1/2 -translate-y-1/2
-                           w-8 h-8 md:w-10 md:h-10 
+                           w-8 h-8 md:w-10 md:h-10
                            flex items-center justify-center
                            rounded-full
                            bg-white/90

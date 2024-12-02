@@ -12,14 +12,14 @@ const ForumInteractionButtons = ({ forumId, user }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const isBanned = (user?.forumInteractionBanned) &&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+    (user?.forumBanExpiresAt === null || new Date(user?.forumBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
     if (!user?.forumInteractionBanned) return '';
-    if (!user.forumBanExpiresAt) {
-      return `You are permanently banned: ${user.forumBanReason}`;
+    if (!user?.forumBanExpiresAt) {
+      return `You are permanently banned: ${user?.forumBanReason}`;
     }
-    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+    return `You are banned until ${new Date(user?.forumBanExpiresAt).toLocaleString()}: ${user?.forumBanReason}`;
   };
 
   useEffect(() => {

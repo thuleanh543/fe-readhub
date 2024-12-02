@@ -200,18 +200,18 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
                 onClick={() => setIsDesktopProfileOpen(!isDesktopProfileOpen)}
                 className='flex items-center gap-2 p-2 rounded-full hover:bg-gray-100'>
                 <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center'>
-                  {user.urlAvatar ? (
+                  {user?.urlAvatar ? (
                     <Avatar
                       sx={{width: 25, height: 25}}
-                      src={user.urlAvatar}
-                      alt={user.fullName}
+                      src={user?.urlAvatar}
+                      alt={user?.fullName}
                     />
                   ) : (
                     <Avatar {...stringAvatar(user?.fullName)} />
                   )}
                 </div>
                 <span className='text-sm font-medium text-gray-700'>
-                  {user.fullName}
+                  {user?.fullName}
                 </span>
                 <ChevronDown className='w-4 h-4 text-gray-500' />
               </button>
@@ -329,11 +329,11 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
                   <div className='animate-pulse w-8 h-8 bg-gray-200 rounded-full' />
                 ) : (
                   <div className='w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center'>
-                    {user.urlAvatar ? (
+                    {user?.urlAvatar ? (
                       <Avatar
                         sx={{width: 30, height: 30}}
-                        src={user.urlAvatar}
-                        alt={user.fullName}
+                        src={user?.urlAvatar}
+                        alt={user?.fullName}
                       />
                     ) : (
                       <Avatar {...stringAvatar(user?.fullName)} />
@@ -350,9 +350,9 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
                     <div className='max-w-7xl mx-auto px-4 py-2'>
                       <div className='py-3 border-b border-gray-100'>
                         <p className='font-semibold text-gray-900'>
-                          {user.fullName}
+                          {user?.fullName}
                         </p>
-                        <p className='text-sm text-gray-500'>{user.email}</p>
+                        <p className='text-sm text-gray-500'>{user?.email}</p>
                       </div>
                       <nav className='py-2'>
                         {profileMenuItems.map((item, index) => (

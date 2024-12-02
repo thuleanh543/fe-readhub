@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
 import { messaging } from '../../../config/firebase'; // Import từ file config
 import {
@@ -18,11 +18,47 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Slide, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/NotificationDropdown.css';
+import axios from 'axios';
+
+const useNotificationCount = () => {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        'http://localhost:8080/api/v1/notifications/unread-notifications-count',
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      if (response.data.success) {
+        setUnreadCount(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const unsubscribe = onMessage(messaging, (payload) => {
+      setUnreadCount(prev => prev + 1);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [fetchUnreadCount]);
+
+  return [unreadCount, setUnreadCount, fetchUnreadCount];
+};
 
 const NotificationDropdown = () => {
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount, refreshUnreadCount] = useNotificationCount();
   const dropdownRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const userId = localStorage.getItem('userId');
@@ -35,7 +71,6 @@ const NotificationDropdown = () => {
 
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          // Listen for foreground messages
           const unsubscribe = onMessage(messaging, (payload) => {
             console.log('Received foreground message:', payload);
 
@@ -157,7 +192,7 @@ const NotificationDropdown = () => {
               : notification
           )
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        refreshUnreadCount();
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);

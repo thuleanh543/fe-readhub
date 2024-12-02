@@ -208,14 +208,14 @@ console.log('Posting comment:', commentData)
   }
 
   const isBanned = (user?.forumInteractionBanned)&&
-    (user.forumBanExpiresAt === null || new Date(user.forumBanExpiresAt) > new Date());
+    (user?.forumBanExpiresAt === null || new Date(user?.forumBanExpiresAt) > new Date());
 
   const getBanMessage = () => {
     if (!user?.forumInteractionBanned) return '';
-    if (!user.forumBanExpiresAt) {
-      return `You are permanently banned: ${user.forumBanReason}`;
+    if (!user?.forumBanExpiresAt) {
+      return `You are permanently banned: ${user?.forumBanReason}`;
     }
-    return `You are banned until ${new Date(user.forumBanExpiresAt).toLocaleString()}: ${user.forumBanReason}`;
+    return `You are banned until ${new Date(user?.forumBanExpiresAt).toLocaleString()}: ${user?.forumBanReason}`;
   };
 
   useEffect(() => {
@@ -365,11 +365,11 @@ console.log('Posting comment:', commentData)
       <div className='max-w-4xl mx-auto'>
         <div className='bg-white rounded-lg shadow-md p-4 mb-8'>
           <div className='flex gap-4'>
-            {user.urlAvatar ? (
+            {user?.urlAvatar ? (
               <Avatar
                 sx={{width: 25, height: 25}}
-                src={user.urlAvatar}
-                alt={user.fullName}
+                src={user?.urlAvatar}
+                alt={user?.fullName}
               />
             ) : (
               <Avatar {...stringAvatar(user?.fullName)} />
