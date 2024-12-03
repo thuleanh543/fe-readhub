@@ -17,6 +17,7 @@ import LoginDialog from '../dialogs/LoginDialog'
 import NotificationDropdown from '../admin/ui/NotificationDropdown'
 import {useUser} from '../../contexts/UserProvider'
 import {Avatar} from '@mui/material'
+import SearchComponent from './SearchComponent'
 
 const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
   const {user, loading, logoutUser} = useUser()
@@ -170,23 +171,10 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
       {/* Center - Search */}
       {showSearch && (
         <div className='flex-1 max-w-xl mx-8'>
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5' />
-            <input
-              type='text'
-              placeholder='Search books, authors, or keywords...'
-              value={searchTerm}
-              onChange={e => onSearchChange?.(e.target.value)}
-              className='w-full pl-10 pr-10 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-            />
-            {searchTerm && (
-              <button
-                onClick={() => onSearchChange?.('')}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'>
-                <X className='h-5 w-5' />
-              </button>
-            )}
-          </div>
+          <SearchComponent
+            onSearchChange={onSearchChange}
+            initialSearchTerm={searchTerm}
+          />
         </div>
       )}
 
