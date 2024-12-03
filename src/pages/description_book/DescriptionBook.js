@@ -317,6 +317,7 @@ export default function DescriptionBook() {
           defaultCoverImage:
             bookDetails.formats['image/jpeg'],
           subjects: bookDetails.subjects,
+          coverBook: bookDetails.formats['image/jpeg'],
         },
       })
     }
