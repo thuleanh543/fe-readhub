@@ -1,0 +1,15 @@
+image: node:16
+
+stages:
+  - build
+  - deploy
+
+pages:
+  stage: deploy
+  script:
+    - npm install
+    - npm run build
+    - mv build public
+  artifacts:
+    paths:
+      - public
