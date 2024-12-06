@@ -1,36 +1,26 @@
-// ListBook.jsx
 import React, {useEffect, useState, useCallback, useRef} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {SEARCH_MODE} from '../../../constants/enums'
 
 const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
-  // Core state management with default values
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [initialLoad, setInitialLoad] = useState(true)
-  const [searchResults, setSearchResults] = useState([])
   const [loadingMore, setLoadingMore] = useState(false)
+  const [totalBooks, setTotalBooks] = useState(0)
   const searchUpdateTimeoutRef = useRef(null)
-  const [numBooks, setNumBooks] = useState(0)
-
-  // Refs for cleanup and control
-  const abortControllerRef = useRef(null)
   const observerRef = useRef(null)
   const lastSearchTermRef = useRef('')
 
   const navigate = useNavigate()
 
-  // Optimized intersection observer
   const lastBookElementRef = useCallback(
     node => {
       if (loading || loadingMore || !hasMore || books.length === 0) return
 
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
+      if (observerRef.current) observerRef.current.disconnect()
 
       observerRef.current = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting && hasMore) {
@@ -38,20 +28,19 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
         }
       })
 
-      if (node) {
-        observerRef.current.observe(node)
-      }
+      if (node) observerRef.current.observe(node)
     },
     [loading, loadingMore, hasMore, books.length],
   )
 
-  // Optimized fetch function
   const fetchBooks = useCallback(async (query, pageNum, isNewSearch) => {
     if (!query) return
 
     try {
+      // Set loading state immediately for new searches
       if (isNewSearch) {
         setLoading(true)
+        setBooks([]) // Clear previous results immediately
       } else {
         setLoadingMore(true)
       }
@@ -61,13 +50,12 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
       const data = await response.json()
 
       const newBooks = data.books || []
+      setTotalBooks(data.totalElements || 0)
 
       if (isNewSearch) {
         setBooks(newBooks)
-      } else {
-        if (newBooks.length > 0) {
-          setBooks(prev => [...prev, ...newBooks])
-        }
+      } else if (newBooks.length > 0) {
+        setBooks(prev => [...prev, ...newBooks])
       }
 
       setHasMore(newBooks.length > 0 && data.hasNext)
@@ -78,19 +66,23 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
     } finally {
       setLoading(false)
       setLoadingMore(false)
-      setInitialLoad(false)
     }
   }, [])
 
-  // Update search handling to be smoother
   useEffect(() => {
     if (searchUpdateTimeoutRef.current) {
       clearTimeout(searchUpdateTimeoutRef.current)
     }
 
-    if (searchTerm !== lastSearchTermRef.current) {
+    if (searchTerm && searchTerm !== lastSearchTermRef.current) {
+      // Update the last search term
+      lastSearchTermRef.current = searchTerm
+      setPage(1)
+      // Start loading immediately
+      setLoading(true)
+      setBooks([])
+
       searchUpdateTimeoutRef.current = setTimeout(() => {
-        setPage(1)
         fetchBooks(searchTerm, 1, true)
       }, 1700)
     }
@@ -99,20 +91,15 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
       if (searchUpdateTimeoutRef.current) {
         clearTimeout(searchUpdateTimeoutRef.current)
       }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
     }
   }, [searchTerm, fetchBooks])
 
-  // Handle pagination
   useEffect(() => {
     if (page > 1 && !loading && !loadingMore) {
       fetchBooks(searchTerm, page, false)
     }
   }, [page, searchTerm, fetchBooks, loading, loadingMore])
 
-  // Optimized book click handler
   const handleBookClick = useCallback(
     book => {
       if (mode === SEARCH_MODE.SELECT_BOOK) {
@@ -134,7 +121,6 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
     [navigate, mode, onBookSelect],
   )
 
-  // Error display
   if (error) {
     return (
       <div className='flex items-center justify-center p-8'>
@@ -145,52 +131,21 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
     )
   }
 
-  // Render main content
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-white px-6 py-8'>
       <div className='max-w-7xl mx-auto'>
+        {/* Results count display */}
+        {!loading && totalBooks > 0 && (
+          <div
+            className='mb-6 text-gray-600 text-l font-bold 
+          text-right'>
+            Found {totalBooks} book{totalBooks !== 1 ? 's' : ''}
+          </div>
+        )}
+
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8'>
-          {/* Book Grid */}
-          {books.map((book, index) => (
-            <div
-              ref={index === books.length - 1 ? lastBookElementRef : null}
-              key={`${book.id}-${index}`}
-              onClick={() => handleBookClick(book)}
-              className={`group relative transition-all duration-300 hover:scale-105 ${
-                mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
-              }`}
-              style={{width: '100%'}}>
-              <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
-                <div
-                  className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
-                  style={{
-                    backgroundImage: `url('${book.coverUrl}')`,
-                  }}
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
-                <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                  <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
-                    {mode === SEARCH_MODE.SELECT_BOOK
-                      ? 'Select Book'
-                      : 'View Details'}
-                  </button>
-                </div>
-              </div>
-
-              <div className='mt-4 p-3'>
-                <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
-                  {book.title}
-                </h3>
-                <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
-                  {book.authors[0]?.name || 'Unknown Author'}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Loading Skeletons */}
+          {/* Loading skeletons */}
           {loading &&
-            books.length === 0 &&
             Array.from({length: 10}).map((_, i) => (
               <div key={`skeleton-${i}`} className='animate-pulse'>
                 <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-gray-200'>
@@ -202,9 +157,48 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
                 </div>
               </div>
             ))}
+
+          {/* Book grid */}
+          {!loading &&
+            books.map((book, index) => (
+              <div
+                ref={index === books.length - 1 ? lastBookElementRef : null}
+                key={`${book.id}-${index}`}
+                onClick={() => handleBookClick(book)}
+                className={`group relative transition-all duration-300 hover:scale-105 ${
+                  mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
+                }`}
+                style={{width: '100%'}}>
+                <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
+                  <div
+                    className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+                    style={{
+                      backgroundImage: `url('${book.coverUrl}')`,
+                    }}
+                  />
+                  <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+                  <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+                    <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
+                      {mode === SEARCH_MODE.SELECT_BOOK
+                        ? 'Select Book'
+                        : 'View Details'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className='mt-4 p-3'>
+                  <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
+                    {book.title}
+                  </h3>
+                  <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
+                    {book.authors[0]?.name || 'Unknown Author'}
+                  </p>
+                </div>
+              </div>
+            ))}
         </div>
 
-        {/* States Display */}
+        {/* No results message */}
         {!loading && searchTerm && books.length === 0 && (
           <div className='text-center py-12'>
             <p className='text-gray-600 text-lg'>
@@ -216,6 +210,7 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
           </div>
         )}
 
+        {/* Load more indicator */}
         {loadingMore && (
           <div className='flex items-center justify-center mt-8'>
             <div className='animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent' />
@@ -223,11 +218,10 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
           </div>
         )}
 
+        {/* End of results message */}
         {!loading && !loadingMore && !hasMore && books.length > 0 && (
           <div className='text-center py-8 mt-4 border-t border-gray-200'>
-            <p className='text-gray-500'>
-              No more books found for "{searchTerm}"
-            </p>
+            <p className='text-gray-500'>End of results</p>
           </div>
         )}
       </div>

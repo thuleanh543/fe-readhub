@@ -212,7 +212,7 @@ const SearchResult = () => {
 
       <div className='pt-20 px-4'>
         <div className='max-w-7xl mx-auto'>
-          <div className='bg-white rounded-xl shadow-lg mb-8 overflow-visible'>
+          <div className='bg-white rounded-xl shadow-md mb-2 overflow-visible'>
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h2 className='text-2xl font-bold text-gray-800'>
@@ -339,7 +339,7 @@ const SearchResult = () => {
 
           {/* Results Section */}
           {showResults && finalSearchTerm && (
-            <div className='mt-6'>
+            <div>
               <ListBook
                 searchTerm={finalSearchTerm}
                 windowSize={windowSize}
