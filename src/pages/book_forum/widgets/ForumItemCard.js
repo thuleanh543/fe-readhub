@@ -54,7 +54,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
       );
       const data = await response.json();
       if (data.success) {
-        toast.success('Xóa diễn đàn thành công');
+        toast.success('Delete Forum success');
         // Refresh danh sách forum
         onForumDeleted(forum.discussionId);
       }
