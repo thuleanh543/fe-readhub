@@ -14,6 +14,7 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
   const [searchResults, setSearchResults] = useState([])
   const [loadingMore, setLoadingMore] = useState(false)
   const searchUpdateTimeoutRef = useRef(null)
+  const [numBooks, setNumBooks] = useState(0)
 
   // Refs for cleanup and control
   const abortControllerRef = useRef(null)
@@ -25,14 +26,14 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
   // Optimized intersection observer
   const lastBookElementRef = useCallback(
     node => {
-      if (loadingMore || !hasMore || loading) return
+      if (loading || loadingMore || !hasMore || books.length === 0) return
 
       if (observerRef.current) {
         observerRef.current.disconnect()
       }
 
       observerRef.current = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && hasMore && !initialLoad) {
+        if (entries[0].isIntersecting && hasMore) {
           setPage(prev => prev + 1)
         }
       })
@@ -41,67 +42,35 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
         observerRef.current.observe(node)
       }
     },
-    [loadingMore, hasMore, loading, initialLoad],
+    [loading, loadingMore, hasMore, books.length],
   )
 
   // Optimized fetch function
-  const fetchBooks = useCallback(async (term, pageNum, isNewSearch) => {
-    if (!term?.trim()) {
-      setBooks([])
-      setHasMore(false)
-      setInitialLoad(false)
-      return
-    }
-
-    // Prevent duplicate searches and rapid re-fetches
-    if (isNewSearch && term === lastSearchTermRef.current) {
-      return
-    }
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-
-    abortControllerRef.current = new AbortController()
+  const fetchBooks = useCallback(async (query, pageNum, isNewSearch) => {
+    if (!query) return
 
     try {
-      // Use separate loading states for new searches vs pagination
       if (isNewSearch) {
-        // Don't clear previous results immediately
         setLoading(true)
       } else {
         setLoadingMore(true)
       }
 
-      const formattedSearchTerm = term.replace(/ /g, '&')
-      const response = await fetch(
-        `https://gutendex.com/books/?search=${formattedSearchTerm}&page=${pageNum}`,
-        {signal: abortControllerRef.current.signal},
-      )
-
-      if (!response.ok) throw new Error('Failed to fetch books')
-
+      const url = `http://localhost:8080/api/v1/book/search?${query}&page=${pageNum}`
+      const response = await fetch(url)
       const data = await response.json()
-      const validBooks = data.results.filter(
-        book =>
-          book.formats['image/jpeg'] &&
-          book.title &&
-          !book.title.includes('[') &&
-          book.authors?.length,
-      )
 
-      // Use transitions for smoother UI updates
+      const newBooks = data.books || []
+
       if (isNewSearch) {
-        // Keep old results visible until new ones are ready
-        requestAnimationFrame(() => {
-          setBooks(validBooks)
-        })
+        setBooks(newBooks)
       } else {
-        setBooks(prev => [...prev, ...validBooks])
+        if (newBooks.length > 0) {
+          setBooks(prev => [...prev, ...newBooks])
+        }
       }
 
-      setHasMore(data.next !== null && validBooks.length > 0)
-      lastSearchTermRef.current = term
+      setHasMore(newBooks.length > 0 && data.hasNext)
     } catch (err) {
       if (err.name !== 'AbortError') {
         setError('Failed to load books. Please try again.')
@@ -195,7 +164,7 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
                 <div
                   className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
                   style={{
-                    backgroundImage: `url('${book.formats['image/jpeg']}')`,
+                    backgroundImage: `url('${book.coverUrl}')`,
                   }}
                 />
                 <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
