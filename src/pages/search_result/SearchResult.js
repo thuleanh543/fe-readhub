@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react'
 import {ListBook} from '../../pages'
-import {Search, SlidersHorizontal, X, Check} from 'lucide-react'
+import {Search, SlidersHorizontal, X} from 'lucide-react'
 import HeaderComponent from '../../component/header/HeaderComponent'
 import {languages, subjects} from '../../constants/searchData'
 import {useLocation, useNavigate} from 'react-router-dom'
