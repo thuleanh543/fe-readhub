@@ -1,83 +1,75 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessagesSquare, Book, Trash2, Send, Paperclip, X } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { MessagesSquare, Book, Trash2, Send, BookOpen, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
-import SearchResult from '../../search_result/SearchResult';
 import axios from 'axios';
+import { SEARCH_MODE } from '../../../constants/enums';
 
-const ChallengeDiscussion = ({ challengeId }) => {
+const ChallengeDiscussion = () => {
+  const { challengeId } = useParams();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [selectedBooks, setSelectedBooks] = useState([]);
-  const [showBookSearch, setShowBookSearch] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmitComment = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`/api/v1/challenges/${challengeId}/comments`, {
-        content: newComment,
-        books: selectedBooks.map(book => book.id)
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-
-      if (response.data.success) {
-        setComments([response.data.data, ...comments]);
-        setNewComment('');
-        setSelectedBooks([]);
-      }
-    } catch (error) {
-      console.error('Error posting comment:', error);
-    }
-  };
-
-  const handleBookSelect = (book) => {
-    setSelectedBooks(prev => [...prev, book]);
-    setShowBookSearch(false);
-  };
-
-  const removeSelectedBook = (bookId) => {
-    setSelectedBooks(prev => prev.filter(book => book.id !== bookId));
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    try {
-      const response = await axios.delete(`/api/v1/challenges/comments/${commentId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-
-      if (response.data.success) {
-        setComments(comments.filter(c => c.id !== commentId));
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-    }
-  };
-
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-6">
+      {/* Challenge Progress Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 mb-8 text-white">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Reading Challenge Progress</h1>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-sm opacity-80">Books Read</p>
+              <p className="text-2xl font-bold">3/10</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm opacity-80">Days Left</p>
+              <p className="text-2xl font-bold">15</p>
+            </div>
+          </div>
+        </div>
+        <div className="w-full bg-white/20 rounded-full h-3">
+          <div className="bg-white rounded-full h-3 w-[30%]" />
+        </div>
+      </div>
+
       {/* Comment Input Section */}
-      <div className="bg-white rounded-lg shadow-lg mb-8 p-4">
-        <form onSubmit={handleSubmitComment} className="space-y-4">
-          <div className="relative">
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="flex gap-6 mb-6">
+          <div className="flex-1">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your thoughts about the challenge..."
+              placeholder="Share your reading progress and thoughts..."
               className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none"
             />
-
-            {/* Selected Books Display */}
+          </div>
+          <div className="w-64 border-l pl-6">
+            <button
+              onClick={() => {
+                navigate('/search-result', {
+                  state: { mode: SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE },
+                  onSelect: (selectedBooks) => {
+                    setSelectedBooks(selectedBooks);
+                  }
+                });
+              }}
+              className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Books Read</span>
+            </button>
             {selectedBooks.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">Selected Books:</h4>
                 {selectedBooks.map(book => (
-                  <div key={book.id} className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
-                    <Book className="w-4 h-4 mr-2" />
-                    <span className="truncate max-w-[150px]">{book.title}</span>
+                  <div key={book.id} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                    <BookOpen className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm truncate flex-1">{book.title}</span>
                     <button
-                      onClick={() => removeSelectedBook(book.id)}
-                      className="ml-2 hover:text-blue-900"
+                      onClick={() => setSelectedBooks(books => books.filter(b => b.id !== book.id))}
+                      className="text-gray-400 hover:text-red-500"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -86,102 +78,63 @@ const ChallengeDiscussion = ({ challengeId }) => {
               </div>
             )}
           </div>
-
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={() => setShowBookSearch(true)}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <Paperclip className="w-5 h-5" />
-              <span>Add Books</span>
-            </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Send className="w-5 h-5" />
-              <span>Post</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Book Search Modal */}
-      {showBookSearch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-auto">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Select Books</h2>
-              <button onClick={() => setShowBookSearch(false)}>
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-4">
-              <SearchResult
-                mode="SELECT_BOOKS_FOR_COMMENT"
-                onBookSelect={handleBookSelect}
-                selectedBooks={selectedBooks}
-              />
-            </div>
-          </div>
         </div>
-      )}
+
+        <div className="flex justify-end">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2">
+            <Send className="w-5 h-5" />
+            <span>Post Update</span>
+          </button>
+        </div>
+      </div>
 
       {/* Comments List */}
       <div className="space-y-6">
         {comments.map(comment => (
-          <div key={comment.id} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <img
-                  src={comment.user.avatar}
-                  alt={comment.user.username}
-                  className="w-10 h-10 rounded-full"
-                />
-                <div>
-                  <h4 className="font-semibold text-gray-900">{comment.user.username}</h4>
-                  <span className="text-sm text-gray-500">
-                    {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
-                  </span>
-                </div>
+          <div key={comment.id} className="bg-white rounded-xl shadow-md p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={comment.user.avatar}
+                alt={comment.user.name}
+                className="w-12 h-12 rounded-full"
+              />
+              <div>
+                <h4 className="font-semibold text-lg">{comment.user.name}</h4>
+                <p className="text-gray-500 text-sm">
+                  {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
+                </p>
               </div>
-              {comment.isOwner && (
-                <button
-                  onClick={() => handleDeleteComment(comment.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              )}
             </div>
 
-            <p className="mt-4 text-gray-700">{comment.content}</p>
+            <p className="text-gray-800 mb-4">{comment.content}</p>
 
-            {/* Shared Books */}
-            {comment.books && comment.books.length > 0 && (
-              <div className="mt-4 space-y-3">
-                <h5 className="text-sm font-medium text-gray-700">Shared Books:</h5>
-                <div className="flex flex-wrap gap-3">
+            {comment.books?.length > 0 && (
+              <div className="border-t pt-4 mt-4">
+                <h5 className="text-sm font-medium text-gray-700 mb-3">Books Read:</h5>
+                <div className="grid grid-cols-2 gap-4">
                   {comment.books.map(book => (
-                    <div
-                      key={book.id}
-                      className="flex items-center bg-gray-50 border border-gray-200 rounded-lg p-3 max-w-sm"
-                    >
+                    <div key={book.id} className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
                       <img
                         src={book.coverUrl}
                         alt={book.title}
-                        className="w-12 h-16 object-cover rounded mr-3"
+                        className="w-16 object-cover rounded"
                       />
                       <div>
-                        <h6 className="font-medium text-gray-900 line-clamp-1">{book.title}</h6>
-                        <p className="text-sm text-gray-500 line-clamp-1">{book.author}</p>
+                        <h6 className="font-medium text-gray-900">{book.title}</h6>
+                        <p className="text-sm text-gray-500">{book.author}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
+
+            <div className="flex items-center gap-6 mt-4 text-gray-500">
+              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                <MessagesSquare className="w-5 h-5" />
+                <span>Reply</span>
+              </button>
+            </div>
           </div>
         ))}
       </div>

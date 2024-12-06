@@ -1,12 +1,14 @@
 import { BookOpen, CalendarDays, Trophy, Users, ArrowRight, Clock, Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const ChallengeCard = ({ challenge, onJoin }) => {
+const ChallengeCard = ({ challenge}) => {
   const [isJoining, setIsJoining] = useState(false);
+  const [isMember, setIsMember] = useState(false);
   const navigate = useNavigate();
+  const isExpired = new Date() > new Date(challenge.endDate);
 
   const api = axios.create({
     baseURL: 'http://localhost:8080',
@@ -27,28 +29,41 @@ const ChallengeCard = ({ challenge, onJoin }) => {
     (error) => Promise.reject(error)
   );
 
+  useEffect(() => {
+    const checkMembership = async () => {
+      try {
+        const response = await api.get(`/api/v1/challenges/${challenge.challengeId}/check-membership`);
+        if (response.data.success) {
+          setIsMember(response.data.data.isMember);
+        }
+      } catch (error) {
+        console.error('Error checking membership:', error);
+      }
+    };
+
+    checkMembership();
+  }, [challenge.challengeId]);
+
   const handleJoin = async () => {
     try {
+      if (isMember) {
+        navigate(`/challenge/${challenge.challengeId}/discussion`);
+        return;
+      }
+
       setIsJoining(true);
       const response = await api.post(`/api/v1/challenges/${challenge.challengeId}/join`);
-
       if (response.data.success) {
+        setIsMember(true);
         toast.success("Successfully joined the challenge!");
+        navigate(`/challenge/${challenge.challengeId}/discussion`);
       }
-      // Always navigate regardless of join status
-      navigate(`/challenge-discussion/${challenge.challengeId}`);
-
     } catch (error) {
-      if (error.response?.status === 400 && error.response.data?.message?.includes("already joined")) {
-        // If already joined, just navigate
-        navigate(`/challenge-discussion/${challenge.challengeId}`);
-      } else {
-        toast.error(error.response?.data?.message || "Failed to join challenge");
-      }
+      toast.error(error.response?.data?.message || "Failed to join challenge");
     } finally {
       setIsJoining(false);
     }
-   };
+  };
 
   const daysLeft = Math.ceil((new Date(challenge.endDate) - new Date()) / (1000 * 60 * 60 * 24));
   const progress = Math.min(100, Math.max(0, ((new Date() - new Date(challenge.startDate)) /
@@ -110,24 +125,24 @@ const ChallengeCard = ({ challenge, onJoin }) => {
           View Details
           <ArrowRight className="w-4 h-4" />
         </button>
-        {!challenge.isExpired && (
+        {!isExpired && (
       <button
         onClick={handleJoin}
-        disabled={isJoining || challenge.hasJoined}
+      disabled={isJoining}
         className={`flex-1 flex items-center justify-center gap-2 font-medium py-2 rounded-lg transition-all ${
           challenge.hasJoined
             ? 'bg-green-50 text-green-600 cursor-default'
             : isJoining
             ? 'bg-gray-100 text-gray-400 cursor-wait'
             : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white'
-        }`}
-      >
+          }`}
+        >
         {isJoining ? (
           <>
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
             Joining...
           </>
-        ) : challenge.hasJoined ? (
+        ) : isMember ? (
           <>
             <Check className="w-4 h-4" />
             Enter Challenge

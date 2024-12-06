@@ -2,7 +2,7 @@ import React, {useEffect, useState, useCallback, useRef} from 'react'
 import {useNavigate} from 'react-router-dom'
 import { SEARCH_MODE } from '../../../constants/enums'
 
-const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
+const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -118,24 +118,29 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
 
   const handleBookClick = useCallback(
     (book) => {
-      if (mode === SEARCH_MODE.SELECT_BOOK) {
-        onBookSelect?.({
-          id: book.id,
-          title: book.title,
-          authors: book.authors[0]?.name || 'Unknown Author',
-          subjects: book.bookshelves || []
-        })
-      } else {
-        navigate('/description-book', {
-          state: {
-            bookId: book.id,
-            bookTitle: book.title
-          }
-        })
+      switch (mode) {
+        case SEARCH_MODE.SELECT_BOOK:
+          onBookSelect?.({
+            id: book.id,
+            title: book.title,
+            authors: book.authors[0]?.name || 'Unknown Author',
+            subjects: book.bookshelves || []
+          });
+          break;
+        case SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE:
+          onBookSelect?.(book);
+          break;
+        default:
+          navigate('/description-book', {
+            state: {
+              bookId: book.id,
+              bookTitle: book.title
+            }
+          });
       }
     },
     [navigate, mode, onBookSelect],
-  )
+  );
   if (error) {
     return (
       <div className='flex items-center justify-center p-8'>
@@ -153,12 +158,14 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
           {/* Results */}
           {books.map((book, index) => (
             <div
-              ref={index === books.length - 1 ? lastBookElementRef : null}
-              key={`${book.id}-${index}`}
-              onClick={() => handleBookClick(book)}
-              className={`group relative transition-all duration-300 hover:scale-105 ${
-                mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
-              }`}
+            ref={index === books.length - 1 ? lastBookElementRef : null}
+            key={`${book.id}-${index}`}
+            onClick={() => handleBookClick(book)}
+            className={`group relative transition-all duration-300 hover:scale-105 ${
+              mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
+              (selectedBooks?.some(b => b.id === book.id) ? 'ring-2 ring-blue-500' : '') :
+              mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
+            }`}
               style={{
                 width: '100%',
               }}>
@@ -171,9 +178,16 @@ const ListBook = ({searchTerm, windowSize, mode, onBookSelect}) => {
                 />
                 <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
                 <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
-                  {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book' : 'View Details'}
-                </button>
+                <button className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-300 shadow-lg ${
+ mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks?.some(b => b.id === book.id)
+ ? 'bg-blue-600 text-white hover:bg-blue-700'
+ : 'bg-white text-gray-900 hover:bg-blue-50'
+}`}>
+ {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book' :
+  mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
+  (selectedBooks?.some(b => b.id === book.id) ? 'Selected' : 'Select Book') :
+  'View Details'}
+</button>
                 </div>
               </div>
 
