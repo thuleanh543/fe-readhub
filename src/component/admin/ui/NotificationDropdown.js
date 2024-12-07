@@ -22,6 +22,7 @@ import axios from 'axios';
 
 const useNotificationCount = () => {
   const [unreadCount, setUnreadCount] = useState(0);
+  const isInitialMount = useRef(true);
 
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -42,7 +43,11 @@ const useNotificationCount = () => {
   }, []);
 
   useEffect(() => {
-    fetchUnreadCount();
+    if (isInitialMount.current) {
+      fetchUnreadCount();
+      isInitialMount.current = false;
+    }
+
     const unsubscribe = onMessage(messaging, (payload) => {
       setUnreadCount(prev => prev + 1);
     });
