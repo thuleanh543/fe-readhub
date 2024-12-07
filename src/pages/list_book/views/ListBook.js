@@ -69,30 +69,29 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
     }
   }, [])
 
-  useEffect(() => {
-    if (searchUpdateTimeoutRef.current) {
-      clearTimeout(searchUpdateTimeoutRef.current)
-    }
+useEffect(() => {
 
-    if (searchTerm && searchTerm !== lastSearchTermRef.current) {
-      // Update the last search term
-      lastSearchTermRef.current = searchTerm
+  if (searchUpdateTimeoutRef.current) {
+      clearTimeout(searchUpdateTimeoutRef.current)
+  }
+
+  if (searchTerm) {
       setPage(1)
-      // Start loading immediately
       setLoading(true)
       setBooks([])
 
       searchUpdateTimeoutRef.current = setTimeout(() => {
-        fetchBooks(searchTerm, 1, true)
-      }, 1700)
-    }
+          console.log('Calling fetchBooks with:', searchTerm)
+          fetchBooks(searchTerm, 1, true)
+      }, 900)
+  }
 
-    return () => {
+  return () => {
       if (searchUpdateTimeoutRef.current) {
-        clearTimeout(searchUpdateTimeoutRef.current)
+          clearTimeout(searchUpdateTimeoutRef.current)
       }
-    }
-  }, [searchTerm, fetchBooks])
+  }
+}, [searchTerm, fetchBooks])
 
   useEffect(() => {
     if (page > 1 && !loading && !loadingMore) {

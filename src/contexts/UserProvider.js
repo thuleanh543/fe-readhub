@@ -49,7 +49,6 @@ export const UserProvider = ({children}) => {
         }
         return false
       } catch (error) {
-        console.error('Login failed:', error)
         toast.error('Login failed. Please try again.')
         return false
       } finally {
