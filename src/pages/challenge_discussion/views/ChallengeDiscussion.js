@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MessagesSquare, Book, Trash2, Send, BookOpen, Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
@@ -11,6 +11,13 @@ const ChallengeDiscussion = () => {
   const [newComment, setNewComment] = useState('');
   const [selectedBooks, setSelectedBooks] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.selectedBooks) {
+      setSelectedBooks(location.state.selectedBooks);
+    }
+  }, [location]);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -36,8 +43,8 @@ const ChallengeDiscussion = () => {
 
       {/* Comment Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
- <div className="md:col-span-3">
-   <textarea
+      <div className="md:col-span-3">
+    <textarea
      value={newComment}
      onChange={(e) => setNewComment(e.target.value)}
      placeholder="Share your reading progress and thoughts..."
@@ -51,7 +58,7 @@ const ChallengeDiscussion = () => {
        navigate('/search-result', {
          state: {
            mode: SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE,
-           onSelect: (books) => setSelectedBooks(books)
+           challengeId: challengeId
          }
        });
      }}
@@ -62,31 +69,31 @@ const ChallengeDiscussion = () => {
    </button>
 
    {selectedBooks.length > 0 && (
-     <div className="bg-gray-50 rounded-lg p-4">
-       <h4 className="font-medium text-gray-900 mb-3">Selected Books ({selectedBooks.length})</h4>
-       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-         {selectedBooks.map(book => (
-           <div key={book.id} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors group">
-             <img
-               src={book.formats?.['image/jpeg']}
-               alt={book.title}
-               className="w-12 h-16 object-cover rounded"
-             />
-             <div className="flex-1 min-w-0">
-               <h5 className="font-medium text-gray-900 text-sm truncate">{book.title}</h5>
-               <p className="text-gray-500 text-xs truncate">{book.authors[0]?.name}</p>
-             </div>
-             <button
-               onClick={() => setSelectedBooks(books => books.filter(b => b.id !== book.id))}
-               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
-             >
-               <X className="w-4 h-4" />
-             </button>
-           </div>
-         ))}
-       </div>
-     </div>
-   )}
+    <div className="bg-gray-50 rounded-lg p-4">
+      <h4 className="font-medium text-gray-900 mb-3">Selected Books ({selectedBooks.length})</h4>
+      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+        {selectedBooks.map(book => (
+          <div key={book.id} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors group">
+            <img
+              src={book.coverUrl}
+              alt={book.title}
+              className="w-12 h-16 object-cover rounded"
+            />
+            <div className="flex-1 min-w-0">
+              <h5 className="font-medium text-gray-900 text-sm truncate">{book.title}</h5>
+              <p className="text-gray-500 text-xs truncate">{book.author}</p>
+            </div>
+            <button
+              onClick={() => setSelectedBooks(books => books.filter(b => b.id !== book.id))}
+              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
  </div>
 
  <div className="md:col-span-4 flex justify-end">

@@ -24,6 +24,7 @@ const MultiSelect = ({value, onChange, options, placeholder}) => {
     }
   }, [wrapperRef])
 
+
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase()),
   )
@@ -145,6 +146,13 @@ const SearchResult = () => {
 
   const mode = location.state?.mode ?? SEARCH_MODE.ADVANCED_SEARCH;
 
+
+  useEffect(() => {
+    if (location.state?.selectedBooks) {
+      setSelectedBooks(location.state.selectedBooks);
+    }
+  }, [location]);
+
   const handleBookSelect = (book) => {
     switch (mode) {
       case SEARCH_MODE.SELECT_BOOK:
@@ -214,10 +222,17 @@ const SearchResult = () => {
   }
 
   const handleDone = () => {
-    if (location.state?.onSelect) {
-      location.state.onSelect(selectedBooks);
-    }
-    navigate(-1);
+    const formattedBooks = selectedBooks.map(book => ({
+      id: book.id,
+      title: book.title,
+      author: book.authors[0]?.name || 'Unknown Author',
+      coverUrl: book.formats['image/jpeg']
+    }));
+
+    // Navigate back với state đơn giản
+    navigate(`/challenge/${location.state.challengeId}/discussion`, {
+      state: { selectedBooks: formattedBooks }
+    });
   };
 
   return (
