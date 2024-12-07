@@ -230,7 +230,7 @@ const BookRecommendations = () => {
                       <div
                         className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
                         style={{
-                          backgroundImage: `url('${book.formats['image/jpeg']}')`,
+                          backgroundImage: `url('${book?.formats?.['image/jpeg']}')`,
                         }}
                       />
                       <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />

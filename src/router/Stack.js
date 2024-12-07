@@ -17,6 +17,7 @@ import {
   SearchResult,
   ForumReports,
   CreateForumChallenge,
+  ChallengeDiscussion,
 } from '../pages'
 import {PrivateRoute} from '../component/routing/PrivateRoute'
 import AdminLayout from '../component/admin/layouts/AdminLayout'
@@ -36,6 +37,9 @@ function Stack() {
       <Route path='/report' element={<Report />} />
       <Route path='/content-moderation' element={<ContentModeration />} />
       <Route path='/description-book' element={<DescriptionBook />} />
+      <Route
+      path='/challenge/:challengeId/discussion'
+      element={<ChallengeDiscussion />} />
       <Route
         path='/forum-discussion/:forumId'
         element={

@@ -229,7 +229,7 @@ export default function DescriptionBook() {
                       '&:hover .overlay': {opacity: 1},
                     }}>
                     <img
-                      src={bookDetails.formats['image/jpeg']}
+                      src={bookDetails?.formats?.['image/jpeg']}
                       alt={bookDetails.title}
                       style={{
                         width: '100%',
@@ -317,7 +317,7 @@ export default function DescriptionBook() {
                               .map(author => author.name)
                               .join(', '),
                             defaultCoverImage:
-                              bookDetails.formats['image/jpeg'],
+                              bookDetails?.formats?.['image/jpeg'],
                             subjects: bookDetails.subjects,
                           },
                         })

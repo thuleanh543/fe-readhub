@@ -24,6 +24,7 @@ const MultiSelect = ({value, onChange, options, placeholder}) => {
     }
   }, [wrapperRef])
 
+
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase()),
   )
@@ -139,21 +140,41 @@ const SearchResult = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   }
-  const location = useLocation()
-  const navigate = useNavigate()
+  const [selectedBooks, setSelectedBooks] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const mode = location.state?.mode || SEARCH_MODE.ADVANCED_SEARCH
+  const mode = location.state?.mode ?? SEARCH_MODE.ADVANCED_SEARCH;
 
-  const handleBookSelect = book => {
-    if (mode === SEARCH_MODE.SELECT_BOOK) {
-      navigate('/create-forum', {
-        state: {
-          bookId: book.id,
-          bookTitle: book.title,
-          authors: book.authors,
-          subjects: book.subjects,
-        },
-      })
+
+  useEffect(() => {
+    if (location.state?.selectedBooks) {
+      setSelectedBooks(location.state.selectedBooks);
+    }
+  }, [location]);
+
+  const handleBookSelect = (book) => {
+    switch (mode) {
+      case SEARCH_MODE.SELECT_BOOK:
+        navigate('/create-forum', {
+          state: {
+            bookId: book.id,
+            bookTitle: book.title,
+            authors: book.authors,
+            subjects: book.subjects
+          }
+        });
+        break;
+      case SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE:
+        const isSelected = selectedBooks.some(b => b.id === book.id);
+        if (isSelected) {
+          setSelectedBooks(books => books.filter(b => b.id !== book.id));
+        } else {
+          setSelectedBooks(books => [...books, book]);
+        }
+        break;
+      default:
+        navigate('/description-book', { state: { bookId: book.id, bookTitle: book.title } });
     }
   }
 
@@ -202,6 +223,20 @@ const SearchResult = () => {
     setShowResults(false)
   }
 
+  const handleDone = () => {
+    const formattedBooks = selectedBooks.map(book => ({
+      id: book.id,
+      title: book.title,
+      author: book.authors[0]?.name || 'Unknown Author',
+      coverUrl: book?.formats?.['image/jpeg']
+    }));
+
+    // Navigate back với state đơn giản
+    navigate(`/challenge/${location.state.challengeId}/discussion`, {
+      state: { selectedBooks: formattedBooks }
+    });
+  };
+
   return (
     <div className='min-h-screen bg-gray-50'>
       <HeaderComponent
@@ -216,9 +251,11 @@ const SearchResult = () => {
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h2 className='text-2xl font-bold text-gray-800'>
-                  {mode === SEARCH_MODE.SELECT_BOOK
-                    ? 'Select Book For Create Forum'
-                    : 'Advanced Search'}
+                {mode === SEARCH_MODE.SELECT_BOOK
+    ? 'Select Book For Create Forum'
+    : mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE
+    ? 'Select Books You Have Read'
+    : 'Advanced Search'}
                 </h2>
                 <button
                   onClick={() => setIsFilterExpanded(!isFilterExpanded)}
@@ -337,14 +374,30 @@ const SearchResult = () => {
             </div>
           </div>
 
+          {mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks.length > 0 && (
+            <div className='fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4'>
+              <div className='max-w-7xl mx-auto flex justify-between items-center'>
+                <div className='flex items-center gap-4'>
+                  <span className='font-medium'>{selectedBooks.length} books selected</span>
+                </div>
+                <button
+                  onClick={handleDone}
+                  className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Results Section */}
           {showResults && finalSearchTerm && (
             <div>
               <ListBook
-                searchTerm={finalSearchTerm}
-                windowSize={windowSize}
-                mode={mode}
-                onBookSelect={handleBookSelect}
+              searchTerm={finalSearchTerm}
+              mode={mode}
+              onBookSelect={handleBookSelect}
+              selectedBooks={selectedBooks}
               />
             </div>
           )}
