@@ -72,14 +72,12 @@ const ActionMenu = ({ reportId, forumId }) => {
 
       window.location.reload();
     } catch (error) {
-      console.error('Error:', error);
       toast.error(error.message);
     }
   };
 
   const handleAction = async (actionId, reason = '') => {
     try {
-      console.log('Applying action:', actionId, 'to report:', reportId, 'reason:', reason, 'banTypes:', banTypes);
         const body = {
             action: actionId,
             reason: reason || null,
@@ -118,7 +116,6 @@ const ActionMenu = ({ reportId, forumId }) => {
         }, 1000);
 
     } catch (error) {
-        console.error('Action error:', error);
         toast.error(error.message);
         throw error;
     }

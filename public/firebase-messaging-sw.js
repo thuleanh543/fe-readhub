@@ -1,9 +1,7 @@
 self.addEventListener('install', function(event) {
-  console.log('Service Worker installing.');
 });
 
 self.addEventListener('activate', function(event) {
-  console.log('Service Worker activating.');
 });
 
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
@@ -22,7 +20,6 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-  console.log('Received background message:', payload);
 
   const notificationOptions = {
     body: payload.notification.body,

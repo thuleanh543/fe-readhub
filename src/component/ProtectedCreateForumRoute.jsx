@@ -17,7 +17,6 @@ const ProtectedCreateForumRoute = ({ children }) => {
         const data = await response.json();
         setUser(data);
       } catch (error) {
-        console.error('Error fetching user:', error);
       } finally {
         setLoading(false);
       }
