@@ -228,7 +228,7 @@ const SearchResult = () => {
       id: book.id,
       title: book.title,
       author: book.authors[0]?.name || 'Unknown Author',
-      coverUrl: book.formats['image/jpeg']
+      coverUrl: book?.formats?.['image/jpeg']
     }));
 
     // Navigate back với state đơn giản
