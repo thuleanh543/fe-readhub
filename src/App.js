@@ -11,6 +11,7 @@ import {useBooks} from './contexts/BooksProvider'
 import LoadingSkeleton from './component/bookshelf/LoadingSkeleton'
 import ErrorMessage from './component/common/ErrorMessage'
 import Footer from './component/footer/Footer'
+import {useCallback} from 'react'
 
 function App() {
   const [windowSize, setWindowSize] = useState({
@@ -33,41 +34,42 @@ function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const handleSearchChange = useCallback(value => {
+    setSearchTerm(value)
+  }, [])
 
   return (
     <div className='App min-h-screen bg-[#060d13] flex flex-col'>
       <HeaderComponent
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         searchTerm={searchTerm}
         showSearch={true}
       />
       <div className='flex-1 overflow-y-auto mt-16'>
-        <div className={searchTerm ? 'hidden' : 'block'}>
+        <div style={{display: searchTerm ? 'none' : 'block'}}>
           <Banner />
           {user && <BookRecommendations user={user} />}
           <div className='bg-white'>
-          {error ? (
-  <ErrorMessage error={error} />
-) : loading ? (
-  <LoadingSkeleton />
-) : (
-  bookshelves.map(shelf => (
-    <BookshelfSection
-      key={shelf.topic}
-      {...shelf}
-      books={booksData[shelf.topic] || []}
-      isLoading={false}
-    />
-  ))
-)}
+            {error ? (
+              <ErrorMessage error={error} />
+            ) : loading ? (
+              <LoadingSkeleton />
+            ) : (
+              bookshelves.map(shelf => (
+                <BookshelfSection
+                  key={shelf.topic}
+                  {...shelf}
+                  books={booksData[shelf.topic] || []}
+                  isLoading={false}
+                />
+              ))
+            )}
           </div>
         </div>
 
-        {searchTerm && (
-          <div className={searchTerm ? 'block' : 'hidden'}>
-            <ListBook searchTerm={searchTerm} windowSize={windowSize} />
-          </div>
-        )}
+        <div style={{display: searchTerm ? 'block' : 'none'}}>
+          <ListBook searchTerm={searchTerm} windowSize={windowSize} />
+        </div>
       </div>
       <Footer />
     </div>

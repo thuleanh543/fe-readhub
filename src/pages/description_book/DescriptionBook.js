@@ -22,6 +22,7 @@ import ReviewDialog from './ReviewDialog'
 import {Download} from '@mui/icons-material'
 import SimilarAuthorBooks from '../../component/recommendations/SimilarAuthorBooks'
 import Footer from '../../component/footer/Footer'
+import {languages} from '../../constants/searchData'
 
 export default function DescriptionBook() {
   const [windowSize, setWindowSize] = useState({
@@ -105,9 +106,10 @@ export default function DescriptionBook() {
     }
   }
 
-  const isBanned = (user?.forumCreationBanned) &&
-  (user?.forumCreationBanExpiresAt === null || new Date(user?.forumCreationBanExpiresAt) > new Date());
-
+  const isBanned =
+    user?.forumCreationBanned &&
+    (user?.forumCreationBanExpiresAt === null ||
+      new Date(user?.forumCreationBanExpiresAt) > new Date())
 
   useEffect(() => {
     const getUser = async () => {
@@ -298,42 +300,42 @@ export default function DescriptionBook() {
                     </Typography>
                   </Box>
                   <Button
-  variant='contained'
-  startIcon={<MessageCircle />}
-  onClick={() => {
-    if (!user) {
-      setShowLoginDialog(true)
-    } else if (isBanned) {
-      // You could add a toast notification here to inform the user why they can't create a forum
-      return;
-    } else {
-      navigate('/create-forum', {
-        state: {
-          bookId,
-          bookTitle,
-          authors: bookDetails.authors
-            .map(author => author.name)
-            .join(', '),
-          defaultCoverImage:
-            bookDetails.formats['image/jpeg'],
-          subjects: bookDetails.subjects,
-        },
-      })
-    }
-  }}
-  disabled={isBanned}
-  sx={{
-    bgcolor: isBanned ? 'grey.500' : 'primary.main',
-    '&:hover': {
-      bgcolor: isBanned ? 'grey.600' : 'primary.dark',
-    },
-    '&.Mui-disabled': {
-      bgcolor: 'grey.500',
-      color: 'white'
-    }
-  }}>
-  {isBanned ? 'Forum Creation Restricted' : 'Create Forum'}
-</Button>
+                    variant='contained'
+                    startIcon={<MessageCircle />}
+                    onClick={() => {
+                      if (!user) {
+                        setShowLoginDialog(true)
+                      } else if (isBanned) {
+                        // You could add a toast notification here to inform the user why they can't create a forum
+                        return
+                      } else {
+                        navigate('/create-forum', {
+                          state: {
+                            bookId,
+                            bookTitle,
+                            authors: bookDetails.authors
+                              .map(author => author.name)
+                              .join(', '),
+                            defaultCoverImage:
+                              bookDetails.formats['image/jpeg'],
+                            subjects: bookDetails.subjects,
+                          },
+                        })
+                      }
+                    }}
+                    disabled={isBanned}
+                    sx={{
+                      bgcolor: isBanned ? 'grey.500' : 'primary.main',
+                      '&:hover': {
+                        bgcolor: isBanned ? 'grey.600' : 'primary.dark',
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: 'grey.500',
+                        color: 'white',
+                      },
+                    }}>
+                    {isBanned ? 'Forum Creation Restricted' : 'Create Forum'}
+                  </Button>
                 </Box>
 
                 <Grid container spacing={3} sx={{mb: 3}}>
@@ -362,7 +364,11 @@ export default function DescriptionBook() {
                     </Typography>
                     <Typography color='text.secondary'>
                       {bookDetails.languages
-                        .map(lang => lang.toUpperCase())
+                        .map(
+                          langValue =>
+                            languages.find(lang => lang.value === langValue)
+                              ?.label || langValue,
+                        )
                         .join(', ')}
                     </Typography>
                   </Grid>

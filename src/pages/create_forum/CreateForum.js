@@ -27,9 +27,9 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { bookId, bookTitle, authors, subjects } = location.state || {};
+  const { bookId, bookTitle, authors, subjects, coverBook } = location.state || {};
 
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(coverBook);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [windowSize, setWindowSize] = useState({
@@ -83,11 +83,6 @@ export default function CreateForum() {
     if (!formData.description.trim()) {
       newErrors.description = 'Forum description is required';
     }
-
-    if (!formData.coverImage) {
-      newErrors.coverImage = 'Forum cover image is required';
-      toast.error('Please upload a forum cover image');
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -114,10 +109,14 @@ export default function CreateForum() {
           });
         }
 
-        // Handle image upload
+        // Chỉ gửi ảnh mới nếu người dùng đã upload, nếu không thì gửi coverBook
         if (formData.coverImage) {
           formDataToSend.append('forumImage', formData.coverImage);
-          console.log('Image appended successfully');
+        } else {
+          // Nếu không có ảnh mới, gửi coverBook làm ảnh mặc định
+          const response = await fetch(coverBook);
+          const blob = await response.blob();
+          formDataToSend.append('forumImage', blob, 'coverBook.jpg');
         }
 
         setIsSubmitting(true);
@@ -298,7 +297,7 @@ export default function CreateForum() {
                       <Box
                         sx={{
                           border: '2px dashed',
-                          borderColor: errors.coverImage ? 'error.main' : 'grey.500',
+                          borderColor: 'grey.500',
                           borderRadius: 1,
                           p: 3,
                           textAlign: 'center',
@@ -312,7 +311,6 @@ export default function CreateForum() {
                           onChange={handleImageUpload}
                           style={{ display: 'none' }}
                           id="forum-cover-upload"
-                          required
                         />
                         <label htmlFor="forum-cover-upload">
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
