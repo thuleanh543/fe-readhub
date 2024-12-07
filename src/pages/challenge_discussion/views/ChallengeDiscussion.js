@@ -35,58 +35,67 @@ const ChallengeDiscussion = () => {
       </div>
 
       {/* Comment Input Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div className="flex gap-6 mb-6">
-          <div className="flex-1">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your reading progress and thoughts..."
-              className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[120px] resize-none"
-            />
-          </div>
-          <div className="w-64 border-l pl-6">
-            <button
-              onClick={() => {
-                navigate('/search-result', {
-                  state: { mode: SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE },
-                  onSelect: (selectedBooks) => {
-                    setSelectedBooks(selectedBooks);
-                  }
-                });
-              }}
-              className="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Books Read</span>
-            </button>
-            {selectedBooks.length > 0 && (
-              <div className="mt-4 space-y-3">
-                <h4 className="text-sm font-medium text-gray-700">Selected Books:</h4>
-                {selectedBooks.map(book => (
-                  <div key={book.id} className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                    <BookOpen className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm truncate flex-1">{book.title}</span>
-                    <button
-                      onClick={() => setSelectedBooks(books => books.filter(b => b.id !== book.id))}
-                      className="text-gray-400 hover:text-red-500"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+ <div className="md:col-span-3">
+   <textarea
+     value={newComment}
+     onChange={(e) => setNewComment(e.target.value)}
+     placeholder="Share your reading progress and thoughts..."
+     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[180px] resize-none"
+   />
+ </div>
 
-        <div className="flex justify-end">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2">
-            <Send className="w-5 h-5" />
-            <span>Post Update</span>
-          </button>
-        </div>
-      </div>
+ <div className="space-y-4">
+   <button
+     onClick={() => {
+       navigate('/search-result', {
+         state: {
+           mode: SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE,
+           onSelect: (books) => setSelectedBooks(books)
+         }
+       });
+     }}
+     className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all"
+   >
+     <Plus className="w-5 h-5" />
+     <span>Add Books Read</span>
+   </button>
+
+   {selectedBooks.length > 0 && (
+     <div className="bg-gray-50 rounded-lg p-4">
+       <h4 className="font-medium text-gray-900 mb-3">Selected Books ({selectedBooks.length})</h4>
+       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+         {selectedBooks.map(book => (
+           <div key={book.id} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-blue-200 transition-colors group">
+             <img
+               src={book.formats?.['image/jpeg']}
+               alt={book.title}
+               className="w-12 h-16 object-cover rounded"
+             />
+             <div className="flex-1 min-w-0">
+               <h5 className="font-medium text-gray-900 text-sm truncate">{book.title}</h5>
+               <p className="text-gray-500 text-xs truncate">{book.authors[0]?.name}</p>
+             </div>
+             <button
+               onClick={() => setSelectedBooks(books => books.filter(b => b.id !== book.id))}
+               className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+             >
+               <X className="w-4 h-4" />
+             </button>
+           </div>
+         ))}
+       </div>
+     </div>
+   )}
+ </div>
+
+ <div className="md:col-span-4 flex justify-end">
+   <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors flex items-center gap-2 font-medium">
+     <Send className="w-5 h-5" />
+     <span>Post Update</span>
+   </button>
+ </div>
+</div>
 
       {/* Comments List */}
       <div className="space-y-6">
