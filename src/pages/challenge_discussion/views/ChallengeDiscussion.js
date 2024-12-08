@@ -4,6 +4,11 @@ import { MessagesSquare, Book, Trash2, Send, BookOpen, Plus, X } from 'lucide-re
 import { format } from 'date-fns';
 import axios from 'axios';
 import { SEARCH_MODE } from '../../../constants/enums';
+import { Stomp } from '@stomp/stompjs';
+import { toast } from 'react-toastify';
+import SockJS from 'sockjs-client';
+import HeaderComponent from '../../../component/header/HeaderComponent';
+import { Avatar } from '@mui/material';
 
 const ChallengeDiscussion = () => {
   const { challengeId } = useParams();
@@ -12,17 +17,130 @@ const ChallengeDiscussion = () => {
   const [selectedBooks, setSelectedBooks] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const [stompClient, setStompClient] = useState(null);
+  const [isSending, setIsSending] = useState(false);
+
+  function stringToColor(string) {
+    let hash = 0
+    let i
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    let color = '#'
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += `00${value.toString(16)}`.slice(-2)
+    }
+    return color
+  }
+  function stringAvatar(name) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 33,
+        height: 33,
+      },
+      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
+    }
+  }
 
   useEffect(() => {
-    if (location.state?.selectedBooks) {
-      setSelectedBooks(location.state.selectedBooks);
+    const books = location.state?.selectedBooks;
+    if (books) {
+      setSelectedBooks(books);
+      window.history.replaceState(null, '');
     }
-  }, [location]);
+  }, []);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/v1/challenges/${challengeId}/comments`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (response.data.success) {
+          setComments(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to load comments:", error);
+      }
+    };
+
+    fetchComments();
+  }, [challengeId]);
+
+  useEffect(() => {
+    let stompClientRef = null;
+
+    const connectWebSocket = () => {
+      const socket = new SockJS('http://localhost:8080/ws');
+      const client = Stomp.over(socket);
+      client.debug = () => {};
+      stompClientRef = client;
+
+      client.connect(
+        { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        () => {
+          setStompClient(client);
+          const commentSub = client.subscribe(`/topic/challenge/${challengeId}`, message => {
+            const newComment = JSON.parse(message.body);
+            setComments(prev => [newComment, ...prev]);
+          });
+
+          return () => {
+            if (commentSub) commentSub.unsubscribe();
+          };
+        }
+      );
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (stompClientRef?.connected) {
+        stompClientRef.disconnect();
+      }
+    };
+  }, [challengeId]);
+
+  const handleSubmit = async () => {
+    if (!newComment.trim() && !selectedBooks.length) return;
+    if (isSending) return;
+
+    try {
+      setIsSending(true);
+      if (stompClient?.connected) {
+        const formattedBooks = selectedBooks.map(book => ({
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          coverUrl: book.coverUrl
+        }));
+
+        stompClient.send(
+          '/app/challenge/comment',
+          { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          JSON.stringify({
+            challengeId,
+            content: newComment,
+            books: formattedBooks
+          })
+        );
+        setNewComment('');
+        setSelectedBooks([]);
+        window.history.replaceState(null, '');
+      }
+    } catch (error) {
+      toast.error('Failed to post comment');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Challenge Progress Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 mb-8 text-white">
+      <HeaderComponent centerContent='' showSearch={false} />
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 mb-8 text-white mt-12">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Reading Challenge Progress</h1>
           <div className="flex items-center gap-4">
@@ -40,8 +158,6 @@ const ChallengeDiscussion = () => {
           <div className="bg-white rounded-full h-3 w-[30%]" />
         </div>
       </div>
-
-      {/* Comment Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-3">
     <textarea
@@ -97,25 +213,46 @@ const ChallengeDiscussion = () => {
  </div>
 
  <div className="md:col-span-4 flex justify-end">
-   <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors flex items-center gap-2 font-medium">
-     <Send className="w-5 h-5" />
-     <span>Post Update</span>
-   </button>
+ <button
+    onClick={handleSubmit}
+    disabled={isSending || (!newComment.trim() && !selectedBooks.length)}
+    className={`${
+      isSending ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+    } text-white px-8 py-3 rounded-lg transition-colors flex items-center gap-2`}
+  >
+    {isSending ? (
+      <>
+        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+        <span>Posting...</span>
+      </>
+    ) : (
+      <>
+        <Send className="w-5 h-5" />
+        <span>Post Update</span>
+      </>
+    )}
+  </button>
  </div>
 </div>
-
-      {/* Comments List */}
       <div className="space-y-6">
-        {comments.map(comment => (
-          <div key={comment.id} className="bg-white rounded-xl shadow-md p-6">
+        {comments.map((comment, index) => (
+          <div
+          key={`comment-${comment.id}-${index}`}
+          className="bg-white rounded-xl shadow-md p-6"
+          >
+
             <div className="flex items-center gap-4 mb-4">
-              <img
-                src={comment.user.avatar}
-                alt={comment.user.name}
-                className="w-12 h-12 rounded-full"
-              />
+            {comment?.user?.urlAvatar ? (
+                      <Avatar
+                        sx={{width: 30, height: 30}}
+                        src={comment?.user?.urlAvatar}
+                        alt={comment?.user?.fullName}
+                      />
+                    ) : (
+                      <Avatar {...stringAvatar(comment?.user?.fullName)} />
+                    )}
               <div>
-                <h4 className="font-semibold text-lg">{comment.user.name}</h4>
+                <h4 className="font-semibold text-lg">{comment.user.fullName}</h4>
                 <p className="text-gray-500 text-sm">
                   {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
                 </p>
@@ -128,8 +265,10 @@ const ChallengeDiscussion = () => {
               <div className="border-t pt-4 mt-4">
                 <h5 className="text-sm font-medium text-gray-700 mb-3">Books Read:</h5>
                 <div className="grid grid-cols-2 gap-4">
-                  {comment.books.map(book => (
-                    <div key={book.id} className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                  {comment.books.map((book, bookIndex) => (
+                    <div
+                    key={`book-${comment.id}-${book.id}-${bookIndex}`}
+                    className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
                       <img
                         src={book.coverUrl}
                         alt={book.title}
