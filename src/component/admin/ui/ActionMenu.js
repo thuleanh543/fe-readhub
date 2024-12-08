@@ -79,7 +79,6 @@ const ActionMenu = ({ reportId, forumId }) => {
 
   const handleAction = async (actionId, reason = '') => {
     try {
-      console.log('Applying action:', actionId, 'to report:', reportId, 'reason:', reason, 'banTypes:', banTypes);
         const body = {
             action: actionId,
             reason: reason || null,

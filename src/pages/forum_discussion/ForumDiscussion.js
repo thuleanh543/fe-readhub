@@ -107,7 +107,6 @@ const ForumDiscussion = () => {
     client.connect(
       headers,
       () => {
-        console.log('Connected to WebSocket')
         setStompClient(client)
         webSocketRef.current = client
 
@@ -184,7 +183,6 @@ const ForumDiscussion = () => {
           discussionId: forumId,
           imageUrl: imageUrl,
         }
-console.log('Posting comment:', commentData)
         stompClient.send(
           '/app/comment',
           {
@@ -258,7 +256,6 @@ console.log('Posting comment:', commentData)
     fetchForumData()
     return () => {
       if (webSocketRef.current) {
-        console.log('Disconnecting WebSocket')
         webSocketRef.current.disconnect()
         webSocketRef.current = null
       }

@@ -92,8 +92,6 @@ const NotificationDropdown = () => {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           const unsubscribe = onMessage(messaging, (payload) => {
-            console.log('Received foreground message:', payload);
-
             const newNotification = {
               id: Date.now().toString(),
               title: payload.notification.title,
@@ -181,7 +179,6 @@ const NotificationDropdown = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('API Response:', data);
         setNotifications(data.data);
         setUnreadCount(data.data.filter(n => !n.read).length);
       }
