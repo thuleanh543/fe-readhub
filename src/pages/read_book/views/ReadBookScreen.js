@@ -258,6 +258,7 @@ function ReadBookScreen() {
   }
 
   const handleError = error => {
+    console.error('Error in ReactReader:', error)
     setError(
       'An error occurred while loading the book. Please try again later.',
     )

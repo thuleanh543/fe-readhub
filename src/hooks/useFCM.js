@@ -25,6 +25,7 @@ const useFCM = () => {
               },
               body: JSON.stringify({ fcmToken: token })
             });
+            console.log('FCM token:', token);
           }
         }
       } catch (error) {

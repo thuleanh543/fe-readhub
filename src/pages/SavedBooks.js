@@ -101,6 +101,7 @@ const RecentlyReadBooks = ({userId, maxBooks = 20}) => {
         }
         setLoading(false)
       } catch (error) {
+        console.error('Error fetching recent books:', error)
         setLoading(false)
       }
     }
@@ -183,6 +184,7 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
         }
         setLoading(false)
       } catch (error) {
+        console.error('Error fetching recommendations:', error)
         setLoading(false)
       }
     }
@@ -284,6 +286,7 @@ function SavedBooks() {
         setUser(response.data)
         fetchSavedBooks(response.data.userId)
       } catch (error) {
+        console.error(error)
         setError('Failed to get user profile')
         setLoading(false)
       }
@@ -315,6 +318,7 @@ function SavedBooks() {
       }
       setLoading(false)
     } catch (error) {
+      console.error(error)
       setError('Failed to fetch saved books')
       setLoading(false)
     }

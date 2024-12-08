@@ -53,6 +53,7 @@ function Register() {
         },
       })
     } catch (error) {
+      console.log(error.massage)
     } finally {
       dispatch({type: actionTypes.SET_LOADING, payload: false})
     }

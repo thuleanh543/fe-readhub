@@ -126,6 +126,7 @@ const BookRecommendations = () => {
           setRecommendations(booksResponse.data.results)
         }
       } catch (error) {
+        console.error('Error fetching recommendations:', error)
         setError('Failed to load recommendations')
       } finally {
         setLoading(false)

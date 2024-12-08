@@ -79,6 +79,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
         }
       );
       const data = await response.json();
+      console.log(data);
       if (data.success) {
         toast.success('Report forum success');
         setShowReportDialog(false);

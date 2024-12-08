@@ -110,6 +110,7 @@ function Profile() {
       setConfirmPassword('')
       toast.success('Password reset successfully')
     } catch (error) {
+      console.error(error)
       toast.error('Failed to reset password')
     }
   }
@@ -138,6 +139,7 @@ function Profile() {
       user.urlAvatar = avatarUrl
       toast.success('Avatar uploaded successfully')
     } catch (error) {
+      console.error(error)
       toast.error('Failed to upload avatar')
     }
   }
@@ -170,6 +172,7 @@ function Profile() {
       refreshUser()
       toast.success('Update profile successfully')
     } catch (error) {
+      console.error(error)
       toast.error('Failed to update profile')
     }
   }
