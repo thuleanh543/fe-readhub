@@ -37,10 +37,9 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
     if (!query) return
 
     try {
-      // Set loading state immediately for new searches
       if (isNewSearch) {
         setLoading(true)
-        setBooks([]) // Clear previous results immediately
+        setBooks([])
       } else {
         setLoadingMore(true)
       }
@@ -74,9 +73,7 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
       clearTimeout(searchUpdateTimeoutRef.current)
     }
 
-    if (searchTerm && searchTerm !== lastSearchTermRef.current) {
-      // Update the last search term
-      lastSearchTermRef.current = searchTerm
+    if (searchTerm) {
       setPage(1)
       // Start loading immediately
       setLoading(true)
@@ -140,62 +137,13 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
       <div className='max-w-7xl mx-auto'>
         {/* Results count display */}
         {!loading && totalBooks > 0 && (
-          <div
-            className='mb-6 text-gray-600 text-l font-bold
-          text-right'>
+          <div className='mb-6 text-gray-600 text-l font-bold text-right'>
             Found {totalBooks} book{totalBooks !== 1 ? 's' : ''}
           </div>
         )}
 
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8'>
-          {/* Results */}
-          {books.map((book, index) => (
-            <div
-            ref={index === books.length - 1 ? lastBookElementRef : null}
-            key={`${book.id}-${index}`}
-            onClick={() => handleBookClick(book)}
-            className={`group relative transition-all duration-300 hover:scale-105 ${
-              mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
-              (selectedBooks?.some(b => b.id === book.id) ? 'ring-2 ring-blue-500' : '') :
-              mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
-            }`}
-              style={{
-                width: '100%',
-              }}>
-              <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
-                <div
-                  className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
-                  style={{
-                    backgroundImage: `url('${book?.formats?.['image/jpeg']}')`,
-                  }}
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
-                <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                <button className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-300 shadow-lg ${
- mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks?.some(b => b.id === book.id)
- ? 'bg-blue-600 text-white hover:bg-blue-700'
- : 'bg-white text-gray-900 hover:bg-blue-50'
-}`}>
- {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book' :
-  mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
-  (selectedBooks?.some(b => b.id === book.id) ? 'Selected' : 'Select Book') :
-  'View Details'}
-</button>
-                </div>
-              </div>
-
-              <div className='mt-4 p-3'>
-                <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
-                  {book.title}
-                </h3>
-                <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
-                  {book.authors[0]?.name || 'Unknown Author'}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Loading skeletons - Only show on initial load */}
+          {/* Loading skeletons */}
           {loading &&
             Array.from({length: 10}).map((_, i) => (
               <div key={`skeleton-${i}`} className='animate-pulse'>
@@ -210,43 +158,48 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
             ))}
 
           {/* Book grid */}
-          {!loading &&
-            books.map((book, index) => (
-              <div
-                ref={index === books.length - 1 ? lastBookElementRef : null}
-                key={`${book.id}-${index}`}
-                onClick={() => handleBookClick(book)}
-                className={`group relative transition-all duration-300 hover:scale-105 ${
-                  mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
-                }`}
-                style={{width: '100%'}}>
-                <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
-                  <div
-                    className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
-                    style={{
-                      backgroundImage: `url('${book.coverUrl}')`,
-                    }}
-                  />
-                  <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
-                  <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                    <button className='w-full px-4 py-2 rounded-lg bg-white font-medium text-gray-900 hover:bg-blue-50 transition-colors duration-300 shadow-lg'>
-                      {mode === SEARCH_MODE.SELECT_BOOK
-                        ? 'Select Book'
-                        : 'View Details'}
-                    </button>
-                  </div>
-                </div>
-
-                <div className='mt-4 p-3'>
-                  <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
-                    {book.title}
-                  </h3>
-                  <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
-                    {book.authors[0]?.name || 'Unknown Author'}
-                  </p>
+          {!loading && books.map((book, index) => (
+            <div
+              ref={index === books.length - 1 ? lastBookElementRef : null}
+              key={`${book.id}-${index}`}
+              onClick={() => handleBookClick(book)}
+              className={`group relative transition-all duration-300 hover:scale-105 ${
+                mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
+                (selectedBooks?.some(b => b.id === book.id) ? 'ring-2 ring-blue-500' : '') :
+                mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
+              }`}>
+              <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
+                <div
+                  className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+                  style={{
+                    backgroundImage: `url('${book?.coverUrl}')`,
+                  }}
+                />
+                <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+                <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+                  <button className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-300 shadow-lg ${
+                    mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks?.some(b => b.id === book.id)
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white text-gray-900 hover:bg-blue-50'
+                  }`}>
+                    {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book' :
+                     mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
+                     (selectedBooks?.some(b => b.id === book.id) ? 'Selected' : 'Select Book') :
+                     'View Details'}
+                  </button>
                 </div>
               </div>
-            ))}
+
+              <div className='mt-4 p-3'>
+                <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
+                  {book.title}
+                </h3>
+                <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
+                  {book.authors[0]?.name || 'Unknown Author'}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* No results message */}
