@@ -1,43 +1,38 @@
 // constants/books.js
 export const BOOKSHELVES = [
   {
-    title: 'Mystery & Detective',
-    topic: 'detective',
+    title: 'Historical fiction',
+    topic: 'Historical fiction',
     backgroundColor: '#EF4444',
   },
   {
-    title: 'Science Fiction & Fantasy',
-    topic: 'science-fiction',
+    title: 'Psychological fiction',
+    topic: 'Psychological fiction',
     backgroundColor: '#8B5CF6',
   },
   {
-    title: "Children's Literature",
-    topic: 'children',
+    title: 'Love stories',
+    topic: 'Love stories',
     backgroundColor: '#10B981',
   },
   {
-    title: 'History',
-    topic: 'history',
+    title: 'Science fiction',
+    topic: 'Science fiction',
     backgroundColor: '#2563EB',
   },
   {
-    title: 'Cooking & Drinking',
-    topic: 'cooking drinking',
+    title: 'Adventure',
+    topic: 'Adventure stories',
     backgroundColor: '#F59E0B',
   },
   {
-    title: 'Economics',
-    topic: 'economics',
+    title: 'Short stories',
+    topic: 'Short stories',
     backgroundColor: '#3B82F6',
   },
   {
-    title: 'Music',
-    topic: 'music',
+    title: 'Domestic fiction',
+    topic: 'Domestic fiction',
     backgroundColor: '#F472B6',
-  },
-  {
-    title: 'Sports & Hobbies & Motoring',
-    topic: 'Sports FHobbies Motoring',
-    backgroundColor: '#FBBF24',
   },
 ]

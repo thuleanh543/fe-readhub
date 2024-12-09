@@ -309,8 +309,8 @@ function SavedBooks() {
         const bookPromises = savedResponse.data.data
           .slice(0, 20)
           .map(bookId =>
-            fetch(`https://gutendex.com/books/${bookId}/`).then(res =>
-              res.json(),
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/book/${bookId}/`).then(
+              res => res.json(),
             ),
           )
         const books = await Promise.all(bookPromises)
@@ -327,7 +327,7 @@ function SavedBooks() {
   const handleUnsaveBook = async bookId => {
     try {
       const response = await axios.delete(
-        `http://localhost:8080/api/v1/saved-books/user/${user.userId}/book/${bookId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${user.userId}/book/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,

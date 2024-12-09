@@ -147,7 +147,9 @@ export default function DescriptionBook() {
 
     const fetchBookDetails = async () => {
       try {
-        const response = await fetch(`https://gutendex.com/books/${bookId}/`)
+        const response = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}/`,
+        )
         if (!response.ok) throw new Error('Failed to fetch book details')
         const data = await response.json()
         setBookDetails(data)
@@ -316,8 +318,7 @@ export default function DescriptionBook() {
                             authors: bookDetails.authors
                               .map(author => author.name)
                               .join(', '),
-                            coverBook:
-                              bookDetails?.formats?.['image/jpeg'],
+                            coverBook: bookDetails?.formats?.['image/jpeg'],
                             subjects: bookDetails.subjects,
                           },
                         })
