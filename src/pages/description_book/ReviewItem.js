@@ -42,7 +42,7 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
     if (isOwnReview) return
     try {
       await axios.post(
-        `http://localhost:8080/api/v1/review/${review.reviewId}/like/user/${currentUser.userId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/review/${review.reviewId}/like/user/${currentUser.userId}`,
         {},
         {
           headers: {
@@ -66,7 +66,7 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
     if (isOwnReview) return
     try {
       await axios.post(
-        `http://localhost:8080/api/v1/review/${review.reviewId}/report/user/${currentUser.userId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/review/${review.reviewId}/report/user/${currentUser.userId}`,
         {},
         {
           headers: {

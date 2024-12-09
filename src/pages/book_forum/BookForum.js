@@ -67,7 +67,7 @@ const BookForum = () => {
       setLoading(true);
       try {
         const [userResponse, forumsResponse, challengesResponse] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/user/profile', {
+          fetch(`${process.env.REACT_APP_API_BASE_URL}/user/profile`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
           api.get('/api/v1/forums'),

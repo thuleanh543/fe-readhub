@@ -86,7 +86,7 @@ const ActionMenu = ({ reportId, forumId }) => {
             banTypes: actionId.startsWith('BAN_') ? banTypes : null
         };
 
-        const response = await fetch(`http://localhost:8080/api/v1/forums/reports/${reportId}/action`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums/reports/${reportId}/action`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

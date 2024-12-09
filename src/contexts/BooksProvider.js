@@ -49,7 +49,6 @@ export const BooksProvider = ({children}) => {
         setBooksData(booksMap)
         initialFetchDoneRef.current = true // Đánh dấu đã fetch xong
       } catch (error) {
-        console.error('Error fetching books:', error)
         setError('Failed to load books')
       } finally {
         setLoading(false)

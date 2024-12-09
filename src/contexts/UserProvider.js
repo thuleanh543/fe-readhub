@@ -19,7 +19,7 @@ export const UserProvider = ({children}) => {
     try {
       setLoading(true)
       const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
+        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
         {
           headers: {Authorization: `Bearer ${token}`},
         },

@@ -29,7 +29,7 @@ const ForumInteractionButtons = ({ forumId, user }) => {
   const fetchInteractions = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forumId}/interactions`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}/interactions`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -63,7 +63,7 @@ const ForumInteractionButtons = ({ forumId, user }) => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forumId}/like`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}/like`,
         {
           method: 'POST',
           headers: {
@@ -103,7 +103,7 @@ const ForumInteractionButtons = ({ forumId, user }) => {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forumId}/save`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}/save`,
         {
           method: 'POST',
           headers: {

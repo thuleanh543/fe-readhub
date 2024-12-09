@@ -44,7 +44,7 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
         setLoadingMore(true)
       }
 
-      const url = `http://localhost:8080/api/v1/book/search?${query}&page=${pageNum}`
+      const url = `${process.env.REACT_APP_API_BASE_URL}/book/search?${query}&page=${pageNum}`
       const response = await fetch(url)
       const data = await response.json()
 
@@ -105,7 +105,8 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
             id: book.id,
             title: book.title,
             authors: book.authors[0]?.name || 'Unknown Author',
-            subjects: book.bookshelves || []
+            subjects: book.bookshelves || [],
+            // coverBook: book.coverBook
           });
           break;
         case SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE:

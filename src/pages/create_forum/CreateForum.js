@@ -28,7 +28,6 @@ export default function CreateForum() {
   const navigate = useNavigate();
   const location = useLocation();
   const { bookId, bookTitle, authors, subjects, coverBook } = location.state || {};
-
   const [previewImage, setPreviewImage] = useState(coverBook);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,7 +120,7 @@ export default function CreateForum() {
 
         setIsSubmitting(true);
 
-        const response = await fetch('http://localhost:8080/api/v1/forums', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,

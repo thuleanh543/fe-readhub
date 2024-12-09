@@ -18,7 +18,7 @@ const CreateReadingChallenge = () => {
   const getUser = async () => {
     try {
       const response = await fetch(
-        'http://localhost:8080/api/v1/user/profile',
+        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -64,7 +64,7 @@ const CreateReadingChallenge = () => {
         reward: formData.reward
       };
 
-      const response = await fetch('http://localhost:8080/api/v1/challenges', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/challenges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

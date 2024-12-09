@@ -176,7 +176,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
       if (editImage) {
         const formData = new FormData();
         formData.append('file', editImage);
-        const response = await fetch('http://localhost:8080/api/v1/upload', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/upload`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -244,7 +244,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
       if (editReplyImage) {
         const formData = new FormData();
         formData.append('file', editReplyImage);
-        const response = await fetch('http://localhost:8080/api/v1/upload', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/upload`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -302,7 +302,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
       if (replyImage) {
         const formData = new FormData();
         formData.append('file', replyImage);
-        const response = await fetch('http://localhost:8080/api/v1/upload', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/upload`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,

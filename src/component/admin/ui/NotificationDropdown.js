@@ -27,7 +27,7 @@ const useNotificationCount = () => {
   const fetchUnreadCount = useCallback(async () => {
     try {
       const response = await axios.get(
-        'http://localhost:8080/api/v1/notifications/unread-notifications-count',
+        `${process.env.REACT_APP_API_BASE_URL}/notifications/unread-notifications-count`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`

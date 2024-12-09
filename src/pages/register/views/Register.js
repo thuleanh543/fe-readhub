@@ -40,7 +40,7 @@ function Register() {
     dispatch({type: actionTypes.SET_LOADING, payload: true})
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/v1/authen/send-otp?email=${state.email}&username=${state.username}`,
+        `${process.env.REACT_APP_API_BASE_URL}/authen/send-otp?email=${state.email}&username=${state.username}`,
       )
       dispatch({type: actionTypes.SET_SUCCESS, payload: true})
       toast.success(response.data.message)

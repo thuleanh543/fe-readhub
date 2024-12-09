@@ -88,14 +88,14 @@ const ReviewDialog = ({
       if (initialReview) {
         // Update existing review
         reviewData.reviewId = initialReview.reviewId
-        await axios.put('http://localhost:8080/api/v1/review', reviewData, {
+        await axios.put(`${process.env.REACT_APP_API_BASE_URL}/review`, reviewData, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         })
       } else {
         // Create new review
-        await axios.post('http://localhost:8080/api/v1/review', reviewData, {
+        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/review`, reviewData, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },

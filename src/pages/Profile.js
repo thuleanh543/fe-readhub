@@ -100,7 +100,7 @@ function Profile() {
 
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/user/${user?.userId}/reset-password`,
+        `${process.env.REACT_APP_API_BASE_URL}/user/${user?.userId}/reset-password`,
         {password, newPassword},
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -131,7 +131,7 @@ function Profile() {
       const formData = new FormData()
       formData.append('avatar', file)
       await axios.post(
-        `http://localhost:8080/api/v1/user/${user?.userId}/upload-avatar`,
+        `${process.env.REACT_APP_API_BASE_URL}/user/${user?.userId}/upload-avatar`,
         formData,
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -155,7 +155,7 @@ function Profile() {
   const handleUpdateProfile = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/api/v1/user/${user?.userId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/user/${user?.userId}`,
         {username: username, fullName: fullName},
         {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
       )
@@ -164,7 +164,7 @@ function Profile() {
         const formData = new FormData()
         formData.append('avatar', avatarFile)
         await axios.post(
-          `http://localhost:8080/api/v1/user/${user.userId}/upload-avatar`,
+          `${process.env.REACT_APP_API_BASE_URL}/user/${user.userId}/upload-avatar`,
           formData,
           {headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}},
         )
@@ -179,7 +179,7 @@ function Profile() {
 
   const handleDeleteAccount = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/v1/user/${user.userId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/user/${user.userId}`, {
         headers: {Authorization: `Bearer ${localStorage.getItem('token')}`},
       })
 

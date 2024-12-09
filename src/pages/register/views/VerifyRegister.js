@@ -52,7 +52,7 @@ function VerifyRegister() {
   const handleVerify = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/v1/authen/register?email=${email}&fullName=${fullName}&username=${username}&password=${password}&otp=${state.otp}`,
+        `${process.env.REACT_APP_API_BASE_URL}/authen/register?email=${email}&fullName=${fullName}&username=${username}&password=${password}&otp=${state.otp}`,
       )
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('tokenExpiration', Date.now() + 86400000)
@@ -66,7 +66,7 @@ function VerifyRegister() {
   const handleResendOTP = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/v1/authen/send-otp?email=${email}&username=${username}`,
+        `${process.env.REACT_APP_API_BASE_URL}/authen/send-otp?email=${email}&username=${username}`,
       )
       toast.success(response.data.message)
       dispatch({type: actionTypes.SET_COUNTDOWN, payload: 60})
