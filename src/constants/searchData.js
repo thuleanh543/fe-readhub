@@ -70,259 +70,123 @@ export const languages = [
 
 export const subjects = [
   {
-    label: 'Archaeology',
-    value: 'Archaeology',
+    label: 'Adventure',
+    value: 'Adventure stories',
   },
   {
-    label: 'Architecture',
-    value: 'Architecture',
+    label: 'Biography & Autobiography',
+    value: 'Biography & Autobiography',
   },
   {
-    label: 'Art & Photography',
-    value: 'Art%20%26%20Photography',
+    label: "Children's Literature",
+    value: "Children's stories",
   },
   {
-    label: 'Biographies',
-    value: 'Biographies',
+    label: 'Classic Literature',
+    value: 'Classic Literature',
   },
   {
-    label: 'Business/Management',
-    value: 'Business%2FManagement',
+    label: 'Detective Fiction',
+    value: 'Detective fiction',
   },
   {
-    label: 'Children & Young Adult Reading',
-    value: 'Children%20%26%20Young%20Adult%20Reading',
+    label: 'Drama',
+    value: 'Drama',
   },
   {
-    label: 'Computers & Technology',
-    value: 'Computers%20%26%20Technology',
+    label: 'Epic Poetry',
+    value: 'Epic poetry',
   },
   {
-    label: 'Cooking & Drinking',
-    value: 'Cooking%20%26%20Drinking',
+    label: 'Essays',
+    value: 'Essays',
   },
   {
-    label: 'Culture/Civilization/Society',
-    value: 'Culture%2FCivilization%2FSociety',
+    label: 'Fairy Tales',
+    value: 'Fairy tales',
   },
   {
-    label: 'Crime/Mystery',
-    value: 'Crime%2FMystery',
+    label: 'Fantasy',
+    value: 'Fantasy fiction',
   },
   {
-    label: 'Drugs/Alcohol/Pharmacology',
-    value: 'Drugs%2FAlcohol%2FPharmacolgy',
+    label: 'Folklore',
+    value: 'Folklore',
   },
   {
-    label: 'Economics',
-    value: 'Economics',
+    label: 'Gothic Fiction',
+    value: 'Gothic fiction',
   },
   {
-    label: 'Encyclopedias/Dictionaries/Reference',
-    value: 'Encyclopedias%2FDictionaries%2FReference',
+    label: 'Historical Fiction',
+    value: 'Historical fiction',
   },
   {
-    label: 'Engineering & Construction',
-    value: 'Engineering%20%26%20Construction',
+    label: 'Horror',
+    value: 'Horror tales',
   },
   {
-    label: 'Environmental Issues',
-    value: 'Environmental%20Issues',
+    label: 'Humor',
+    value: 'Humor',
   },
   {
-    label: 'Fashion & Costume',
-    value: 'Fashion%20%26%20Costume',
+    label: 'Letters',
+    value: 'Letters',
   },
   {
-    label: 'Fiction',
-    value: 'Fiction',
+    label: 'Literary Fiction',
+    value: 'Literary fiction',
   },
   {
-    label: 'Gender & Sexuality Studies',
-    value: 'Gender%20%26%20Sexuality%20Studies',
+    label: 'Love Stories',
+    value: 'Love stories',
   },
   {
-    label: 'Health & Medicine',
-    value: 'Health%20%26%20Medicine',
+    label: 'Mystery',
+    value: 'Mystery fiction',
   },
   {
-    label: 'History - American',
-    value: 'History%20-%20American',
+    label: 'Mythology',
+    value: 'Mythology',
   },
   {
-    label: 'History - Ancient',
-    value: 'History%20-%20Ancient',
-  },
-  {
-    label: 'History - British',
-    value: 'History%20-%20British',
-  },
-  {
-    label: 'History - European',
-    value: 'History%20-%20European',
-  },
-  {
-    label: 'History - General',
-    value: 'History%20-%20General',
-  },
-  {
-    label: 'History - Medieval/The Middle Ages',
-    value: 'History%20-%20Medieval%2FThe%20Middle%20Ages',
-  },
-  {
-    label: 'History - Religious',
-    value: 'History%20-%20Religious',
-  },
-  {
-    label: 'History - Royalty',
-    value: 'History%20-%20Royalty',
-  },
-  {
-    label: 'History - Schools & Universities',
-    value: 'History%20-%20Schools%20%26%20Universities',
-  },
-  {
-    label: 'History - Warfare',
-    value: 'History%20-%20Warfare',
-  },
-  {
-    label: 'Humour',
-    value: 'Humour',
-  },
-  {
-    label: 'Journalism/Media/Writing',
-    value: 'Journalism%2FMedia%2FWriting',
-  },
-  {
-    label: 'Journals',
-    value: 'Journals',
-  },
-  {
-    label: 'Language & Communication',
-    value: 'Language%20%26%20Communication',
-  },
-  {
-    label: 'Law & Criminology',
-    value: 'Law%20%26%20Criminology',
-  },
-  {
-    label: 'Literature',
-    value: 'Literature',
-  },
-  {
-    label: 'Mathematics',
-    value: 'Mathematics',
-  },
-  {
-    label: 'Music',
-    value: 'Music',
-  },
-  {
-    label: 'Nature/Gardening/Animals',
-    value: 'Nature%2FGardening%2FAnimals',
-  },
-  {
-    label: 'Nutrition',
-    value: 'Nutrition',
-  },
-  {
-    label: 'Old Age & the Elderly',
-    value: 'Old%20Age%20%26%20the%20Elderly',
-  },
-  {
-    label: 'Other',
-    value: 'Other',
-  },
-  {
-    label: 'Parenthood & Family Relations',
-    value: 'Parenthood%20%26%20Family%20Relations',
-  },
-  {
-    label: 'Performing Arts/Film',
-    value: 'Performing%20Arts%2FFilm',
-  },
-  {
-    label: 'Philosophy & Ethics',
-    value: 'Philosophy%20%26%20Ethics',
+    label: 'Philosophy',
+    value: 'Philosophy',
   },
   {
     label: 'Poetry',
     value: 'Poetry',
   },
   {
-    label: 'Politics',
-    value: 'Politics',
+    label: 'Political Fiction',
+    value: 'Political fiction',
   },
   {
-    label: 'Psychiatry/Psychology',
-    value: 'Psychiatry%2FPsychology',
+    label: 'Religious Literature',
+    value: 'Religious literature',
   },
   {
-    label: 'Religion/Spirituality/Paranormal',
-    value: 'Religion%2FSpirituality%2FParanormal',
+    label: 'Romance',
+    value: 'Romance fiction',
   },
   {
-    label: 'Reports & Conference Proceedings',
-    value: 'Reports%20%26%20Conference%20Proceedings',
+    label: 'Satire',
+    value: 'Satire',
   },
   {
-    label: 'Research Methods/Statistics/Information Sys',
-    value: 'Research%20Methods%2FStatistics%2FInformation%20Sys',
+    label: 'Science Fiction',
+    value: 'Science fiction',
   },
   {
-    label: 'Russian Interest',
-    value: 'Russian%20Interest',
-  },
-  {
-    label: 'Science - Astronomy',
-    value: 'Science%20-%20Astronomy',
-  },
-  {
-    label: 'Science - Chemistry/Biochemistry/Physics',
-    value: 'Science%20-%20Chemistry%2FBiochemistry%2FPhysics',
-  },
-  {
-    label: 'Science - Earth/Agricultural/Farming',
-    value: 'Science%20-%20Earth%2FAgricultural%2FFarming',
-  },
-  {
-    label: 'Science - Physics',
-    value: 'Science%20-%20Physics',
-  },
-  {
-    label: 'Science - General',
-    value: 'Science%20-%20General',
-  },
-  {
-    label: 'Science - Genetics/Biology/Evolution',
-    value: 'Science%20-%20Genetics%2FBiology%2FEvolution',
-  },
-  {
-    label: 'Science-Fiction & Fantasy',
-    value: 'Science-Fiction%20%26%20Fantasy',
-  },
-  {
-    label: 'Sexuality & Erotica',
-    value: 'Sexuality%20%26%20Erotica',
-  },
-  {
-    label: 'Sociology',
-    value: 'Sociology',
-  },
-  {
-    label: 'Sports/Hobbies/Motoring',
-    value: 'Sports%2FHobbies%2FMotoring',
-  },
-  {
-    label: 'Teaching & Education',
-    value: 'Teaching%20%26%20Education',
-  },
-  {
-    label: 'Travel & Geography',
-    value: 'Travel%20%26%20Geography',
+    label: 'Sea Stories',
+    value: 'Sea stories',
   },
   {
     label: 'Short Stories',
-    value: 'Short%20Stories',
+    value: 'Short stories',
+  },
+  {
+    label: 'War Stories',
+    value: 'War stories',
   },
 ]

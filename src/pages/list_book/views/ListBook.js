@@ -2,18 +2,20 @@ import React, {useEffect, useState, useCallback, useRef} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {SEARCH_MODE} from '../../../constants/enums'
 
-const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
+const ListBook = ({
+  searchTerm: searchCriteria,
+  mode,
+  onBookSelect,
+  selectedBooks,
+}) => {
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [totalBooks, setTotalBooks] = useState(0)
-  const searchUpdateTimeoutRef = useRef(null)
   const observerRef = useRef(null)
-  const lastSearchTermRef = useRef('')
-
   const navigate = useNavigate()
 
   const lastBookElementRef = useCallback(
@@ -32,10 +34,7 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
     },
     [loading, loadingMore, hasMore, books.length],
   )
-
-  const fetchBooks = useCallback(async (query, pageNum, isNewSearch) => {
-    if (!query) return
-
+  const fetchBooks = useCallback(async (criteria, pageNum, isNewSearch) => {
     try {
       if (isNewSearch) {
         setLoading(true)
@@ -44,12 +43,22 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
         setLoadingMore(true)
       }
 
-      const url = `${process.env.REACT_APP_API_BASE_URL}/book/search?${query}&page=${pageNum}`
-      const response = await fetch(url)
-      const data = await response.json()
+      const url = new URL('http://localhost:8080/api/v1/book/search/advanced')
+      url.searchParams.append('page', pageNum)
+      url.searchParams.append('size', 32)
 
-      const newBooks = data.books || []
-      setTotalBooks(data.totalElements || 0)
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(criteria),
+      })
+
+      const data = await response.json()
+      const newBooks = data.results || []
+      setTotalBooks(data.count || 0)
+      setHasMore(newBooks.length > 0 && data.next !== null)
 
       if (isNewSearch) {
         setBooks(newBooks)
@@ -57,11 +66,9 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
         setBooks(prev => [...prev, ...newBooks])
       }
 
-      setHasMore(newBooks.length > 0 && data.hasNext)
+      setHasMore(newBooks.length > 0 && !data.last)
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        setError('Failed to load books. Please try again.')
-      }
+      setError('Failed to load books. Please try again.')
     } finally {
       setLoading(false)
       setLoadingMore(false)
@@ -69,60 +76,31 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
   }, [])
 
   useEffect(() => {
-    if (searchUpdateTimeoutRef.current) {
-      clearTimeout(searchUpdateTimeoutRef.current)
+    if (searchCriteria) {
+      setPage(0)
+      fetchBooks(searchCriteria, 0, true)
     }
-
-    if (searchTerm) {
-      setPage(1)
-      // Start loading immediately
-      setLoading(true)
-      setBooks([])
-
-      searchUpdateTimeoutRef.current = setTimeout(() => {
-        fetchBooks(searchTerm, 1, true)
-      }, 1700)
-    }
-
-    return () => {
-      if (searchUpdateTimeoutRef.current) {
-        clearTimeout(searchUpdateTimeoutRef.current)
-      }
-    }
-  }, [searchTerm, fetchBooks])
+  }, [searchCriteria, fetchBooks])
 
   useEffect(() => {
-    if (page > 1 && !loading && !loadingMore) {
-      fetchBooks(searchTerm, page, false)
+    if (page > 0 && searchCriteria) {
+      fetchBooks(searchCriteria, page, false)
     }
-  }, [page, searchTerm, fetchBooks, loading, loadingMore])
+  }, [page, searchCriteria, fetchBooks])
 
   const handleBookClick = useCallback(
-    (book) => {
-      switch (mode) {
-        case SEARCH_MODE.SELECT_BOOK:
-          onBookSelect?.({
-            id: book.id,
-            title: book.title,
-            authors: book.authors[0]?.name || 'Unknown Author',
-            subjects: book.bookshelves || [],
-            // coverBook: book.coverBook
-          });
-          break;
-        case SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE:
-          onBookSelect?.(book);
-          break;
-        default:
-          navigate('/description-book', {
-            state: {
-              bookId: book.id,
-              bookTitle: book.title
-            }
-          });
+    book => {
+      if (onBookSelect) {
+        onBookSelect(book)
+      } else {
+        navigate('/description-book', {
+          state: {bookId: book.id, bookTitle: book.title},
+        })
       }
     },
-    [navigate, mode, onBookSelect],
-  );
+    [navigate, onBookSelect],
+  )
+
   if (error) {
     return (
       <div className='flex items-center justify-center p-8'>
@@ -136,7 +114,6 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-white px-6 py-8'>
       <div className='max-w-7xl mx-auto'>
-        {/* Results count display */}
         {!loading && totalBooks > 0 && (
           <div className='mb-6 text-gray-600 text-l font-bold text-right'>
             Found {totalBooks} book{totalBooks !== 1 ? 's' : ''}
@@ -144,7 +121,6 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
         )}
 
         <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8'>
-          {/* Loading skeletons */}
           {loading &&
             Array.from({length: 10}).map((_, i) => (
               <div key={`skeleton-${i}`} className='animate-pulse'>
@@ -158,53 +134,61 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
               </div>
             ))}
 
-          {/* Book grid */}
-          {!loading && books.map((book, index) => (
-            <div
-              ref={index === books.length - 1 ? lastBookElementRef : null}
-              key={`${book.id}-${index}`}
-              onClick={() => handleBookClick(book)}
-              className={`group relative transition-all duration-300 hover:scale-105 ${
-                mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
-                (selectedBooks?.some(b => b.id === book.id) ? 'ring-2 ring-blue-500' : '') :
-                mode === SEARCH_MODE.SELECT_BOOK ? 'cursor-pointer' : ''
-              }`}>
-              <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
-                <div
-                  className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
-                  style={{
-                    backgroundImage: `url('${book?.coverUrl}')`,
-                  }}
-                />
-                <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
-                <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
-                  <button className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-300 shadow-lg ${
-                    mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks?.some(b => b.id === book.id)
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-white text-gray-900 hover:bg-blue-50'
-                  }`}>
-                    {mode === SEARCH_MODE.SELECT_BOOK ? 'Select Book' :
-                     mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE ?
-                     (selectedBooks?.some(b => b.id === book.id) ? 'Selected' : 'Select Book') :
-                     'View Details'}
-                  </button>
+          {!loading &&
+            books.map((book, index) => (
+              <div
+                ref={index === books.length - 1 ? lastBookElementRef : null}
+                key={`${book.id}-${index}`}
+                onClick={() => handleBookClick(book)}
+                className={`group relative transition-all duration-300 hover:scale-105 ${
+                  mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE
+                    ? selectedBooks?.some(b => b.id === book.id)
+                      ? 'ring-2 ring-blue-500'
+                      : ''
+                    : mode === SEARCH_MODE.SELECT_BOOK
+                    ? 'cursor-pointer'
+                    : ''
+                }`}>
+                <div className='relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm ring-1 ring-black/5 shadow-xl group-hover:shadow-2xl transition-all duration-300'>
+                  <div
+                    className='absolute inset-0 bg-cover bg-center transition-all duration-300 group-hover:scale-110'
+                    style={{
+                      backgroundImage: `url('${book?.formats?.['image/jpeg']}')`,
+                    }}
+                  />
+                  <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300' />
+                  <div className='absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-300'>
+                    <button
+                      className={`w-full px-4 py-2 rounded-lg font-medium transition-colors duration-300 shadow-lg ${
+                        mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE &&
+                        selectedBooks?.some(b => b.id === book.id)
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-white text-gray-900 hover:bg-blue-50'
+                      }`}>
+                      {mode === SEARCH_MODE.SELECT_BOOK
+                        ? 'Select Book'
+                        : mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE
+                        ? selectedBooks?.some(b => b.id === book.id)
+                          ? 'Selected'
+                          : 'Select Book'
+                        : 'View Details'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className='mt-4 p-3'>
+                  <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
+                    {book.title}
+                  </h3>
+                  <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
+                    {book.authors[0]?.name || 'Unknown Author'}
+                  </p>
                 </div>
               </div>
-
-              <div className='mt-4 p-3'>
-                <h3 className='text-center text-sm font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-300'>
-                  {book.title}
-                </h3>
-                <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
-                  {book.authors[0]?.name || 'Unknown Author'}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
 
-        {/* No results message */}
-        {!loading && searchTerm && books.length === 0 && (
+        {!loading && books.length === 0 && (
           <div className='text-center py-12'>
             <p className='text-gray-600 text-lg'>
               No books found for this search!
@@ -215,7 +199,6 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
           </div>
         )}
 
-        {/* Load more indicator */}
         {loadingMore && (
           <div className='flex items-center justify-center mt-8'>
             <div className='animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent' />
@@ -223,7 +206,6 @@ const ListBook = ({searchTerm, mode, onBookSelect, selectedBooks}) => {
           </div>
         )}
 
-        {/* End of results message */}
         {!loading && !loadingMore && !hasMore && books.length > 0 && (
           <div className='text-center py-8 mt-4 border-t border-gray-200'>
             <p className='text-gray-500'>End of results</p>

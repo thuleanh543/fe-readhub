@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react'
-import {ListBook} from '../../pages'
 import {Search, SlidersHorizontal, X} from 'lucide-react'
+import {ListBook} from '../../pages'
 import HeaderComponent from '../../component/header/HeaderComponent'
 import {languages, subjects} from '../../constants/searchData'
 import {useLocation, useNavigate} from 'react-router-dom'
@@ -23,7 +23,6 @@ const MultiSelect = ({value, onChange, options, placeholder}) => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [wrapperRef])
-
 
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -129,31 +128,27 @@ const SearchResult = () => {
   const [searchParams, setSearchParams] = useState({
     title: '',
     author: '',
-    subjects: [], // Changed to array for multiple selection
-    language: '',
+    subjects: [],
+    languages: [],
+    bookshelves: [],
   })
 
   const [showResults, setShowResults] = useState(false)
-  const [finalSearchTerm, setFinalSearchTerm] = useState('')
+  const [searchPayload, setSearchPayload] = useState(null)
   const [isFilterExpanded, setIsFilterExpanded] = useState(true)
-  const windowSize = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  }
-  const [selectedBooks, setSelectedBooks] = useState([]);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const mode = location.state?.mode ?? SEARCH_MODE.ADVANCED_SEARCH;
-
+  const windowSize = {width: window.innerWidth, height: window.innerHeight}
+  const [selectedBooks, setSelectedBooks] = useState([])
+  const location = useLocation()
+  const navigate = useNavigate()
+  const mode = location.state?.mode ?? SEARCH_MODE.ADVANCED_SEARCH
 
   useEffect(() => {
     if (location.state?.selectedBooks) {
-      setSelectedBooks(location.state.selectedBooks);
+      setSelectedBooks(location.state.selectedBooks)
     }
-  }, [location]);
+  }, [location])
 
-  const handleBookSelect = (book) => {
+  const handleBookSelect = book => {
     switch (mode) {
       case SEARCH_MODE.SELECT_BOOK:
         navigate('/create-forum', {
@@ -163,64 +158,48 @@ const SearchResult = () => {
             authors: book.authors,
             subjects: book.subjects,
             coverBook: book.coverBook,
-          }
-        });
-        break;
+          },
+        })
+        break
       case SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE:
-        const isSelected = selectedBooks.some(b => b.id === book.id);
+        const isSelected = selectedBooks.some(b => b.id === book.id)
         if (isSelected) {
-          setSelectedBooks(books => books.filter(b => b.id !== book.id));
+          setSelectedBooks(books => books.filter(b => b.id !== book.id))
         } else {
-          setSelectedBooks(books => [...books, book]);
+          setSelectedBooks(books => [...books, book])
         }
-        break;
+        break
       default:
-        navigate('/description-book', { state: { bookId: book.id, bookTitle: book.title } });
+        navigate('/description-book', {
+          state: {bookId: book.id, bookTitle: book.title},
+        })
     }
   }
 
-  const handleSearch = e => {
+  const handleSearch = async e => {
     e.preventDefault()
-    let queryParams = []
-
-    // Handle title search
-    if (searchParams.title.trim()) {
-      queryParams.push(`title=${encodeURIComponent(searchParams.title.trim())}`)
+    const payload = {
+      title: searchParams.title.trim() || null,
+      author: searchParams.author.trim() || null,
+      languages:
+        searchParams.languages.length > 0 ? searchParams.languages : null,
+      subjects: searchParams.subjects.length > 0 ? searchParams.subjects : null,
+      bookshelves:
+        searchParams.bookshelves.length > 0 ? searchParams.bookshelves : null,
     }
-
-    // Handle author search
-    if (searchParams.author.trim()) {
-      queryParams.push(
-        `author=${encodeURIComponent(searchParams.author.trim())}`,
-      )
-    }
-
-    // Handle language selection - now supporting multiple languages
-    if (searchParams.language.length > 0) {
-      queryParams.push(`language=${searchParams.language.join(',')}`)
-    }
-
-    // Handle subjects/genres - now supporting multiple genres
-    if (searchParams.subjects.length > 0) {
-      queryParams.push(`genre=${searchParams.subjects.join(',')}`)
-    }
-
-    // Build the final query string
-    const finalQuery = queryParams.join('&')
-
-    if (finalQuery) {
-      setFinalSearchTerm(finalQuery)
-      setShowResults(true)
-    }
+    setSearchPayload(payload)
+    setShowResults(true)
   }
+
   const clearSearch = () => {
     setSearchParams({
       title: '',
       author: '',
       subjects: [],
-      language: '',
+      languages: [],
+      bookshelves: [],
     })
-    setFinalSearchTerm('')
+    setSearchPayload(null)
     setShowResults(false)
   }
 
@@ -229,14 +208,13 @@ const SearchResult = () => {
       id: book.id,
       title: book.title,
       author: book.authors[0]?.name || 'Unknown Author',
-      coverUrl: book?.coverUrl
-    }));
+      coverUrl: book?.coverUrl,
+    }))
 
-    // Navigate back với state đơn giản
     navigate(`/challenge/${location.state.challengeId}/discussion`, {
-      state: { selectedBooks: formattedBooks }
-    });
-  };
+      state: {selectedBooks: formattedBooks},
+    })
+  }
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -252,11 +230,11 @@ const SearchResult = () => {
             <div className='p-6'>
               <div className='flex items-center justify-between mb-6'>
                 <h2 className='text-2xl font-bold text-gray-800'>
-                {mode === SEARCH_MODE.SELECT_BOOK
-    ? 'Select Book For Create Forum'
-    : mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE
-    ? 'Select Books You Have Read'
-    : 'Advanced Search'}
+                  {mode === SEARCH_MODE.SELECT_BOOK
+                    ? 'Select Book For Create Forum'
+                    : mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE
+                    ? 'Select Books You Have Read'
+                    : 'Advanced Search'}
                 </h2>
                 <button
                   onClick={() => setIsFilterExpanded(!isFilterExpanded)}
@@ -269,7 +247,6 @@ const SearchResult = () => {
                 onSubmit={handleSearch}
                 className={`${isFilterExpanded ? 'block' : 'hidden'}`}>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                  {/* Title */}
                   <div className='col-span-full'>
                     <label className='block text-sm font-medium text-gray-700 mb-1'>
                       Title
@@ -301,7 +278,6 @@ const SearchResult = () => {
                     </div>
                   </div>
 
-                  {/* Author */}
                   <div>
                     <label className='block text-sm font-medium text-gray-700 mb-1'>
                       Author
@@ -320,17 +296,16 @@ const SearchResult = () => {
                     />
                   </div>
 
-                  {/* Language */}
                   <div>
                     <label className='block text-sm font-medium text-gray-700 mb-1'>
                       Language
                     </label>
                     <MultiSelect
-                      value={searchParams.language}
-                      onChange={newLanguage =>
+                      value={searchParams.languages}
+                      onChange={newLanguages =>
                         setSearchParams({
                           ...searchParams,
-                          language: newLanguage,
+                          languages: newLanguages,
                         })
                       }
                       options={languages}
@@ -338,7 +313,6 @@ const SearchResult = () => {
                     />
                   </div>
 
-                  {/* Subject with Multiple Select */}
                   <div className='md:col-span-2'>
                     <label className='block text-sm font-medium text-gray-700 mb-1'>
                       Subjects
@@ -357,7 +331,6 @@ const SearchResult = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className='mt-8 flex justify-end space-x-4'>
                   <button
                     type='button'
@@ -375,35 +348,35 @@ const SearchResult = () => {
             </div>
           </div>
 
-          {mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE && selectedBooks.length > 0 && (
-            <div className='fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4'>
-              <div className='max-w-7xl mx-auto flex justify-between items-center'>
-                <div className='flex items-center gap-4'>
-                  <span className='font-medium'>{selectedBooks.length} books selected</span>
+          {mode === SEARCH_MODE.SELECT_BOOKS_FOR_CHALLENGE &&
+            selectedBooks.length > 0 && (
+              <div className='fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t p-4'>
+                <div className='max-w-7xl mx-auto flex justify-between items-center'>
+                  <div className='flex items-center gap-4'>
+                    <span className='font-medium'>
+                      {selectedBooks.length} books selected
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleDone}
+                    className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'>
+                    Done
+                  </button>
                 </div>
-                <button
-                  onClick={handleDone}
-                  className='px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
-                >
-                  Done
-                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Results Section */}
-          {showResults && finalSearchTerm && (
+          {showResults && searchPayload && (
             <div>
               <ListBook
-              searchTerm={finalSearchTerm}
-              mode={mode}
-              onBookSelect={handleBookSelect}
-              selectedBooks={selectedBooks}
+                searchTerm={searchPayload}
+                mode={mode}
+                onBookSelect={handleBookSelect}
+                selectedBooks={selectedBooks}
               />
             </div>
           )}
 
-          {/* No Search Yet Message */}
           {!showResults && (
             <div className='text-center py-16'>
               <h3 className='text-xl text-gray-600'>
