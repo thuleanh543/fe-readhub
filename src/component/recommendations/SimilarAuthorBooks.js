@@ -16,14 +16,27 @@ const SimilarAuthorBooks = ({bookId, backgroundColor = '#4F46E5'}) => {
   useEffect(() => {
     const fetchSimilarBooks = async () => {
       try {
-        const response = await axios.get(`https://gutendex.com/books/${bookId}`)
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}`,
+        )
         const book = response.data
         const authorName = book.authors[0]?.name
 
         if (authorName) {
           const encodedAuthor = encodeURIComponent(authorName)
-          const similarBooksResponse = await axios.get(
-            `https://gutendex.com/books?search=${encodedAuthor}`,
+          const similarBooksResponse = await axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`,
+            {
+              subjects: null,
+              bookshelves: null,
+              languages: null,
+              author: authorName,
+              title: null,
+            },
+            {
+              headers: {'Content-Type': 'application/json'},
+              params: {page: 0, size: 15},
+            },
           )
           const similarBooks = similarBooksResponse.data.results
           setBooks(similarBooks.filter(book => book.id !== bookId))

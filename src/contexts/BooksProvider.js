@@ -8,6 +8,7 @@ import React, {
 } from 'react'
 import axios from 'axios'
 import {BOOKSHELVES} from '../constants/books'
+import BookshelfSection from '../component/bookshelf/BookshelfSection'
 
 const BooksContext = createContext()
 
@@ -23,36 +24,56 @@ export const BooksProvider = ({children}) => {
   useEffect(() => {
     // Function để fetch books
     const fetchBooks = async () => {
-      // Check nếu đang fetch hoặc đã fetch xong
-      if (fetchingRef.current || initialFetchDoneRef.current) {
-        return
-      }
+      if (fetchingRef.current || initialFetchDoneRef.current) return
 
       try {
-        fetchingRef.current = true // Đánh dấu đang fetch
+        fetchingRef.current = true
         setLoading(true)
         setError(null)
 
+        console.log('Fetching with shelves:', BOOKSHELVES)
+
         const responses = await Promise.all(
-          BOOKSHELVES.map(shelf =>
-            axios.get(
-              `https://gutendex.com/books?topic=${shelf.topic}&page=1&sort=popular `,
-            ),
-          ),
+          BOOKSHELVES.map(async shelf => {
+            try {
+              const response = await axios.post(
+                'http://localhost:8080/api/v1/book/search/advanced',
+                {
+                  subjects: [shelf.topic],
+                  bookshelves: null,
+                  languages: null,
+                  author: null,
+                  title: null,
+                },
+                {
+                  headers: {'Content-Type': 'application/json'},
+                  params: {page: 0, size: 15},
+                },
+              )
+              console.log(`Response for ${shelf.topic}:`, response.data)
+              return response
+            } catch (err) {
+              console.error(`Error fetching ${shelf.topic}:`, err)
+              throw err
+            }
+          }),
         )
 
         const booksMap = {}
-        BOOKSHELVES.forEach((shelf, index) => {
-          booksMap[shelf.topic] = responses[index].data.results.slice(0, 20)
+        responses.forEach((response, index) => {
+          const shelf = BOOKSHELVES[index]
+          booksMap[shelf.topic] = response.data.results || []
+          console.log(`Books for ${shelf.topic}:`, booksMap[shelf.topic])
         })
 
         setBooksData(booksMap)
-        initialFetchDoneRef.current = true // Đánh dấu đã fetch xong
+        initialFetchDoneRef.current = true
       } catch (error) {
-        setError('Failed to load books')
+        console.error('Fetch error:', error)
+        setError(error.message || 'Failed to load books')
       } finally {
         setLoading(false)
-        fetchingRef.current = false // Reset fetch flag
+        fetchingRef.current = false
       }
     }
 
@@ -76,14 +97,36 @@ export const BooksProvider = ({children}) => {
       setError(null)
 
       const responses = await Promise.all(
-        BOOKSHELVES.map(shelf =>
-          axios.get(`https://gutendex.com/books?topic=${shelf.topic}&page=1`),
-        ),
+        BOOKSHELVES.map(async shelf => {
+          try {
+            const response = await axios.post(
+              'http://localhost:8080/api/v1/book/search/advanced',
+              {
+                subjects: [shelf.topic],
+                bookshelves: null,
+                languages: null,
+                author: null,
+                title: null,
+              },
+              {
+                headers: {'Content-Type': 'application/json'},
+                params: {page: 0, size: 15},
+              },
+            )
+            console.log(`Response for ${shelf.topic}:`, response.data)
+            return response
+          } catch (err) {
+            console.error(`Error fetching ${shelf.topic}:`, err)
+            throw err
+          }
+        }),
       )
 
       const booksMap = {}
-      BOOKSHELVES.forEach((shelf, index) => {
-        booksMap[shelf.topic] = responses[index].data.results.slice(0, 10)
+      responses.forEach((response, index) => {
+        const shelf = BOOKSHELVES[index]
+        booksMap[shelf.topic] = response.data.results || []
+        console.log(`Books for ${shelf.topic}:`, booksMap[shelf.topic])
       })
 
       setBooksData(booksMap)
