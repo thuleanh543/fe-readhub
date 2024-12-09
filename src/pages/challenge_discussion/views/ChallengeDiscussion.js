@@ -55,7 +55,7 @@ const ChallengeDiscussion = () => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/v1/challenges/${challengeId}/comments`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/challenges/${challengeId}/comments`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         if (response.data.success) {

@@ -82,7 +82,7 @@ const RecentlyReadBooks = ({userId, maxBooks = 20}) => {
     const fetchRecentBooks = async () => {
       try {
         const historyResponse = await axios.get(
-          `http://localhost:8080/api/v1/reading-history/user/${userId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/reading-history/user/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -167,7 +167,7 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
     const fetchRecommendedBooks = async userId => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/v1/recommendations/user/${userId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/recommendations/user/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -297,7 +297,7 @@ function SavedBooks() {
   const fetchSavedBooks = async userId => {
     try {
       const savedResponse = await axios.get(
-        `http://localhost:8080/api/v1/saved-books/user/${userId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,

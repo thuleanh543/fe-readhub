@@ -75,7 +75,7 @@ function ReadBookScreen() {
     if (!user || !bookId) return
     try {
       await axios.post(
-        'http://localhost:8080/api/v1/reading-history',
+        `${process.env.REACT_APP_API_BASE_URL}/reading-history`,
         {
           userId: user.userId,
           bookId: bookId,
@@ -99,7 +99,7 @@ function ReadBookScreen() {
 
     try {
       await axios.post(
-        'http://localhost:8080/api/v1/bookmark',
+        `${process.env.REACT_APP_API_BASE_URL}/bookmark`,
         {
           userId: user.userId,
           bookId: bookId,
@@ -124,7 +124,7 @@ function ReadBookScreen() {
     if (!localStorage.getItem('token')) return
     try {
       const response = await axios.get(
-        'http://localhost:8080/api/v1/user/profile',
+        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -141,7 +141,7 @@ function ReadBookScreen() {
     if (!user?.userId || !bookId || !rendition) return
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/note/user/${user.userId}/book/${bookId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/note/user/${user.userId}/book/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -165,7 +165,7 @@ function ReadBookScreen() {
 
   const handleSaveEdit = async () => {
     try {
-      await axios.put(`http://localhost:8080/api/v1/note`, editingNote, {
+      await axios.put(`${process.env.REACT_APP_API_BASE_URL}/note`, editingNote, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -210,7 +210,7 @@ function ReadBookScreen() {
     if (!user || !bookId) return
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/bookmark/user/${user.userId}/book/${bookId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/bookmark/user/${user.userId}/book/${bookId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -234,7 +234,7 @@ function ReadBookScreen() {
     if (hasBookmark && bookmarkId) {
       try {
         await axios.put(
-          'http://localhost:8080/api/v1/bookmark',
+          `${process.env.REACT_APP_API_BASE_URL}/bookmark`,
           {
             bookmarkId: bookmarkId,
             userId: user.userId,
@@ -560,7 +560,7 @@ function ReadBookScreen() {
 
       try {
         const response = await axios.post(
-          'http://localhost:8080/api/v1/note',
+          `${process.env.REACT_APP_API_BASE_URL}/note`,
           newNote,
           {
             headers: {
@@ -585,7 +585,7 @@ function ReadBookScreen() {
 
   const handleRemoveHighlight = async (cfiRange, noteId) => {
     try {
-      await axios.delete(`http://localhost:8080/api/v1/note/${noteId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/note/${noteId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

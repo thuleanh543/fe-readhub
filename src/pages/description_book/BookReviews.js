@@ -43,8 +43,8 @@ const BookReviews = ({onWriteReview, bookId, refreshTrigger, currentUser}) => {
       setLoading(true)
       try {
         const url = currentUser?.userId
-          ? `http://localhost:8080/api/v1/review/book/${bookId}?currentUserId=${currentUser.userId}`
-          : `http://localhost:8080/api/v1/review/book/${bookId}`
+          ? `${process.env.REACT_APP_API_BASE_URL}/review/book/${bookId}?currentUserId=${currentUser.userId}`
+          : `${process.env.REACT_APP_API_BASE_URL}/review/book/${bookId}`
 
         const config = currentUser
           ? {

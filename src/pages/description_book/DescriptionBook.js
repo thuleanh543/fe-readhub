@@ -49,7 +49,7 @@ export default function DescriptionBook() {
     if (!user) return
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/saved-books/user/${user.userId}/${bookId}/is-saved`,
+        `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${user.userId}/${bookId}/is-saved`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -73,7 +73,7 @@ export default function DescriptionBook() {
       if (isSaved) {
         // Unsave book
         const response = await axios.delete(
-          `http://localhost:8080/api/v1/saved-books/user/${user.userId}/book/${bookId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${user.userId}/book/${bookId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -87,7 +87,7 @@ export default function DescriptionBook() {
       } else {
         // Save book
         const response = await axios.post(
-          `http://localhost:8080/api/v1/saved-books/user/${user.userId}/book/${bookId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${user.userId}/book/${bookId}`,
           null,
           {
             headers: {
@@ -116,7 +116,7 @@ export default function DescriptionBook() {
       if (!localStorage.getItem('token')) return
       try {
         const response = await axios.get(
-          'http://localhost:8080/api/v1/user/profile',
+          `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -127,7 +127,7 @@ export default function DescriptionBook() {
         // Kiểm tra trạng thái saved ngay sau khi có user data
         try {
           const savedResponse = await axios.get(
-            `http://localhost:8080/api/v1/saved-books/user/${response.data.userId}/${bookId}/is-saved`,
+            `${process.env.REACT_APP_API_BASE_URL}/saved-books/user/${response.data.userId}/${bookId}/is-saved`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -316,7 +316,7 @@ export default function DescriptionBook() {
                             authors: bookDetails.authors
                               .map(author => author.name)
                               .join(', '),
-                            defaultCoverImage:
+                            coverBook:
                               bookDetails?.formats?.['image/jpeg'],
                             subjects: bookDetails.subjects,
                           },

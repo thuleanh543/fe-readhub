@@ -44,7 +44,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
     try {
       setIsDeleting(true);
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forum.discussionId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forum.discussionId}`,
         {
           method: 'DELETE',
           headers: {
@@ -68,7 +68,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const handleReportForum = async (reportData) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forum.discussionId}/report`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forum.discussionId}/report`,
         {
           method: 'POST',
           headers: {
@@ -107,7 +107,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const checkMembership = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forum.discussionId}/membership`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forum.discussionId}/membership`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -128,7 +128,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
   const fetchCommentsCount = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/v1/forums/${forum.discussionId}/comments`,
+        `${process.env.REACT_APP_API_BASE_URL}/forums/${forum.discussionId}/comments`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -162,7 +162,7 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
     } else {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/v1/forums/${forum.discussionId}/join`,
+          `${process.env.REACT_APP_API_BASE_URL}/forums/${forum.discussionId}/join`,
           {
             method: 'POST',
             headers: {

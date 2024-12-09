@@ -72,7 +72,7 @@ const ForumDiscussion = () => {
   const getUser = async () => {
     try {
       const response = await fetch(
-        'http://localhost:8080/api/v1/user/profile',
+        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -161,7 +161,7 @@ const ForumDiscussion = () => {
         const formData = new FormData()
         setIsSending(true);
         formData.append('file', selectedImage)
-        const response = await fetch('http://localhost:8080/api/v1/upload', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/upload`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -221,7 +221,7 @@ const ForumDiscussion = () => {
       try {
         const token = localStorage.getItem('token')
         const response = await fetch(
-          `http://localhost:8080/api/v1/forums/${forumId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -234,7 +234,7 @@ const ForumDiscussion = () => {
         }
 
         const commentsResponse = await fetch(
-          `http://localhost:8080/api/v1/forums/${forumId}/comments`,
+          `${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}/comments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

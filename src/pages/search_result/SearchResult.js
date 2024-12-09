@@ -161,7 +161,8 @@ const SearchResult = () => {
             bookId: book.id,
             bookTitle: book.title,
             authors: book.authors,
-            subjects: book.subjects
+            subjects: book.subjects,
+            coverBook: book.coverBook,
           }
         });
         break;
