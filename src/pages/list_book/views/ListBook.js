@@ -43,7 +43,7 @@ const ListBook = ({
         setLoadingMore(true)
       }
 
-      const url = new URL('http://localhost:8080/api/v1/book/search/advanced')
+      const url = new URL(`${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`)
       url.searchParams.append('page', pageNum)
       url.searchParams.append('size', 32)
 

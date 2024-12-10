@@ -37,7 +37,7 @@ export const BooksProvider = ({children}) => {
           BOOKSHELVES.map(async shelf => {
             try {
               const response = await axios.post(
-                'http://localhost:8080/api/v1/book/search/advanced',
+                `${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`,
                 {
                   subjects: [shelf.topic],
                   bookshelves: null,
@@ -100,7 +100,7 @@ export const BooksProvider = ({children}) => {
         BOOKSHELVES.map(async shelf => {
           try {
             const response = await axios.post(
-              'http://localhost:8080/api/v1/book/search/advanced',
+              `${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`,
               {
                 subjects: [shelf.topic],
                 bookshelves: null,
