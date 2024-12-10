@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { Flag, Check, X, AlertCircle, Clock, Ban, Trash2, MoreVertical } from 'lucide-react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, FormGroup, Alert, IconButton, Menu, MenuItem } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, FormGroup, Alert, IconButton, Menu, MenuItem, CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 
 const ActionMenu = ({ reportId, forumId }) => {
   const [showBanDialog, setShowBanDialog] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [banReason, setBanReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [banTypes, setBanTypes] = useState({
     noInteraction: false,
     noComment: false,
     noJoin: false,
-    noForumCreation: false,
-    deleteForum: false
+    noForumCreation: false
   });
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -34,8 +35,7 @@ const ActionMenu = ({ reportId, forumId }) => {
         noInteraction: false,
         noComment: false,
         noJoin: false,
-        noForumCreation: false,
-        deleteForum: false
+        noForumCreation: false
       });
       setShowBanDialog(true);
       setAnchorEl(null);
@@ -60,72 +60,55 @@ const ActionMenu = ({ reportId, forumId }) => {
       return;
     }
 
-    try {
-      await handleAction(selectedAction, banReason);
+    setIsSubmitting(true);
 
-      setShowBanDialog(false);
-      setBanReason('');
-      setBanTypes({
-        noInteraction: false,
-        noComment: false,
-        noJoin: false,
-        deleteForum: false
+    try {
+      // Xử lý ban user trước
+      const body = {
+        action: selectedAction,
+        reason: banReason || null,
+        banTypes: selectedAction.startsWith('BAN_') ? {
+          ...banTypes,
+          deleteForum: false // Tạm thời set false vì sẽ xóa sau nếu user confirm
+        } : null
+      };
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums/reports/${reportId}/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(body)
       });
 
-      window.location.reload();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to apply action');
+      }
+
+      await response.json();
+      toast.success('Action applied successfully');
+
+      // Nếu là action ban, show dialog xác nhận xóa
+      if (selectedAction?.includes('BAN')) {
+        setShowBanDialog(false);
+        setShowDeleteConfirmation(true);
+        setIsSubmitting(false);
+      } else {
+        resetAndReload();
+      }
     } catch (error) {
       console.error('Error:', error);
       toast.error(error.message);
+      setIsSubmitting(false);
     }
-  };
+};
 
-  const handleAction = async (actionId, reason = '') => {
-    try {
-        const body = {
-            action: actionId,
-            reason: reason || null,
-            // Chỉ thêm banTypes nếu là action ban và có ít nhất 1 loại ban được chọn
-            banTypes: actionId.startsWith('BAN_') ? banTypes : null
-        };
 
-        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums/reports/${reportId}/action`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to apply action');
-        }
-
-        // Đợi xử lý xong action trước khi xóa forum
-        await response.json();
-
-        // Thêm delay nhỏ trước khi xóa forum
-        if (banTypes.deleteForum) {
-            await new Promise(resolve => setTimeout(resolve, 500));
-            await handleDeleteForum();
-        }
-
-        toast.success('Action applied successfully');
-
-        // Thêm delay trước khi reload trang
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-
-    } catch (error) {
-        console.error('Action error:', error);
-        toast.error(error.message);
-        throw error;
-    }
-  };
-
-  const handleDeleteForum = async () => {
+const handleDeleteConfirmation = async (shouldDelete) => {
+  if (shouldDelete) {
+    setIsSubmitting(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums/${forumId}`, {
         method: 'DELETE',
@@ -137,14 +120,65 @@ const ActionMenu = ({ reportId, forumId }) => {
       if (!response.ok) {
         throw new Error('Failed to delete forum');
       }
+
+      toast.success('Forum deleted successfully');
     } catch (error) {
-      throw new Error('Failed to delete forum: ' + error.message);
+      console.error('Error:', error);
+      toast.error(error.message);
     }
+  }
+
+  resetAndReload();
+};
+
+
+  const resetAndReload = () => {
+    setShowDeleteConfirmation(false);
+    setBanReason('');
+    setBanTypes({
+      noInteraction: false,
+      noComment: false,
+      noJoin: false,
+      noForumCreation: false
+    });
+    setIsSubmitting(false);
+    window.location.reload();
   };
 
+  const handleAction = async (actionId, reason, deleteForum = false) => {
+    try {
+      const body = {
+        action: actionId,
+        reason: reason || null,
+        banTypes: actionId.startsWith('BAN_') ? banTypes : null,
+        deleteForum // Thêm flag delete forum vào request
+      };
+
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums/reports/${reportId}/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to apply action');
+      }
+
+      await response.json();
+
+    } catch (error) {
+      console.error('Action error:', error);
+      toast.error(error.message);
+      throw error;
+    }
+};
   return (
     <>
-        <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
+      <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
         <MoreVertical className="w-5 h-5" />
       </IconButton>
 
@@ -165,9 +199,10 @@ const ActionMenu = ({ reportId, forumId }) => {
         ))}
       </Menu>
 
+      {/* Ban/Warning Dialog */}
       <Dialog
         open={showBanDialog}
-        onClose={() => setShowBanDialog(false)}
+        onClose={() => !isSubmitting && setShowBanDialog(false)}
         maxWidth="sm"
         fullWidth
       >
@@ -187,6 +222,7 @@ const ActionMenu = ({ reportId, forumId }) => {
                       checked={banTypes.noInteraction}
                       onChange={handleBanTypeChange}
                       name="noInteraction"
+                      disabled={isSubmitting}
                     />
                   }
                   label="Ban user from forum interactions (like, save)"
@@ -197,6 +233,7 @@ const ActionMenu = ({ reportId, forumId }) => {
                       checked={banTypes.noComment}
                       onChange={handleBanTypeChange}
                       name="noComment"
+                      disabled={isSubmitting}
                     />
                   }
                   label="Ban user from commenting"
@@ -207,6 +244,7 @@ const ActionMenu = ({ reportId, forumId }) => {
                       checked={banTypes.noJoin}
                       onChange={handleBanTypeChange}
                       name="noJoin"
+                      disabled={isSubmitting}
                     />
                   }
                   label="Ban user from joining forums"
@@ -217,19 +255,10 @@ const ActionMenu = ({ reportId, forumId }) => {
                       checked={banTypes.noForumCreation}
                       onChange={handleBanTypeChange}
                       name="noForumCreation"
+                      disabled={isSubmitting}
                     />
                   }
                   label="Ban user from creating forums"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={banTypes.deleteForum}
-                      onChange={handleBanTypeChange}
-                      name="deleteForum"
-                    />
-                  }
-                  label="Delete this forum"
                 />
               </FormGroup>
             </>
@@ -244,32 +273,60 @@ const ActionMenu = ({ reportId, forumId }) => {
             onChange={(e) => setBanReason(e.target.value)}
             variant="outlined"
             required
+            disabled={isSubmitting}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
-            onClick={() => {
-              setShowBanDialog(false);
-              setBanReason('');
-              setBanTypes({
-                noInteraction: false,
-                noComment: false,
-                noJoin: false,
-                noForumCreation: false,
-                deleteForum: false
-              });
-            }}
+            onClick={() => setShowBanDialog(false)}
             color="inherit"
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
             onClick={handleReasonSubmit}
-            disabled={!banReason.trim() || (selectedAction?.includes('BAN') && !Object.values(banTypes).some(value => value))}
+            disabled={!banReason.trim() || (selectedAction?.includes('BAN') && !Object.values(banTypes).some(value => value)) || isSubmitting}
             variant="contained"
             color="error"
+            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
           >
-            {selectedAction?.includes('BAN') ? 'Confirm Ban' : 'Send Warning'}
+            {isSubmitting ? 'Processing...' : selectedAction?.includes('BAN') ? 'Confirm Ban' : 'Send Warning'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteConfirmation}
+        onClose={() => !isSubmitting && setShowDeleteConfirmation(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Delete Forum
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" className="mt-4">
+            Would you like to delete this forum as well?
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => handleDeleteConfirmation(false)}
+            color="inherit"
+            disabled={isSubmitting}
+          >
+            No, Keep Forum
+          </Button>
+          <Button
+            onClick={() => handleDeleteConfirmation(true)}
+            variant="contained"
+            color="error"
+            disabled={isSubmitting}
+            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Trash2 className="w-4 h-4" />}
+          >
+            {isSubmitting ? 'Deleting...' : 'Yes, Delete Forum'}
           </Button>
         </DialogActions>
       </Dialog>
