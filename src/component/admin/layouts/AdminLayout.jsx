@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   BarChart2, Flag, Users, BookOpen,
-  LogOut, Menu, X, Home, Bell
+  LogOut, Menu, X, Home, Bell,
+  MessageSquare
 } from 'lucide-react';
 import { images } from '../../../constants';
 import HeaderComponent from '../../header/HeaderComponent';
@@ -22,6 +23,11 @@ const AdminLayout = ({ children }) => {
       path: '/admin/forum-reports',
       name: 'Forum Reports',
       icon: <Flag className="w-5 h-5" />
+    },
+    {
+      name: 'Comment Reports',
+      path: '/admin/comment-reports',
+      icon: <MessageSquare className="w-5 h-5" />
     },
     {
       path: '/admin/user-management',
