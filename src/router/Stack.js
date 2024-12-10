@@ -6,7 +6,6 @@ import {
   ReadBookScreen,
   VerifyRegister,
   Dashboard,
-  Report,
   ContentModeration,
   Profile,
   DescriptionBook,
@@ -34,7 +33,6 @@ function Stack() {
       <Route path='/read-book-screen' element={<ReadBookScreen />} />
       <Route path='/profile' element={<Profile />} />
       <Route path='/dashboard' element={<Dashboard />} />
-      <Route path='/report' element={<Report />} />
       <Route path='/content-moderation' element={<ContentModeration />} />
       <Route path='/description-book' element={<DescriptionBook />} />
       <Route
