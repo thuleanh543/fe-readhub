@@ -36,6 +36,7 @@ export default function DescriptionBook() {
   const navigate = useNavigate()
   const location = useLocation()
   const {bookId, bookTitle} = location.state || {}
+  const [ebook,setEbook] = useState(null)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [shouldRefreshReviews, setShouldRefreshReviews] = useState(0)
@@ -153,6 +154,7 @@ export default function DescriptionBook() {
         if (!response.ok) throw new Error('Failed to fetch book details')
         const data = await response.json()
         setBookDetails(data)
+        setEbook(data.formats['application/epub+zip'])
         setLoading(false)
       } catch (err) {
         setError('Failed to fetch book details')
@@ -259,7 +261,7 @@ export default function DescriptionBook() {
                         startIcon={<BookOpen />}
                         onClick={() =>
                           navigate('/read-book-screen', {
-                            state: {bookId, bookTitle},
+                            state: {bookId, bookTitle, ebook},
                           })
                         }
                         sx={{
