@@ -6,7 +6,6 @@ import {
   ReadBookScreen,
   VerifyRegister,
   Dashboard,
-  ContentModeration,
   Profile,
   DescriptionBook,
   BookForum,
@@ -34,7 +33,6 @@ function Stack() {
       <Route path='/read-book-screen' element={<ReadBookScreen />} />
       <Route path='/profile' element={<Profile />} />
       <Route path='/dashboard' element={<Dashboard />} />
-      <Route path='/content-moderation' element={<ContentModeration />} />
       <Route path='/description-book' element={<DescriptionBook />} />
       <Route
       path='/challenge/:challengeId/discussion'
@@ -67,10 +65,6 @@ function Stack() {
                 <Route path='dashboard' element={<Dashboard />} />
                 <Route path='forum-reports' element={<ForumReports />} />
                 <Route path='comment-reports' element={<CommentReports />} />
-                <Route
-                  path='content-moderation'
-                  element={<ContentModeration />}
-                />
               </Routes>
             </AdminLayout>
           </PrivateRoute>

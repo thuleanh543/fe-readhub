@@ -39,34 +39,36 @@ const ForumDiscussion = () => {
 
 
   function stringToColor(string) {
-    let hash = 0
-    let i
-
-    /* eslint-disable no-bitwise */
+    if (!string) return '#000000';
+    let hash = 0;
+    let i;
     for (i = 0; i < string.length; i += 1) {
-      hash = string.charCodeAt(i) + ((hash << 5) - hash)
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
     }
-
-    let color = '#'
-
+    let color = '#';
     for (i = 0; i < 3; i += 1) {
-      const value = (hash >> (i * 8)) & 0xff
-      color += `00${value.toString(16)}`.slice(-2)
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
     }
-    /* eslint-enable no-bitwise */
-
-    return color
+    return color;
   }
 
   function stringAvatar(name) {
+    if (!name) return {};
+
+    const nameParts = name.split(' ');
+    const initials = nameParts.length >= 2
+      ? `${nameParts[0][0]}${nameParts[1][0]}`
+      : name[0];
+
     return {
       sx: {
         bgcolor: stringToColor(name),
         width: 33,
         height: 33,
       },
-      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
-    }
+      children: initials
+    };
   }
 
   const getUser = async () => {
@@ -409,6 +411,9 @@ const ForumDiscussion = () => {
                       <Image className='w-5 h-5' />
                     )}
                     <span>{isBanned ? 'Restricted' : 'Add Image'}</span>
+                    <div className="text-sm text-red-600 italic">
+                      {getBanMessage()}
+                    </div>
                   </label>
                   {selectedImage && !isBanned && (
                     <div className='flex items-center gap-2'>
