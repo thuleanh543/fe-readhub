@@ -148,7 +148,7 @@ export default function DescriptionBook() {
     const fetchBookDetails = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}/`,
+          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}`,
         )
         if (!response.ok) throw new Error('Failed to fetch book details')
         const data = await response.json()
@@ -175,7 +175,7 @@ export default function DescriptionBook() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [bookDetails])
+  }, [])
 
   if (loading)
     return (
@@ -379,14 +379,6 @@ export default function DescriptionBook() {
                     </Typography>
                     <Typography color='text.secondary'>
                       Project Gutenberg
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant='h6' gutterBottom>
-                      Downloads
-                    </Typography>
-                    <Typography color='text.secondary'>
-                      {bookDetails.download_count.toLocaleString()}
                     </Typography>
                   </Grid>
                 </Grid>
