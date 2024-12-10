@@ -91,9 +91,10 @@ const RecentlyReadBooks = ({userId, maxBooks = 20}) => {
         )
 
         if (historyResponse.data.success) {
-          const bookIds = historyResponse.data.data.slice(0, maxBooks)
-          const booksResponse = await axios.get(
-            `https://gutendex.com/books?ids=${bookIds}`,
+          const bookIds = historyResponse.data.data.slice(0, maxBooks).map(Number)
+          const booksResponse = await axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/book/batch`,
+            bookIds
           )
 
           const books = await Promise.all(booksResponse.data.results)
@@ -176,10 +177,11 @@ const RecommendedBooks = ({userId, maxBooks = 20}) => {
         )
 
         if (response.data.success) {
-          const bookPromises = response.data.data.slice(0, maxBooks)
-          const recommendedBooks = await axios.get(
-            `https://gutendex.com/books?ids=${bookPromises}`,
-          )
+          const bookPromises = response.data.data.slice(0, maxBooks).map(Number)
+          const recommendedBooks = await axios.post(
+              `${process.env.REACT_APP_API_BASE_URL}/book/batch`,
+              bookPromises
+            )
           setRecommendedBooks(recommendedBooks.data.results)
         }
         setLoading(false)
@@ -306,15 +308,12 @@ function SavedBooks() {
       )
 
       if (savedResponse.data.success) {
-        const bookPromises = savedResponse.data.data
-          .slice(0, 20)
-          .map(bookId =>
-            fetch(`${process.env.REACT_APP_API_BASE_URL}/book/${bookId}/`).then(
-              res => res.json(),
-            ),
-          )
-        const books = await Promise.all(bookPromises)
-        setSavedBooks(books)
+        const bookPromises = savedResponse.data.data.slice(0, 20).map(Number)
+        const books = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/book/batch`,
+          bookPromises
+        )
+        setSavedBooks(books.data.results)
       }
       setLoading(false)
     } catch (error) {
