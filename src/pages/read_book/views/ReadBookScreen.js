@@ -38,7 +38,7 @@ function ReadBookScreen() {
   const navigate = useNavigate()
   const location = useLocation()
   const [loca, setLocation] = useState(location || '')
-  const {bookId, bookTitle} = location.state || {}
+  const {bookId, bookTitle, ebook} = location.state || {}
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [epubUrl, setEpubUrl] = useState(null)
@@ -406,10 +406,10 @@ function ReadBookScreen() {
   }, [])
 
   useEffect(() => {
-    const epubUrl = `https://www.gutenberg.org/cache/epub/${bookId}/pg${bookId}.epub`
-    setEpubUrl(epubUrl)
+    setEpubUrl(ebook)
+    console.log('Ebook:', ebook)
     getUser()
-  }, [bookId])
+  }, [ebook, bookId])
 
   useEffect(() => {
     const handleBeforeUnload = () => {
