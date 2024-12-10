@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Flag, Check, X, AlertCircle, Clock, Ban, Trash2 } from 'lucide-react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, FormGroup, Alert } from '@mui/material';
+import { Flag, Check, X, AlertCircle, Clock, Ban, Trash2, MoreVertical } from 'lucide-react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Checkbox, FormControlLabel, FormGroup, Alert, IconButton, Menu, MenuItem } from '@mui/material';
 import { toast } from 'react-toastify';
 
 const ActionMenu = ({ reportId, forumId }) => {
@@ -14,6 +14,7 @@ const ActionMenu = ({ reportId, forumId }) => {
     noForumCreation: false,
     deleteForum: false
   });
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const actions = [
     { id: 'DISMISS', label: 'Dismiss Report', icon: <X className="w-4 h-4" /> },
@@ -37,6 +38,7 @@ const ActionMenu = ({ reportId, forumId }) => {
         deleteForum: false
       });
       setShowBanDialog(true);
+      setAnchorEl(null);
     }
   };
 
@@ -142,21 +144,26 @@ const ActionMenu = ({ reportId, forumId }) => {
 
   return (
     <>
-      <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-[1000]">
-        <div className="py-1" role="menu">
-          {actions.map((action) => (
-            <button
-              key={action.id}
-              onClick={() => handleActionClick(action.id)}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              role="menuitem"
-            >
-              {action.icon}
-              <span className="ml-2">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+        <IconButton onClick={(event) => setAnchorEl(event.currentTarget)}>
+        <MoreVertical className="w-5 h-5" />
+      </IconButton>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        {actions.map((action) => (
+          <MenuItem
+            key={action.id}
+            onClick={() => handleActionClick(action.id)}
+            className="flex items-center gap-2"
+          >
+            {action.icon}
+            <span>{action.label}</span>
+          </MenuItem>
+        ))}
+      </Menu>
 
       <Dialog
         open={showBanDialog}
