@@ -170,25 +170,12 @@ const ForumReports = () => {
                     {format(new Date(report.reportedAt), 'PPp')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="relative">
-                      {report.status === 'PENDING' && (
-                        <button
-                          onClick={() => {
-                            setSelectedReport(report);
-                            setShowActionMenu(!showActionMenu);
-                          }}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Take Action
-                        </button>
-                      )}
-                      {selectedReport?.id === report.id && showActionMenu && (
-                        <ActionMenu
-                          reportId={report.id}
-                          forumId={report.forum.discussionId}
-                        />
-                      )}
-                    </div>
+                    {report.status === 'PENDING' && (
+                      <ActionMenu
+                        reportId={report.id}
+                        forumId={report.forum.discussionId}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
