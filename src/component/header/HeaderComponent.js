@@ -133,6 +133,37 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
     },
   ]
 
+  const LoadingRightSection = () => (
+    <div className="flex items-center space-x-4">
+      <div className="hidden md:flex items-center space-x-3">
+        {/* Notification bell skeleton */}
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse flex items-center justify-center">
+          <Bell className="w-5 h-5 text-gray-400" />
+        </div>
+
+        {/* Profile skeleton */}
+        <div className="flex items-center space-x-2 py-2 px-3 rounded-full bg-gray-100">
+          <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <ChevronDown className="w-4 h-4 text-gray-400" />
+        </div>
+      </div>
+
+      {/* Mobile loading state */}
+      <div className="flex md:hidden items-center space-x-3">
+        <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse flex items-center justify-center">
+          <MessageSquare className="w-5 h-5 text-gray-400" />
+        </div>
+        <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse flex items-center justify-center">
+          <Bell className="w-5 h-5 text-gray-400" />
+        </div>
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+    </div>
+  );
+
   // Desktop Header
   const DesktopHeader = () => (
     <div className='hidden md:flex h-16 items-center justify-between'>
@@ -180,7 +211,11 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
 
       {/* Right Section */}
       <div className='flex items-center space-x-4'>
-        {user ? (
+        {
+        loading ? (
+          <LoadingRightSection />
+        ) :
+        user ? (
           <>
             <NotificationDropdown />
             <div className='relative' ref={desktopProfileRef}>
