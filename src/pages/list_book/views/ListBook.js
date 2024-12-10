@@ -117,6 +117,24 @@ const ListBook = ({
       </div>
     )
   }
+  const renderStars = (rating) => {
+    const stars = [];
+    const roundedRating = rating || 0;
+
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          className={`text-base ${
+            i < roundedRating ? "text-yellow-400" : "text-gray-200"
+          }`}
+        >
+          ★
+        </span>
+      );
+    }
+    return stars;
+  };
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-white px-6 py-8'>
@@ -190,6 +208,16 @@ const ListBook = ({
                   <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
                     {book.authors[0]?.name || 'Unknown Author'}
                   </p>
+                  {book.averageRating > 0 && (
+                      <div className="flex justify-center items-center mt-2 gap-2">
+                        <div className="flex space-x-0.5">
+                          {renderStars(book.averageRating)}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {book.averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             ))}

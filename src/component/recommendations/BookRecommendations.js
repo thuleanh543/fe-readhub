@@ -199,6 +199,21 @@ const BookRecommendations = () => {
   }
 
   if (recommendations.length === 0) return null
+  const renderStars = (rating) => {
+    const stars = []
+    const roundedRating = rating || 0 // Xử lý trường hợp rating là null/undefined
+    
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <span 
+          key={i}
+          className={`text-base ${i < roundedRating ? 'text-yellow-400' : 'text-gray-200'}`}>
+          ★
+        </span>
+      )
+    }
+    return stars
+  }
 
   return (
     <div className='bg-gradient-to-br from-violet-50 to-blue-50 py-10'>
@@ -250,6 +265,16 @@ const BookRecommendations = () => {
                       <p className='mt-1 md:mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
                         {book.authors?.[0]?.name || 'Unknown Author'}
                       </p>
+                      {book.averageRating > 0 && (
+                      <div className="flex justify-center items-center mt-2 gap-2">
+                        <div className="flex space-x-0.5">
+                          {renderStars(book.averageRating)}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {book.averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                     </div>
                   </div>
                 </div>

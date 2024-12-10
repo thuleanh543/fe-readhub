@@ -12,6 +12,7 @@ import LoadingSkeleton from './component/bookshelf/LoadingSkeleton'
 import ErrorMessage from './component/common/ErrorMessage'
 import Footer from './component/footer/Footer'
 import {useCallback} from 'react'
+import axios from 'axios'
 
 function App() {
   const [windowSize, setWindowSize] = useState({
@@ -21,6 +22,22 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const {user} = useUser()
   const {booksData, loading, error, bookshelves} = useBooks()
+  const [topRated, setTopRated] = useState(null)
+
+  useEffect(() => {
+    // Function để fetch top rated books
+    const fetchTopRated = async () => {
+      try {
+        const responseTopRated = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/book/top-rated`)
+          setTopRated(responseTopRated.data.results)
+      } catch (error) {
+        console.error('Error fetching top rated books:', error)
+      }
+    }
+    fetchTopRated()
+  }, [])
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,14 +72,21 @@ function App() {
             ) : loading ? (
               <LoadingSkeleton />
             ) : (
-              bookshelves.map(shelf => (
+            <>
+              <BookshelfSection
+                title='Top rated books ⭐'
+                books={topRated || []}
+                isLoading={false}
+              />
+              {bookshelves.map(shelf => (
                 <BookshelfSection
                   key={shelf.topic}
                   {...shelf}
                   books={booksData[shelf.topic] || []}
                   isLoading={false}
                 />
-              ))
+              ))}
+            </>
             )}
           </div>
         </div>
