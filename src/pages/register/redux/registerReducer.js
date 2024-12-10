@@ -114,6 +114,8 @@ export const validateField = (field, value, state) => {
       if (value === '') error = 'Please confirm your password'
       else if (value !== state.password) error = 'Passwords do not match'
       break
+    default:
+      error = ''
   }
   return error
 }

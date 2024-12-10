@@ -117,9 +117,10 @@ const BookRecommendations = () => {
         )
 
         if (response.data.data.length > 0) {
-          const bookIds = response.data.data.join(',')
-          const booksResponse = await axios.get(
-            `https://gutendex.com/books?ids=${bookIds}`,
+          const bookIds = response.data.data.map(Number)
+          const booksResponse = await axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/book/batch`,
+            bookIds
           )
 
           recommendationsRef.current = booksResponse.data.results
