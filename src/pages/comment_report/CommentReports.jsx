@@ -6,7 +6,15 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  FormControl,
+  FormControlLabel,
+  Button,
+  DialogActions
 } from '@mui/material';
 import { MoreVertical, Flag } from 'lucide-react';
 
@@ -15,6 +23,11 @@ const CommentReports = () => {
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [shouldDeleteComment, setShouldDeleteComment] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function stringToColor(string) {
     if (!string) return '#000000';
@@ -74,34 +87,40 @@ const CommentReports = () => {
   };
 
   const handleAction = async (reportId, action) => {
+    setIsSubmitting(true); // Thêm state loading
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/comment-reports/reports/${reportId}/action`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({
-            action,
-            banTypes: {
-              noComment: true,
-              deleteComment: action !== 'DISMISS',
+      // Nếu là action ban, mở dialog xác nhận xóa comment
+      if (action.includes('BAN')) {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/comment-reports/reports/${reportId}/action`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }),
-        }
-      );
+            body: JSON.stringify({
+              action,
+              banTypes: {
+                noComment: true, // Luôn ban comment vì đây là report comment
+                deleteComment: action !== 'DISMISS' && shouldDeleteComment // Thêm flag delete comment
+              },
+            }),
+          }
+        );
 
-      if (response.ok) {
+        if (!response.ok) {
+          throw new Error('Failed to apply action');
+        }
+
         toast.success('Action applied successfully');
-        fetchReports();
-      } else {
-        throw new Error('Failed to apply action');
+        await fetchReports();
       }
     } catch (error) {
-      toast.error(error.message);
-      console.error('Error applying action:', error);
+      toast.error('Error applying action: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
+      setShowDeleteDialog(false);
     }
     setAnchorEl(null);
   };
@@ -250,13 +269,20 @@ const CommentReports = () => {
                           open={Boolean(anchorEl) && selectedReport?.id === report.id}
                           onClose={() => setAnchorEl(null)}
                         >
-                          <MenuItem onClick={() => handleAction(report.id, 'DISMISS')}>
+                          <MenuItem onClick={() =>
+                            handleAction(report.id, 'DISMISS')}>
                             Dismiss Report
                           </MenuItem>
-                          <MenuItem onClick={() => handleAction(report.id, 'BAN_24H')}>
+                          <MenuItem onClick={() => {
+                            setSelectedAction('BAN_24H');
+                            setShowDeleteDialog(true);
+                          }}>
                             Ban 24 Hours
                           </MenuItem>
-                          <MenuItem onClick={() => handleAction(report.id, 'BAN_PERMANENT')}>
+                          <MenuItem onClick={() => {
+                            setSelectedAction('BAN_PERMANENT');
+                            setShowDeleteDialog(true);
+                          }}>
                             Ban Permanently
                           </MenuItem>
                         </Menu>
@@ -269,6 +295,39 @@ const CommentReports = () => {
           </table>
         </div>
       </div>
+
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      >
+        <DialogTitle>Ban User Options</DialogTitle>
+        <DialogContent>
+        <FormControl fullWidth>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={shouldDeleteComment}
+              onChange={(e) => setShouldDeleteComment(e.target.checked)}
+            />
+        }
+        label="Delete this comment"
+      />
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setShowDeleteDialog(false)}>
+      Cancel
+    </Button>
+    <Button
+      onClick={() => handleAction(selectedReport?.id, selectedAction)}
+      variant="contained"
+      color="error"
+      disabled={isSubmitting}
+    >
+      {isSubmitting ? 'Processing...' : 'Confirm'}
+    </Button>
+  </DialogActions>
+</Dialog>
     </div>
   );
 };

@@ -411,9 +411,6 @@ const ForumDiscussion = () => {
                       <Image className='w-5 h-5' />
                     )}
                     <span>{isBanned ? 'Restricted' : 'Add Image'}</span>
-                    <div className="text-sm text-red-600 italic">
-                      {getBanMessage()}
-                    </div>
                   </label>
                   {selectedImage && !isBanned && (
                     <div className='flex items-center gap-2'>
