@@ -10,10 +10,12 @@ import {
   Edit2,
   Trash2,
   MoreVertical,
+  Flag,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { DialogConfirmation } from '../../../component/dialogs/DialogConfirmation';
-import { Avatar } from '@mui/material';
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import ReportCommentDialog from '../../../component/dialogs/ReportCommentDialog';
 
 const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
   // States for reply functionality
@@ -50,6 +52,10 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
 
   const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false);
   const [showDeleteReplyDialog, setShowDeleteReplyDialog] = useState(null);
+
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
 
   useEffect(() => {
     if (stompClient) {
@@ -135,6 +141,40 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
       };
     }
   }, [stompClient, comment.id, onCommentDeleted]);
+
+  const handleReportSubmit = async (reportData) => {
+    try {
+      console.log('Sending report data:', reportData); // Log để debug
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/comment-reports/${reportData.commentId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({
+            reason: reportData.reason,
+            additionalInfo: reportData.additionalInfo || ''
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', errorData); // Log error response
+        throw new Error(errorData.message || 'Failed to report comment');
+      }
+
+      toast.success('Comment reported successfully');
+      setShowReportDialog(false);
+
+    } catch (err) {
+      console.error('Error reporting comment:', err);
+      toast.error(err.message || 'Failed to report comment');
+    }
+  };
 
   const handleLike = () => {
     if (!user) {
@@ -402,7 +442,7 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
             </p>
           </div>
         </div>
-        {canModifyComment && (
+
           <div className="relative">
             <button
               className="text-gray-400 hover:text-gray-600"
@@ -413,7 +453,17 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
             {showCommentOptions && (
               <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                 <div className="py-1" role="menu">
-                  <button
+                {!comment.user.id !== user.id && (
+  <button
+    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2"
+    onClick={() => setShowReportDialog(true)}
+  >
+    <Flag className="w-4 h-4" />
+    Report
+  </button>
+)}
+{canModifyComment && ( <>
+ <button
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                     onClick={() => {
                       setIsEditing(true);
@@ -433,11 +483,13 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
+</> )}
+
                 </div>
               </div>
             )}
           </div>
-        )}
+
       </div>
 
       {/* Comment Content */}
@@ -858,6 +910,15 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
         title="Delete Reply"
         message="Are you sure you want to delete this reply? This action cannot be undone."
       />
+
+{showReportDialog && (
+  <ReportCommentDialog
+  isOpen={showReportDialog}
+  onClose={() => setShowReportDialog(false)}
+  onSubmit={handleReportSubmit}
+  commentId={comment.id}
+/>
+)}
     </div>
   );
 };

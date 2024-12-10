@@ -9,7 +9,7 @@ const ProtectedJoinForumRoute = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/user/profile', {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/user/profile`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
