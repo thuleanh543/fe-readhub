@@ -406,10 +406,10 @@ function ReadBookScreen() {
   }, [])
 
   useEffect(() => {
-    console.log('ebook:', ebook)
     setEpubUrl(ebook)
+    console.log('Ebook:', ebook)
     getUser()
-  }, [bookId])
+  }, [ebook, bookId])
 
   useEffect(() => {
     const handleBeforeUnload = () => {
