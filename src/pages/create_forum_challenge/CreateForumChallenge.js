@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { CalendarDays, BookOpen, Trophy, Clock } from 'lucide-react';
+import { CalendarDays, BookOpen, Trophy, Clock, Bean } from 'lucide-react';
 import HeaderComponent from '../../component/header/HeaderComponent';
 
 const CreateReadingChallenge = () => {
+
+  const REWARD_TYPES = {
+    READING_COLOR: 'READING_COLOR',
+    READING_MONTH: 'READING_MONTH'
+  };
+
+  const REWARD_LABELS = {
+    [REWARD_TYPES.READING_COLOR]: 'Reading Color Badge',
+    [REWARD_TYPES.READING_MONTH]: 'Monthly Reader Badge'
+  };
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -214,18 +225,43 @@ const CreateReadingChallenge = () => {
     </div>
   </div>
 
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Reward</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., Summer Reader Badge, Special Recognition"
-                  value={formData.reward}
-                  onChange={(e) => setFormData({...formData, reward: e.target.value})}
-                  required
-                />
-                <Trophy className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+  <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Select Reward</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(REWARD_TYPES).map(([key, value]) => (
+                  <div
+                    key={value}
+                    className={`relative flex items-center p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                      formData.reward === value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300 hover:border-blue-300'
+                    }`}
+                    onClick={() => setFormData({...formData, reward: value})}
+                  >
+                    <Bean className={`h-6 w-6 mr-3 ${
+                      formData.reward === value ? 'text-blue-500' : 'text-gray-400'
+                    }`} />
+                    <div>
+                      <h3 className="font-medium">
+                        {REWARD_LABELS[value]}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {value === REWARD_TYPES.READING_COLOR
+                          ? 'Earn badges based on reading progress colors'
+                          : 'Earn badges for completing monthly reading goals'}
+                      </p>
+                    </div>
+                    <input
+                      type="radio"
+                      name="reward"
+                      value={value}
+                      checked={formData.reward === value}
+                      onChange={(e) => setFormData({...formData, reward: e.target.value})}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2"
+                      required
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 
