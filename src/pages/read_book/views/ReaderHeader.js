@@ -119,7 +119,7 @@ const ReaderHeader = ({
       </IconButton>
 
       <div className="flex-1 flex justify-center items-center gap-2">
-        <h1 className="text-gray-100 font-medium text-sm">{title}</h1>
+        <h1 className="text-gray-100 font-medium text-2xl">{title}</h1>
 
       </div>
       {totalPages > 0 && (
