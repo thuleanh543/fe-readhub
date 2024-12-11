@@ -101,7 +101,11 @@ const ListBook = ({
         onBookSelect(book)
       } else {
         navigate('/description-book', {
-          state: {bookId: book.id, bookTitle: book.title},
+          state: {
+            bookId: book.id, bookTitle: book.title,
+            author: book.authors[0]?.name || 'Unknown Author',
+            coverUrl: book.formats?.['image/jpeg']
+          },
         })
       }
     },

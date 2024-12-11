@@ -208,7 +208,7 @@ const SearchResult = () => {
       id: book.id,
       title: book.title,
       author: book.authors[0]?.name || 'Unknown Author',
-      coverUrl: book?.coverUrl,
+      coverUrl:  book.formats?.['image/jpeg'] ,
     }))
 
     navigate(`/challenge/${location.state.challengeId}/discussion`, {
