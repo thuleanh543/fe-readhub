@@ -32,7 +32,7 @@ function App() {
           `${process.env.REACT_APP_API_BASE_URL}/book/top-rated`)
           setTopRated(responseTopRated.data.results)
       } catch (error) {
-        console.error('Error fetching top rated books:', error)
+        console.error(error)
       }
     }
     fetchTopRated()

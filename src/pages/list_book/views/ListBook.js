@@ -52,7 +52,7 @@ const ListBook = ({
           bookshelves: null,
           languages: null,
           author: null,
-          title: criteria,
+          title: criteria.title,
         },
         {
           headers: {'Content-Type': 'application/json'},
