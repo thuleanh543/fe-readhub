@@ -229,9 +229,6 @@ const NotesDrawer = ({...props}) => {
                 {props.bookmarks?.map(bookmark => (
                   <div key={bookmark.id} className='py-4'>
                     <div className='mb-3'>
-                      <div className='font-medium mb-1 text-sm text-gray-900'>
-                        Chapter {bookmark?.chapter}
-                      </div>
                       <div className='text-gray-600 text-sm line-clamp-2'>
                         {bookmark?.text}
                       </div>
@@ -239,7 +236,7 @@ const NotesDrawer = ({...props}) => {
                     <div className='flex justify-between items-center'>
                       <Button
                         size='small'
-                        onClick={() => props.onShowBookmark(bookmark.cfiRange)}
+                        onClick={() => props.onShowBookmark(bookmark.location)}
                         variant='outlined'
                         sx={{
                           color: '#111827',
@@ -257,7 +254,7 @@ const NotesDrawer = ({...props}) => {
                         </span>
                         <IconButton
                           size='small'
-                          onClick={() => props.onRemoveBookmark(bookmark.id)}
+                          onClick={() => props.onRemoveBookmark(bookmark.bookmarkId)}
                           sx={{
                             color: '#EF4444',
                             padding: '4px',

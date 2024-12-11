@@ -19,6 +19,8 @@ import {
 import axios from 'axios'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { useBookmarks } from '../useBookmarks'
+import { useUser } from '../../../contexts/UserProvider'
 
 const colors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
 const themes = ['#FFFFFF', '#faf6ed', '#121212']
@@ -38,6 +40,11 @@ function ReadBookScreen() {
   const location = useLocation()
   const [loca, setLocation] = useState(location || '')
   const {bookId, bookTitle, ebook} = location.state || {}
+  const {user} = useUser()
+  const { bookmarks, addBookmark, removeBookmark } = useBookmarks(
+    user?.userId,
+    bookId
+  );
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [epubUrl, setEpubUrl] = useState(null)
@@ -54,15 +61,14 @@ function ReadBookScreen() {
   const [editingNote, setEditingNote] = useState(null)
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [settings, setSettings] = useState(defaultSettings)
-  const [user, setUser] = useState(null)
   const [isNote, setIsNote] = useState(false)
-  const [hasBookmark, setHasBookmark] = useState(false)
-  const [currentLocation, setCurrentLocation] = useState(null)
   const [readStartTime, setReadStartTime] = useState(null)
   const [bookmarkId, setBookmarkId] = useState(null)
   const [lastReadingUpdate, setLastReadingUpdate] = useState(null)
   const [isActive, setIsActive] = useState(true)
   const [activeHighlights] = useState(new Set())
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
 
   const startReadingSession = () => {
     setReadStartTime(Date.now())
@@ -93,48 +99,6 @@ function ReadBookScreen() {
     }
   }
 
-  const saveBookmark = async location => {
-    if (!user || !bookId) return
-
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/bookmark`,
-        {
-          userId: user.userId,
-          bookId: bookId,
-          location: loca,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setHasBookmark(true)
-      toast.success('Đã lưu đánh dấu trang')
-    } catch (error) {
-      console.error('Error saving bookmark:', error)
-      toast.error('Có lỗi xảy ra khi lưu đánh dấu trang', 'error')
-    }
-  }
-
-  const getUser = async () => {
-    if (!localStorage.getItem('token')) return
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
-      setUser(response.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
 
   const getNotes = async () => {
     if (!user?.userId || !bookId || !rendition) return
@@ -205,56 +169,26 @@ function ReadBookScreen() {
     }
   }
 
-  const getBookmark = async () => {
-    if (!user || !bookId) return
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/bookmark/user/${user.userId}/book/${bookId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        },
-      )
 
-      if (response.data.data) {
-        setHasBookmark(true)
-        setBookmarkId(response.data.data.bookmarkId)
-        setLocation(response.data.data.location)
+
+  const handleToggleBookmark = async (value, isRemove) => {
+    if (!user) {
+      toast.error("Please login to bookmark");
+      return;
+    }
+
+    try {
+      if (isRemove) {
+        await removeBookmark(value); // value is bookmarkId
+        toast.success("Bookmark removed");
+      } else {
+        await addBookmark(currentLocation); // value is location
+        toast.success("Bookmark added");
       }
     } catch (error) {
-      console.error('Error fetching bookmark:', error)
+      toast.error("Failed to update bookmark");
     }
-  }
-
-  const handleToggleBookmark = async () => {
-    if (!user || !bookId) return
-
-    if (hasBookmark && bookmarkId) {
-      try {
-        await axios.put(
-          `${process.env.REACT_APP_API_BASE_URL}/bookmark`,
-          {
-            bookmarkId: bookmarkId,
-            userId: user.userId,
-            bookId: bookId,
-            location: loca,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          },
-        )
-        toast.success('Đã đánh dấu trang')
-      } catch (error) {
-        toast.error('Có lỗi xảy ra khi đánh dấu trang', 'error')
-      }
-    } else {
-      await saveBookmark(currentLocation)
-    }
-  }
+  };
 
   const handleError = error => {
     console.error('Error in ReactReader:', error)
@@ -406,8 +340,6 @@ function ReadBookScreen() {
 
   useEffect(() => {
     setEpubUrl(ebook)
-    console.log('Ebook:', ebook)
-    getUser()
   }, [ebook, bookId])
 
   useEffect(() => {
@@ -421,11 +353,6 @@ function ReadBookScreen() {
     }
   }, [])
 
-  useEffect(() => {
-    if (user && bookId) {
-      getBookmark()
-    }
-  }, [user && bookId])
 
   useEffect(() => {
     if (user && bookId) {
@@ -639,7 +566,7 @@ function ReadBookScreen() {
         onToggleSettings={handleSettingsDrawerToggle}
         user={user}
         onToggleBookmark={handleToggleBookmark}
-        hasBookmark={hasBookmark}
+        bookmarks={bookmarks}
         currentLocation={currentLocation}
       />
 
@@ -649,9 +576,17 @@ function ReadBookScreen() {
       <ReaderContent
         epubUrl={epubUrl}
         location={loca}
-        onLocationChanged={loc => setLocation(loc)}
+        totalPages={totalPages}
+        onLocationChanged={loc => {setLocation(loc);
+          setCurrentLocation(loc)}
+        }
         onGetRendition={_rendition => {
           setRendition(_rendition)
+
+          _rendition.book.ready.then(() => {
+            const totalPagesCount = _rendition.book.locations.length();
+            setTotalPages(totalPagesCount);
+          });
 
           // Apply default settings ngay khi rendition được tạo
           _rendition.themes.default({
@@ -712,6 +647,11 @@ function ReadBookScreen() {
         setSearchTerm={setSearchTerm}
         filter={filter}
         setFilter={setFilter}
+        bookmarks={bookmarks}
+        onShowBookmark={(location) => {
+          rendition.display(location);
+        }}
+        onRemoveBookmark={removeBookmark}
         colors={colors}
         filteredSelections={filteredSelections}
         rendition={rendition}
