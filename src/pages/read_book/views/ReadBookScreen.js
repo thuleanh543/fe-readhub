@@ -61,7 +61,6 @@ function ReadBookScreen() {
   const [editingNote, setEditingNote] = useState(null)
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [settings, setSettings] = useState(defaultSettings)
-  const [user, setUser] = useState(null)
   const [isNote, setIsNote] = useState(false)
   const [readStartTime, setReadStartTime] = useState(null)
   const [bookmarkId, setBookmarkId] = useState(null)
