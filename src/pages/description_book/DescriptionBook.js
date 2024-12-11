@@ -422,9 +422,6 @@ export default function DescriptionBook() {
                     }}>
                     Downloads
                   </Button> */}
-                  <Button variant='outlined' startIcon={<Share2 />} fullWidth>
-                    Share
-                  </Button>
                 </Box>
               </CardContent>
             </Card>

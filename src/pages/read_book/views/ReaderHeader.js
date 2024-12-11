@@ -1,5 +1,5 @@
-import React, {useState, useRef, useEffect} from 'react'
-import {IconButton, Avatar} from '@mui/material'
+import React, { useState, useRef, useEffect } from "react";
+import { IconButton, Avatar, CircularProgress } from "@mui/material";
 import {
   ArrowBack,
   BookmarkBorder,
@@ -9,7 +9,7 @@ import {
   Person,
   AutoStories,
   Logout,
-} from '@mui/icons-material'
+} from "@mui/icons-material";
 
 const ReaderHeader = ({
   onBack,
@@ -17,12 +17,28 @@ const ReaderHeader = ({
   onToggleSettings,
   user,
   onToggleBookmark,
-  hasBookmark,
+  bookmarks,
   currentLocation,
-  bookTitle = 'War and Peace',
+  totalPages,
+  title,
 }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const profileRef = useRef(null)
+  const [isBookmarking, setIsBookmarking] = useState(false);
+  const currentBookmark = bookmarks.find(b => b.location === currentLocation);
+  const hasBookmarkOnCurrentPage = Boolean(currentBookmark);
+
+  const handleBookmarkClick = async () => {
+    setIsBookmarking(true);
+    try {
+      await onToggleBookmark(
+        currentBookmark?.bookmarkId, 
+        Boolean(currentBookmark)
+      );
+    } finally {
+      setIsBookmarking(false);
+    }
+  };
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = event => {
@@ -100,38 +116,54 @@ const ReaderHeader = ({
         <ArrowBack sx={{fontSize: 20}} />
       </IconButton>
 
-      <div className='flex-1 flex justify-center'>
-        <h1 className='text-gray-100 font-medium text-sm'>{bookTitle}</h1>
-      </div>
+      <div className="flex-1 flex justify-center items-center gap-2">
+        <h1 className="text-gray-100 font-medium text-sm">{title}</h1>
 
-      <div className='flex items-center gap-2'>
+      </div>
+      {totalPages > 0 && (
+          <h1 className="text-gray-100 text-xs">
+            Page {Math.ceil(currentLocation * totalPages)} of {totalPages}
+          </h1>
+        )}
+
+      <div className="flex items-center gap-2">
+      {user && currentLocation && (
         <IconButton
-          onClick={() => onToggleBookmark(currentLocation)}
+          onClick={handleBookmarkClick}
+          disabled={isBookmarking}
           sx={{
-            color: 'rgba(250, 250, 250, 0.9)',
-            padding: '8px',
-            '&:hover': {
-              background: 'rgba(250, 250, 250, 0.08)',
+            color: "rgba(250, 250, 250, 0.9)",
+            padding: "8px",
+            "&:hover": {
+              background: "rgba(250, 250, 250, 0.08)",
             },
-          }}>
-          {hasBookmark ? (
-            <Bookmark sx={{fontSize: 20}} />
+          }}
+        >
+          {isBookmarking ? (
+            <CircularProgress size={20} style={{color:'white'}} />
+          ) : currentBookmark ? (
+            <Bookmark sx={{ fontSize: 20 }} />
           ) : (
-            <BookmarkBorder sx={{fontSize: 20}} />
+            <BookmarkBorder sx={{ fontSize: 20 }} />
           )}
         </IconButton>
+      )}
+          
 
-        <IconButton
-          onClick={onToggleNotes}
-          sx={{
-            color: 'rgba(250, 250, 250, 0.9)',
-            padding: '8px',
-            '&:hover': {
-              background: 'rgba(250, 250, 250, 0.08)',
-            },
-          }}>
-          <ViewListRounded sx={{fontSize: 20}} />
-        </IconButton>
+        {user && (
+          <IconButton
+            onClick={onToggleNotes}
+            sx={{
+              color: "rgba(250, 250, 250, 0.9)",
+              padding: "8px",
+              "&:hover": {
+                background: "rgba(250, 250, 250, 0.08)",
+              },
+            }}
+          >
+            <ViewListRounded sx={{ fontSize: 20 }} />
+          </IconButton>
+        )}
 
         <IconButton
           onClick={onToggleSettings}
@@ -166,7 +198,8 @@ const ReaderHeader = ({
           ) : (
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className='text-sm text-gray-200 hover:text-gray-100 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors'>
+              className="text-sm text-gray-200 hover:text-gray-100 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
               Login
             </button>
           )}
@@ -193,8 +226,9 @@ const ReaderHeader = ({
                   ))}
                   <button
                     onClick={() => setIsProfileOpen(false)}
-                    className='w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-white/5'>
-                    <Logout className='w-4 h-4' />
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
+                  >
+                    <Logout className="w-4 h-4" />
                     <span>Logout</span>
                   </button>
                 </>

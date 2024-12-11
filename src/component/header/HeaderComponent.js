@@ -25,6 +25,7 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
   const [isDesktopProfileOpen, setIsDesktopProfileOpen] = useState(false)
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false)
   const [showMobileNotifications, setShowMobileNotifications] = useState(false)
+  
 
   const desktopProfileRef = useRef(null)
   const mobileProfileRef = useRef(null)
@@ -114,24 +115,32 @@ const HeaderComponent = ({onSearchChange, searchTerm, showSearch = false}) => {
     }
   }
 
-  const profileMenuItems = [
-    {
-      label: 'Profile',
-      icon: <User className='w-4 h-4' />,
-      path: '/profile',
-    },
-    {
-      label: 'My Library',
-      icon: <BookOpen className='w-4 h-4' />,
-      path: '/saved-books',
-    },
-    user?.role === 'ADMIN' && {
-      label: 'Admin',
-      icon: <SettingsIcon className='w-4 h-4' />,
-      path: '/admin/dashboard',
-      shouldShowForAdmin: true,
-    },
-  ]
+  const getProfileMenuItems = () => {
+    const baseItems = [
+      {
+        label: 'Profile',
+        icon: <User className='w-4 h-4' />,
+        path: '/profile',
+      },
+      {
+        label: 'My Library',
+        icon: <BookOpen className='w-4 h-4' />,
+        path: '/saved-books',
+      },
+    ]
+
+    // Only add Admin menu item if user has ADMIN role
+    if (user?.role === 'ADMIN') {
+      baseItems.push({
+        label: 'Admin',
+        icon: <SettingsIcon className='w-4 h-4' />,
+        path: '/admin/dashboard',
+      })
+    }
+
+    return baseItems
+  }
+  const profileMenuItems = getProfileMenuItems()
 
   const LoadingRightSection = () => (
     <div className="flex items-center space-x-4">

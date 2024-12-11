@@ -52,7 +52,7 @@ const ListBook = ({
           bookshelves: null,
           languages: null,
           author: null,
-          title: criteria,
+          title: criteria.title,
         },
         {
           headers: {'Content-Type': 'application/json'},
@@ -70,7 +70,7 @@ const ListBook = ({
       setBooks(prev => [...prev, ...newBooks])
     }
 
-    setHasMore(newBooks.length === 15) 
+    setHasMore(newBooks.length === 15)
     setError(null)
 
   } catch (err) {

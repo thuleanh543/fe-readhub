@@ -21,7 +21,7 @@ export const BooksProvider = ({children}) => {
   const initialFetchDoneRef = useRef(false)
 
 
-          
+
 
 
   useEffect(() => {
@@ -33,9 +33,6 @@ export const BooksProvider = ({children}) => {
         fetchingRef.current = true
         setLoading(true)
         setError(null)
-
-        console.log('Fetching with shelves:', BOOKSHELVES)
-
         const responses = await Promise.all(
           BOOKSHELVES.map(async shelf => {
             try {
@@ -53,10 +50,8 @@ export const BooksProvider = ({children}) => {
                   params: {page: 0, size: 15},
                 },
               )
-              console.log(`Response for ${shelf.topic}:`, response.data)
               return response
             } catch (err) {
-              console.error(`Error fetching ${shelf.topic}:`, err)
               throw err
             }
           }),
@@ -66,7 +61,6 @@ export const BooksProvider = ({children}) => {
         responses.forEach((response, index) => {
           const shelf = BOOKSHELVES[index]
           booksMap[shelf.topic] = response.data.results || []
-          console.log(`Books for ${shelf.topic}:`, booksMap[shelf.topic])
         })
 
         setBooksData(booksMap)
@@ -116,7 +110,6 @@ export const BooksProvider = ({children}) => {
                 params: {page: 0, size: 15},
               },
             )
-            console.log(`Response for ${shelf.topic}:`, response.data)
             return response
           } catch (err) {
             console.error(`Error fetching ${shelf.topic}:`, err)
@@ -129,7 +122,6 @@ export const BooksProvider = ({children}) => {
       responses.forEach((response, index) => {
         const shelf = BOOKSHELVES[index]
         booksMap[shelf.topic] = response.data.results || []
-        console.log(`Books for ${shelf.topic}:`, booksMap[shelf.topic])
       })
 
       setBooksData(booksMap)
