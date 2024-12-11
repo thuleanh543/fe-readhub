@@ -11,7 +11,7 @@ const ChallengeCard = ({ challenge}) => {
   const isExpired = new Date() > new Date(challenge.endDate);
 
   const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: `${process.env.REACT_APP_API_BASE_URL}`,
     headers: {
       'Content-Type': 'application/json'
     }
@@ -32,7 +32,7 @@ const ChallengeCard = ({ challenge}) => {
   useEffect(() => {
     const checkMembership = async () => {
       try {
-        const response = await api.get(`/api/v1/challenges/${challenge.challengeId}/check-membership`);
+        const response = await api.get(`/challenges/${challenge.challengeId}/check-membership`);
         if (response.data.success) {
           setIsMember(response.data.data.isMember);
         }
@@ -52,7 +52,7 @@ const ChallengeCard = ({ challenge}) => {
       }
 
       setIsJoining(true);
-      const response = await api.post(`/api/v1/challenges/${challenge.challengeId}/join`);
+      const response = await api.post(`/challenges/${challenge.challengeId}/join`);
       if (response.data.success) {
         setIsMember(true);
         toast.success("Successfully joined the challenge!");

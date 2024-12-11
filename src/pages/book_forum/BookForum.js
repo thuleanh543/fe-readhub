@@ -38,7 +38,7 @@ const BookForum = () => {
 
   // Configure axios defaults
   const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: `${process.env.REACT_APP_API_BASE_URL}`,
     headers: {
       'Content-Type': 'application/json'
     }
@@ -70,8 +70,8 @@ const BookForum = () => {
           fetch(`${process.env.REACT_APP_API_BASE_URL}/user/profile`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           }),
-          api.get('/api/v1/forums'),
-          api.get('/api/v1/challenges')
+          api.get('/forums'),
+          api.get('/challenges')
         ]);
 
         const userData = await userResponse.json();

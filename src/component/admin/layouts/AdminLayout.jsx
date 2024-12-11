@@ -34,11 +34,6 @@ const AdminLayout = ({ children }) => {
       name: 'User Management',
       icon: <Users className="w-5 h-5" />
     },
-    {
-      path: '/admin/content-moderation',
-      name: 'Content Moderation',
-      icon: <BookOpen className="w-5 h-5" />
-    },
   ];
 
   const handleLogout = () => {

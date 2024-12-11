@@ -5,7 +5,6 @@ import ReadBookScreen from './read_book/views/ReadBookScreen'
 import ListBook from './list_book/views/ListBook'
 import DescriptionBook from './description_book/DescriptionBook'
 import Dashboard from './Dashboard'
-import ContentModeration from './ContentModeration'
 import Profile from './Profile'
 import BookForum from './book_forum/BookForum'
 import CreateForum from './create_forum/CreateForum'
@@ -23,7 +22,6 @@ export {
   VerifyRegister,
   ListBook,
   Dashboard,
-  ContentModeration,
   Profile,
   DescriptionBook,
   BookForum,
