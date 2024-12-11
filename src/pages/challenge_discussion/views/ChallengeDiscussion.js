@@ -21,6 +21,7 @@ const ChallengeDiscussion = () => {
   const [isSending, setIsSending] = useState(false);
   const [challengeInfo, setChallengeInfo] = useState(null);
   const [readBooksCount, setReadBooksCount] = useState(0);
+  const [currentUserReadCount, setCurrentUserReadCount] = useState(0);
 
   function stringToColor(string) {
     let hash = 0
@@ -80,6 +81,32 @@ const ChallengeDiscussion = () => {
     return diffDays > 0 ? diffDays : 0;
   };
 
+  useEffect(() => {
+    if (challengeInfo?.startDate && challengeInfo?.endDate) {
+      fetchUserReadCount();
+    }
+  }, [challengeInfo]);
+
+  const fetchUserReadCount = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/reading-history/count`,
+        {
+          params: {
+            startDate: challengeInfo?.startDate,
+            endDate: challengeInfo?.endDate
+          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+      if (response.data.success) {
+        setCurrentUserReadCount(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to load user read count:", error);
+    }
+  };
+
   // Tính phần trăm hoàn thành
   const getProgressPercentage = () => {
     if (!challengeInfo?.targetBooks) return 0;
@@ -128,7 +155,8 @@ const ChallengeDiscussion = () => {
 
   useEffect(() => {
     let stompClientRef = null;
-    let subscription = null;  // Thêm biến để track subscription
+    let subscription = null;
+    let deleteSubscription = null;
 
     const connectWebSocket = () => {
       const socket = new SockJS(`${process.env.REACT_APP_END_POINT_API_RENDER}/ws`);
@@ -142,28 +170,59 @@ const ChallengeDiscussion = () => {
           setStompClient(client);
           subscription = client.subscribe(`/topic/challenge/${challengeId}`, message => {
             const newComment = JSON.parse(message.body);
+            // Check if the new comment should have a reward badge
+            const shouldShowReward = newComment.user.id === JSON.parse(localStorage.getItem('user'))?.id &&
+                                   currentUserReadCount >= challengeInfo?.targetBooks;
+
+            const commentWithReward = {
+              ...newComment,
+              rewardEarned: shouldShowReward
+            };
+
             setComments(prev => {
-              const exists = prev.some(c => c.id === newComment.id);
+              const exists = prev.some(c => c.id === commentWithReward.id);
               if (exists) return prev;
-              return [newComment, ...prev];
+              return [commentWithReward, ...prev];
             });
           });
+
+          deleteSubscription = client.subscribe(
+            `/topic/challenge/${challengeId}/comment-delete`,
+            message => {
+              const { commentId } = JSON.parse(message.body);
+              setComments(prev => prev.filter(c => c.id !== commentId));
+            }
+          );
         }
       );
     };
 
     connectWebSocket();
 
-    // Clean up function
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();  // Unsubscribe khi component unmount
-      }
+      if (subscription) subscription.unsubscribe();
+      if (deleteSubscription) deleteSubscription.unsubscribe();
       if (stompClientRef?.connected) {
         stompClientRef.disconnect();
       }
     };
-  }, [challengeId]);
+  }, [challengeId, currentUserReadCount, challengeInfo]);
+
+  const handleDeleteComment = (commentId) => {
+    if (stompClient?.connected) {
+      const messagePayload = {
+        challengeId,
+        commentId,
+        timestamp: new Date().getTime()
+      };
+
+      stompClient.send(
+        '/app/challenge/comment/delete',
+        { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        JSON.stringify(messagePayload)
+      );
+    }
+  };
 
   const handleSubmit = async () => {
     if (!newComment.trim() && !selectedBooks.length) return;
@@ -184,7 +243,8 @@ const ChallengeDiscussion = () => {
           challengeId,
           content: newComment,
           books: formattedBooks,
-          timestamp: new Date().getTime() // Thêm timestamp để tránh duplicate
+          timestamp: new Date().getTime(),
+          rewardEarned: currentUserReadCount >= challengeInfo?.targetBooks
         };
 
         stompClient.send(
@@ -193,10 +253,12 @@ const ChallengeDiscussion = () => {
           JSON.stringify(messagePayload)
         );
 
-        // Reset form sau khi gửi thành công
+        // Reset form and update read count
         setNewComment('');
         setSelectedBooks([]);
-        window.history.replaceState(null, '');
+        if (formattedBooks.length > 0) {
+          fetchUserReadCount(); // Refresh the read count after adding books
+        }
       }
     } catch (error) {
       toast.error('Failed to post comment');
@@ -254,13 +316,13 @@ const ChallengeDiscussion = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="md:col-span-3">
-    <textarea
-     value={newComment}
-     onChange={(e) => setNewComment(e.target.value)}
-     placeholder="Share your reading progress and thoughts..."
-     className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[180px] resize-none"
-   />
- </div>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Share your reading progress and thoughts..."
+            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[180px] resize-none bg-white shadow-sm"
+          />
+        </div>
 
  <div className="space-y-4">
    <button
@@ -328,72 +390,80 @@ const ChallengeDiscussion = () => {
   </button>
  </div>
 </div>
-      <div className="space-y-6">
-        {comments.map((comment, index) => (
-          <div
-          key={`comment-${comment.id}-${index}`}
-          className="bg-white rounded-xl shadow-md p-6"
-          >
+<div className="space-y-6 mt-8">
+        {comments.map((comment, index) => {
+          const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+          const isOwnComment = comment.user.id === currentUserId;
 
-<div className="flex items-center gap-4 mb-4">
-  {comment?.user?.urlAvatar ? (
-    <Avatar
-      sx={{width: 30, height: 30}}
-      src={comment?.user?.urlAvatar}
-      alt={comment?.user?.fullName}
-    />
-  ) : (
-    <Avatar {...stringAvatar(comment?.user?.fullName)} />
-  )}
-  <div>
-    <div className="flex items-center gap-2">
-      <h4 className="font-semibold text-lg">{comment.user.fullName}</h4>
-      {comment.rewardEarned && challengeInfo?.reward === "READING_COLOR" && (
-        <ColorBadge />
-      )}
-      {comment.rewardEarned && challengeInfo?.reward === "READING_MONTH" && (
-        <MonthlyBadge />
-      )}
-    </div>
-    <p className="text-gray-500 text-sm">
-      {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
-    </p>
-  </div>
-</div>
-
-            <p className="text-gray-800 mb-4">{comment.content}</p>
-
-            {comment.books?.length > 0 && (
-              <div className="border-t pt-4 mt-4">
-                <h5 className="text-sm font-medium text-gray-700 mb-3">Books Read:</h5>
-                <div className="grid grid-cols-2 gap-4">
-                  {comment.books.map((book, bookIndex) => (
-                    <div
-                    key={`book-${comment.id}-${book.id}-${bookIndex}`}
-                    className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
-                      <img
-                        src={book.coverUrl}
-                        alt={book.title}
-                        className="w-16 object-cover rounded"
-                      />
-                      <div>
-                        <h6 className="font-medium text-gray-900">{book.title}</h6>
-                        <p className="text-sm text-gray-500">{book.author}</p>
-                      </div>
+          return (
+            <div
+              key={`comment-${comment.id}-${index}`}
+              className="bg-white rounded-xl shadow-lg p-6 border border-gray-100"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  {comment?.user?.urlAvatar ? (
+                    <Avatar
+                      sx={{width: 30, height: 30}}
+                      src={comment?.user?.urlAvatar}
+                      alt={comment?.user?.fullName}
+                    />
+                  ) : (
+                    <Avatar {...stringAvatar(comment?.user?.fullName)} />
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-lg">{comment.user.fullName}</h4>
+                      {comment.rewardEarned && challengeInfo?.reward === "READING_COLOR" && (
+                        <ColorBadge />
+                      )}
+                      {comment.rewardEarned && challengeInfo?.reward === "READING_MONTH" && (
+                        <MonthlyBadge />
+                      )}
                     </div>
-                  ))}
+                    <p className="text-gray-500 text-sm">
+                      {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
+                    </p>
+                  </div>
                 </div>
+                {isOwnComment && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.id)}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
               </div>
-            )}
 
-            <div className="flex items-center gap-6 mt-4 text-gray-500">
-              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                <MessagesSquare className="w-5 h-5" />
-                <span>Reply</span>
-              </button>
+              <p className="text-gray-800 mb-4">{comment.content}</p>
+
+              {comment.books?.length > 0 && (
+                <div className="border-t pt-4 mt-4">
+                  <h5 className="text-sm font-medium text-gray-700 mb-3">Books Read:</h5>
+                  <div className="grid grid-cols-2 gap-4">
+                    {comment.books.map((book, bookIndex) => (
+                      <div
+                        key={`book-${comment.id}-${book.id}-${bookIndex}`}
+                        className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg"
+                      >
+                        <img
+                          src={book.coverUrl}
+                          alt={book.title}
+                          className="w-16 object-cover rounded"
+                        />
+                        <div>
+                          <h6 className="font-medium text-gray-900">{book.title}</h6>
+                          <p className="text-sm text-gray-500">{book.author}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
