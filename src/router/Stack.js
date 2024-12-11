@@ -22,6 +22,7 @@ import AdminLayout from '../component/admin/layouts/AdminLayout'
 import ProtectedCreateForumRoute from '../component/ProtectedCreateForumRoute'
 import ProtectedJoinForumRoute from '../component/ProtectedJoinForumRoute'
 import CommentReports from '../pages/comment_report/CommentReports'
+import UserManagement from '../pages/user_management/UserManagement'
 
 function Stack() {
   return (
@@ -65,6 +66,7 @@ function Stack() {
                 <Route path='dashboard' element={<Dashboard />} />
                 <Route path='forum-reports' element={<ForumReports />} />
                 <Route path='comment-reports' element={<CommentReports />} />
+                <Route path='user-management' element={<UserManagement />} />
               </Routes>
             </AdminLayout>
           </PrivateRoute>
