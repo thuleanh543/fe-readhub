@@ -462,6 +462,7 @@ export default function DescriptionBook() {
         }}
         bookId={bookId}
         currentUser={user}
+        bookDetails={bookDetails}
       />
       <Footer />
     </Box>

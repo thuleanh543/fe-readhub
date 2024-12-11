@@ -6,7 +6,6 @@ import {
   Bookmark,
   ViewListRounded,
   Settings,
-  LogOut,
   Person,
   AutoStories,
   Logout,

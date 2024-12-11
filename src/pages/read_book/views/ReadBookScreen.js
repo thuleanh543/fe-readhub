@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {useLocation, useNavigate} from 'react-router-dom'
 import {ReactReaderStyle} from 'react-reader'
-import ePub from 'epubjs'
 import ReaderHeader from './ReaderHeader'
 import ReaderContent from './ReaderContent'
 import NotePopover from './NotePopover'

@@ -8,6 +8,7 @@ import {
   TextField,
   Box,
   CircularProgress,
+  Typography,
 } from '@mui/material'
 import {Star} from 'lucide-react'
 import axios from 'axios'
@@ -19,6 +20,7 @@ const ReviewDialog = ({
   currentUser,
   existingReview = null,
   onReviewSubmit,
+  bookDetails,
 }) => {
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState('')
@@ -114,55 +116,166 @@ const ReviewDialog = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-      <DialogTitle>
-        {initialReview ? 'Update Your Review' : 'Write a Review'}
-      </DialogTitle>
+<Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth='sm' 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '12px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+        }
+      }}
+    >
+      <DialogContent sx={{ p: 0 }}>
+        {/* Header with gradient background */}
+        <Box 
+          sx={{ 
+            p: 3,
+            pb: 4,
+            background: 'linear-gradient(to bottom, rgba(79, 70, 229, 0.1) 0%, rgba(255,255,255,0) 100%)',
+          }}
+        >
+          {/* Book Info Section */}
+          <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+            {/* Book Cover */}
+            <Box 
+              sx={{ 
+                width: 120,
+                flexShrink: 0,
+                '& img': {
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                }
+              }}
+            >
+              <img
+                src={bookDetails?.formats?.['image/jpeg']}
+                alt={bookDetails?.title}
+              />
+            </Box>
 
-      <DialogContent>
-        {/* Rating Stars */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            mb: 3,
-            gap: 1,
-          }}>
-          {[1, 2, 3, 4, 5].map(star => (
-            <Star
-              key={star}
-              size={32}
-              className={`cursor-pointer transition-colors ${
-                (reviewHover || reviewRating) >= star
-                  ? 'text-yellow-400 fill-yellow-400'
-                  : 'text-gray-300'
-              }`}
-              onMouseEnter={() => setReviewHover(star)}
-              onMouseLeave={() => setReviewHover(0)}
-              onClick={() => setReviewRating(star)}
-            />
-          ))}
+            {/* Book Details */}
+            <Box sx={{ flex: 1 }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 600,
+                  mb: 1,
+                  color: 'text.primary',
+                  lineHeight: 1.3
+                }}
+              >
+                {bookDetails?.title}
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'text.secondary',
+                  mb: 2
+                }}
+              >
+                by {bookDetails?.authors?.map(author => author.name).join(', ')}
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Rating Section */}
+          <Box sx={{ mt: 4 }}>
+            <Typography 
+              variant="h6" 
+              align="center" 
+              sx={{ 
+                mb: 2,
+                fontWeight: 500,
+                color: 'text.primary' 
+              }}
+            >
+              {initialReview ? 'Update your rating' : 'Rate this book'}
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1.5,
+              }}
+            >
+              {[1, 2, 3, 4, 5].map(star => (
+                <Star
+                  key={star}
+                  size={36}
+                  className={`cursor-pointer transition-all duration-200 ${
+                    (reviewHover || reviewRating) >= star
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-gray-200'
+                  }`}
+                  onMouseEnter={() => setReviewHover(star)}
+                  onMouseLeave={() => setReviewHover(0)}
+                  onClick={() => setReviewRating(star)}
+                />
+              ))}
+            </Box>
+          </Box>
         </Box>
 
-        <TextField
-          fullWidth
-          multiline
-          rows={4}
-          placeholder='Share your thoughts about this book'
-          variant='outlined'
-          value={reviewText}
-          onChange={e => setReviewText(e.target.value)}
-        />
+        {/* Review Text Section */}
+        <Box sx={{ p: 3 }}>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Share your thoughts about this book..."
+            variant="outlined"
+            value={reviewText}
+            onChange={e => setReviewText(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px',
+                backgroundColor: 'rgba(0,0,0,0.02)',
+              }
+            }}
+          />
+        </Box>
       </DialogContent>
 
-      <DialogActions sx={{p: 2, gap: 1}}>
-        <Button onClick={onClose} variant='outlined'>
+      {/* Actions Section */}
+      <DialogActions 
+        sx={{ 
+          p: 3, 
+          pt: 0,
+          gap: 1.5 
+        }}
+      >
+        <Button 
+          onClick={onClose} 
+          variant="outlined"
+          sx={{ 
+            borderRadius: '8px',
+            px: 3,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
           Cancel
         </Button>
         <Button
-          variant='contained'
+          variant="contained"
           onClick={handleSubmit}
-          disabled={!hasChanges || loading}>
+          disabled={!hasChanges || loading}
+          sx={{ 
+            borderRadius: '8px',
+            px: 3,
+            textTransform: 'none',
+            fontWeight: 500,
+            boxShadow: 'none',
+            '&:hover': {
+              boxShadow: 'none'
+            }
+          }}
+        >
           {loading ? (
             <CircularProgress size={24} />
           ) : initialReview ? (
