@@ -36,6 +36,7 @@ export default function DescriptionBook() {
   const navigate = useNavigate()
   const location = useLocation()
   const {bookId, bookTitle} = location.state || {}
+  const [ebook, setEbook] = useState(null)
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [showReviewDialog, setShowReviewDialog] = useState(false)
   const [shouldRefreshReviews, setShouldRefreshReviews] = useState(0)
@@ -148,11 +149,11 @@ export default function DescriptionBook() {
     const fetchBookDetails = async () => {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}/`,
+          `${process.env.REACT_APP_API_BASE_URL}/book/${bookId}`,
         )
         if (!response.ok) throw new Error('Failed to fetch book details')
         const data = await response.json()
-        setBookDetails(data)
+        setBookDetails(data)     
         setLoading(false)
       } catch (err) {
         setError('Failed to fetch book details')
@@ -175,7 +176,13 @@ export default function DescriptionBook() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [bookDetails])
+  }, [])
+
+  useEffect(() => {
+    if (bookDetails?.formats?.['application/epub+zip']) {
+      setEbook(bookDetails.formats['application/epub+zip']);
+    }
+  }, [bookDetails, ]);
 
   if (loading)
     return (
@@ -259,7 +266,7 @@ export default function DescriptionBook() {
                         startIcon={<BookOpen />}
                         onClick={() =>
                           navigate('/read-book-screen', {
-                            state: {bookId, bookTitle},
+                            state: {bookId, bookTitle, ebook},
                           })
                         }
                         sx={{
@@ -381,14 +388,6 @@ export default function DescriptionBook() {
                       Project Gutenberg
                     </Typography>
                   </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant='h6' gutterBottom>
-                      Downloads
-                    </Typography>
-                    <Typography color='text.secondary'>
-                      {bookDetails.download_count.toLocaleString()}
-                    </Typography>
-                  </Grid>
                 </Grid>
 
                 <Divider sx={{my: 3}} />
@@ -398,7 +397,7 @@ export default function DescriptionBook() {
                     startIcon={<BookOpen />}
                     onClick={() =>
                       navigate('/read-book-screen', {
-                        state: {bookId, bookTitle},
+                        state: {bookId, bookTitle, ebook},
                       })
                     }
                     fullWidth>
@@ -463,6 +462,7 @@ export default function DescriptionBook() {
         }}
         bookId={bookId}
         currentUser={user}
+        bookDetails={bookDetails}
       />
       <Footer />
     </Box>

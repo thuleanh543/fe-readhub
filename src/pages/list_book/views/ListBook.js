@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useCallback, useRef} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {SEARCH_MODE} from '../../../constants/enums'
+import axios from 'axios'
 
 const ListBook = ({
   searchTerm: searchCriteria,
@@ -20,7 +21,7 @@ const ListBook = ({
 
   const lastBookElementRef = useCallback(
     node => {
-      if (loading || loadingMore || !hasMore || books.length === 0) return
+      if (loading || loadingMore || !hasMore) return
 
       if (observerRef.current) observerRef.current.disconnect()
 
@@ -32,10 +33,11 @@ const ListBook = ({
 
       if (node) observerRef.current.observe(node)
     },
-    [loading, loadingMore, hasMore, books.length],
+    [loading, loadingMore, hasMore],
   )
   const fetchBooks = useCallback(async (criteria, pageNum, isNewSearch) => {
     try {
+      // Set loading state correctly
       if (isNewSearch) {
         setLoading(true)
         setBooks([])
@@ -43,38 +45,43 @@ const ListBook = ({
         setLoadingMore(true)
       }
 
-      const url = new URL('http://localhost:8080/api/v1/book/search/advanced')
-      url.searchParams.append('page', pageNum)
-      url.searchParams.append('size', 32)
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`,
+        {
+          subjects: null,
+          bookshelves: null,
+          languages: null,
+          author: null,
+          title: criteria,
         },
-        body: JSON.stringify(criteria),
-      })
+        {
+          headers: {'Content-Type': 'application/json'},
+          params: {page: pageNum, size: 15},
+        },
+      )
 
-      const data = await response.json()
-      const newBooks = data.results || []
-      setTotalBooks(data.count || 0)
-      setHasMore(newBooks.length > 0 && data.next !== null)
+      const data = response.data
+    const newBooks = data.results || []
+    setTotalBooks(data.totalElements || 0)
 
-      if (isNewSearch) {
-        setBooks(newBooks)
-      } else if (newBooks.length > 0) {
-        setBooks(prev => [...prev, ...newBooks])
-      }
-
-      setHasMore(newBooks.length > 0 && !data.last)
-    } catch (err) {
-      setError('Failed to load books. Please try again.')
-    } finally {
-      setLoading(false)
-      setLoadingMore(false)
+    if (isNewSearch) {
+      setBooks(newBooks)
+    } else {
+      setBooks(prev => [...prev, ...newBooks])
     }
-  }, [])
 
+    setHasMore(newBooks.length === 15) 
+    setError(null)
+
+  } catch (err) {
+    setError('Failed to load books. Please try again.')
+    setBooks([])
+    setHasMore(false)
+  } finally {
+    setLoading(false)
+    setLoadingMore(false)
+  }
+}, [])
   useEffect(() => {
     if (searchCriteria) {
       setPage(0)
@@ -110,6 +117,24 @@ const ListBook = ({
       </div>
     )
   }
+  const renderStars = (rating) => {
+    const stars = [];
+    const roundedRating = rating || 0;
+
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          className={`text-base ${
+            i < roundedRating ? "text-yellow-400" : "text-gray-200"
+          }`}
+        >
+          ★
+        </span>
+      );
+    }
+    return stars;
+  };
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-white px-6 py-8'>
@@ -183,6 +208,16 @@ const ListBook = ({
                   <p className='mt-2 text-center text-xs font-medium text-gray-600 group-hover:text-indigo-500 transition-colors duration-300'>
                     {book.authors[0]?.name || 'Unknown Author'}
                   </p>
+                  {book.averageRating > 0 && (
+                      <div className="flex justify-center items-center mt-2 gap-2">
+                        <div className="flex space-x-0.5">
+                          {renderStars(book.averageRating)}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {book.averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             ))}
