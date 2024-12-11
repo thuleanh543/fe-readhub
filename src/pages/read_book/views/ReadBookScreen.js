@@ -36,11 +36,6 @@ const defaultSettings = {
 function ReadBookScreen() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user } = useUser();
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks(
-    user?.userId,
-    bookId
-  );
   const [loca, setLocation] = useState(location || '')
   const {bookId, bookTitle, ebook} = location.state || {}
   const [error, setError] = useState(null)
@@ -59,6 +54,7 @@ function ReadBookScreen() {
   const [editingNote, setEditingNote] = useState(null)
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [settings, setSettings] = useState(defaultSettings)
+  const [user, setUser] = useState(null)
   const [isNote, setIsNote] = useState(false)
   const [hasBookmark, setHasBookmark] = useState(false)
   const [currentLocation, setCurrentLocation] = useState(null)
@@ -72,22 +68,6 @@ function ReadBookScreen() {
     setReadStartTime(Date.now())
   }
 
-
-  const handleToggleBookmark = async (location) => {
-    if (!user) {
-      toast.error("Please login to bookmark");
-      return;
-    }
-
-    const existingBookmark = bookmarks.find(b => b.location === location);
-    if (existingBookmark) {
-      await removeBookmark(existingBookmark.id);
-      toast.success("Bookmark removed");
-    } else {
-      await addBookmark(location);
-      toast.success("Bookmark added");
-    }
-  };
   const updateReadingHistory = async () => {
     const currentTime = Date.now()
     const timeSpent = Math.floor((currentTime - lastReadingUpdate) / 1000)
@@ -659,7 +639,7 @@ function ReadBookScreen() {
         onToggleSettings={handleSettingsDrawerToggle}
         user={user}
         onToggleBookmark={handleToggleBookmark}
-        hasBookmark={bookmarks.some(b => b.location === currentLocation)}
+        hasBookmark={hasBookmark}
         currentLocation={currentLocation}
       />
 
