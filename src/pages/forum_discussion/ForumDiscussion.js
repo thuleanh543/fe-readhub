@@ -95,7 +95,7 @@ const ForumDiscussion = () => {
   };
 
   const connectWebSocket = () => {
-    const socket = new SockJS(`${process.env.END_POINT_API_RENDER}/ws`)
+    const socket = new SockJS(`${process.env.REACT_APP_END_POINT_API_RENDER}/ws`)
     const client = Stomp.over(() => socket)
 
     client.debug = () => {}

@@ -70,7 +70,7 @@ const ListBook = ({
       setBooks(prev => [...prev, ...newBooks])
     }
 
-    setHasMore(newBooks.length === 15) 
+    setHasMore(newBooks.length === 15)
     setError(null)
 
   } catch (err) {
