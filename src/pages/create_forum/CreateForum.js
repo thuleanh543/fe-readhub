@@ -48,24 +48,18 @@ export default function CreateForum() {
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image size should be less than 5MB');
         return;
       }
-
-      // Check file type
       if (!file.type.startsWith('image/')) {
         toast.error('Please upload an image file');
         return;
       }
-
       setFormData(prev => ({
         ...prev,
         coverImage: file
       }));
-
-      // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewImage(e.target.result);
@@ -96,8 +90,6 @@ export default function CreateForum() {
         formDataToSend.append('authors', authors);
         formDataToSend.append('forumTitle', formData.title);
         formDataToSend.append('forumDescription', formData.description);
-
-        // Append categories/subjects
         formData.selectedCategories.forEach(category => {
           formDataToSend.append('categories', category);
         });
@@ -107,17 +99,26 @@ export default function CreateForum() {
             formDataToSend.append('subjects', subject);
           });
         }
-
-        // Chỉ gửi ảnh mới nếu người dùng đã upload, nếu không thì gửi coverBook
         if (formData.coverImage) {
           formDataToSend.append('forumImage', formData.coverImage);
+        } else if (coverBook) {
+          try {
+            const proxyUrl = `${process.env.REACT_APP_API_BASE_URL}/proxy/image?url=${encodeURIComponent(coverBook)}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+              throw new Error('Failed to fetch cover image');
+            }
+            const blob = await response.blob();
+            const filename = coverBook.split('/').pop() || 'cover.jpg';
+            formDataToSend.append('forumImage', blob, filename);
+          } catch (error) {
+            toast.error('Failed to fetch cover image. Please upload an image manually.');
+            return;
+          }
         } else {
-          // Nếu không có ảnh mới, gửi coverBook làm ảnh mặc định
-          const response = await fetch(coverBook);
-          const blob = await response.blob();
-          formDataToSend.append('forumImage', blob, 'coverBook.jpg');
+          toast.error('Forum image is required');
+          return;
         }
-
         setIsSubmitting(true);
 
         const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums`, {
@@ -128,20 +129,15 @@ export default function CreateForum() {
           body: formDataToSend,
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to create forum');
-        }
-
         const result = await response.json();
 
-        if (result.success) {
+        if (response.ok && result.success) {
           toast.success(result.message);
           setTimeout(() => {
             navigate('/book-forum');
           }, 500);
         } else {
-          toast.error(result.message || 'Failed to create forum');
+          throw new Error(result.message || 'Failed to create forum');
         }
       } catch (error) {
         console.error('Error creating forum:', error);
