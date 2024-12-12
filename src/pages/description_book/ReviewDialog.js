@@ -12,6 +12,8 @@ import {
 } from '@mui/material'
 import {Star} from 'lucide-react'
 import axios from 'axios'
+import { useUser } from '../../contexts/UserProvider'
+
 
 const ReviewDialog = ({
   open,
@@ -22,6 +24,7 @@ const ReviewDialog = ({
   onReviewSubmit,
   bookDetails,
 }) => {
+  const {user} = useUser()
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewText, setReviewText] = useState('')
   const [reviewHover, setReviewHover] = useState(0)
@@ -36,7 +39,7 @@ const ReviewDialog = ({
 
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}review/user/${currentUser.userId}/book/${bookId}`,
+          `${process.env.REACT_APP_API_BASE_URL}review/user/${user.userId}/book/${bookId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
