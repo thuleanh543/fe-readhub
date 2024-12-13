@@ -99,6 +99,8 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
             )
           );
           setEditingReplyId(null);
+          setEditReplyContent('');
+          setEditReplyImage(null);
         }
       );
 
@@ -116,6 +118,8 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
         `/topic/comment/${comment.id}/update`,
         message => {
           const updatedComment = JSON.parse(message.body);
+          comment.content = updatedComment.content; // Cập nhật nội dung comment
+          comment.imageUrl = updatedComment.imageUrl; // Cập nhật ảnh nếu có
           setEditContent(updatedComment.content);
           setIsEditing(false);
         }
