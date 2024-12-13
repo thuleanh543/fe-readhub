@@ -125,6 +125,34 @@ const ForumDiscussion = () => {
             console.error('Error processing comment:', error)
           }
         })
+
+        client.subscribe(`/topic/errors`, message => {
+          try {
+            const error = JSON.parse(message.body)
+            toast.error(error.message || 'An error occurred')
+          } catch (error) {
+            console.error('Error processing error message:', error)
+          }
+        })
+
+        // Subscribe to discussion-specific errors
+        client.subscribe(`/topic/errors/${forumId}`, message => {
+          try {
+            const error = JSON.parse(message.body)
+            toast.error(error.error || 'An error occurred')
+          } catch (error) {
+            console.error('Error processing forum error message:', error)
+          }
+        })
+
+        client.subscribe(`/topic/errors/comment/${forumId}`, message => {
+          try {
+            const error = JSON.parse(message.body)
+            toast.error(error.message || 'An error occurred with your comment')
+          } catch (error) {
+            console.error('Error processing comment error message:', error)
+          }
+        })
       },
       error => {
         console.error('WebSocket connection error:', error)
@@ -200,7 +228,7 @@ const ForumDiscussion = () => {
         }
       }
     } catch (error) {
-      console.error('Error posting comment:', error)
+      toast.error('You don\'t have permission to comment');
     } finally {
       setIsSending(false);
   }
