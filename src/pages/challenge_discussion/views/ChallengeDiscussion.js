@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { MessagesSquare, Book, Trash2, Send, BookOpen, Plus, X } from 'lucide-react';
+import { Trash2, Send,Plus, X } from 'lucide-react';
 import { format } from 'date-fns';
 import axios from 'axios';
 import { SEARCH_MODE } from '../../../constants/enums';
@@ -22,6 +22,7 @@ const ChallengeDiscussion = () => {
   const [challengeInfo, setChallengeInfo] = useState(null);
   const [readBooksCount, setReadBooksCount] = useState(0);
   const [currentUserReadCount, setCurrentUserReadCount] = useState(0);
+  const [user, setUser] = useState(null);
 
   function stringToColor(string) {
     let hash = 0
@@ -48,6 +49,7 @@ const ChallengeDiscussion = () => {
   }
 
   useEffect(() => {
+    getUser();
     const books = location.state?.selectedBooks;
     if (books) {
       setSelectedBooks(books);
@@ -112,6 +114,24 @@ const ChallengeDiscussion = () => {
     if (!challengeInfo?.targetBooks) return 0;
     return Math.min((readBooksCount / challengeInfo.targetBooks) * 100, 100);
   };
+
+  const getUser = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/user/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data)
+      }
+    } catch (error) {
+    }
+  }
 
   useEffect(() => {
     const fetchChallengeInfo = async () => {
@@ -392,9 +412,7 @@ const ChallengeDiscussion = () => {
 </div>
 <div className="space-y-6 mt-8">
         {comments.map((comment, index) => {
-          const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
-          const isOwnComment = comment.user.id === currentUserId;
-
+          const isOwnComment = comment?.user?.userId === user?.userId;
           return (
             <div
               key={`comment-${comment.id}-${index}`}
