@@ -244,7 +244,6 @@ const ForumCommentItem = ({ comment, stompClient, user, onCommentDeleted }) => {
         );
       }
     } catch (error) {
-      console.error('Error updating comment:', error);
       toast.error('Failed to update comment');
     } finally {
       setIsSubmittingEdit(false);

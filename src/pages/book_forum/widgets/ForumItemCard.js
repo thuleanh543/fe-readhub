@@ -84,7 +84,6 @@ const ForumItemCard = ({ forum, user, onForumDeleted  }) => {
         setShowReportDialog(false);
       }
     } catch (err) {
-      console.error('Error:', err);
       toast.error('Report forum failed');
     }
   };

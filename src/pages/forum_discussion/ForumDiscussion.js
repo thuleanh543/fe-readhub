@@ -86,7 +86,6 @@ const ForumDiscussion = () => {
         setUser(data)
       }
     } catch (error) {
-      console.error(error)
     }
   }
 

@@ -38,7 +38,6 @@ const useNotificationCount = () => {
         setUnreadCount(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching unread count:', error);
     }
   }, []);
 
@@ -148,7 +147,6 @@ const NotificationDropdown = () => {
           };
         }
       } catch (error) {
-        console.error('Error initializing notifications:', error);
       } finally {
         setLoading(false);
       }

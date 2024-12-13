@@ -17,12 +17,11 @@ export const useBookmarks = (userId, bookId) => {
           },
         }
       );
-      
+
       if (response.data.success) {
         setBookmarks(response.data.data || []);
       }
     } catch (err) {
-      console.error('Error fetching bookmarks:', err);
     }
   };
 

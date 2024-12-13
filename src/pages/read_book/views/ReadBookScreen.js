@@ -162,10 +162,9 @@ function ReadBookScreen() {
         activeHighlights.add(editingNote.cfiRange)
 
         setIsNote(!isNote)
-        setEditingNote(null) // Đóng dialog
+        setEditingNote(null)
       }
     } catch (error) {
-      console.error('Error updating note:', error)
     }
   }
 

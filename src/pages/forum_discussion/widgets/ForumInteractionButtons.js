@@ -43,7 +43,6 @@ const ForumInteractionButtons = ({ forumId, user }) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching interactions:', error);
     }
   };
 

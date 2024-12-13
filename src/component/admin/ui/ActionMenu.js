@@ -99,7 +99,6 @@ const ActionMenu = ({ reportId, forumId }) => {
         resetAndReload();
       }
     } catch (error) {
-      console.error('Error:', error);
       toast.error(error.message);
       setIsSubmitting(false);
     }
@@ -123,7 +122,6 @@ const handleDeleteConfirmation = async (shouldDelete) => {
 
       toast.success('Forum deleted successfully');
     } catch (error) {
-      console.error('Error:', error);
       toast.error(error.message);
     }
   }
@@ -171,7 +169,6 @@ const handleDeleteConfirmation = async (shouldDelete) => {
       await response.json();
 
     } catch (error) {
-      console.error('Action error:', error);
       toast.error(error.message);
       throw error;
     }
