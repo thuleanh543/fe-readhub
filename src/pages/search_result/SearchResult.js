@@ -155,9 +155,9 @@ const SearchResult = () => {
           state: {
             bookId: book.id,
             bookTitle: book.title,
-            authors: book.authors,
+            authors: book.authors.map(author => author.name),
             subjects: book.subjects,
-            coverBook: book.coverBook,
+            coverBook: book.formats['image/jpeg'],
           },
         })
         break

@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import { blueGrey } from '@mui/material/colors';
 import {
-  Save,
   Image as ImageIcon,
   Send as SendIcon,
 } from 'lucide-react';
@@ -31,11 +30,6 @@ export default function CreateForum() {
   const [previewImage, setPreviewImage] = useState(coverBook);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -84,6 +78,7 @@ export default function CreateForum() {
     e.preventDefault();
     if (validateForm()) {
       try {
+        setIsSubmitting(true);
         const formDataToSend = new FormData();
         formDataToSend.append('bookId', bookId);
         formDataToSend.append('bookTitle', bookTitle);
@@ -119,7 +114,6 @@ export default function CreateForum() {
           toast.error('Forum image is required');
           return;
         }
-        setIsSubmitting(true);
 
         const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/forums`, {
           method: 'POST',
@@ -135,12 +129,11 @@ export default function CreateForum() {
           toast.success(result.message);
           setTimeout(() => {
             navigate('/book-forum');
-          }, 500);
+          }, 300);
         } else {
           throw new Error(result.message || 'Failed to create forum');
         }
       } catch (error) {
-        console.error('Error creating forum:', error);
         toast.error(error.message || 'An error occurred while creating the forum');
       } finally {
         setIsSubmitting(false);
