@@ -39,7 +39,7 @@ const ReviewDialog = ({
 
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}review/user/${user.userId}/book/${bookId}`,
+          `${process.env.REACT_APP_API_BASE_URL}/review/user/${user.userId}/book/${bookId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
