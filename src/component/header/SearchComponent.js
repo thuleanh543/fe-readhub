@@ -76,11 +76,11 @@ const SearchComponent = ({ onSearchChange, initialSearchTerm }) => {
         type='text'
         autoFocus
         placeholder='Search books, authors, or keywords...'
-        value={localSearchTerm.title}
+        value={localSearchTerm?.title}
         onChange={handleChange}
         className='w-full pl-10 pr-10 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
       />
-      {localSearchTerm.title && (
+      {localSearchTerm?.title && (
         <button
           type="button"
           onClick={clearSearch}
