@@ -131,7 +131,7 @@ const RecentlyReadBooks = ({ userId, maxBooks = 20 }) => {
           );
 
           const books = await Promise.all(booksResponse.data.results);
-          setRecentBooks(books);
+          setRecentBooks(books.slice().reverse());
         }
         setLoading(false);
       } catch (error) {
