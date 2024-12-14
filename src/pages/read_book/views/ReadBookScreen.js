@@ -41,6 +41,8 @@ function ReadBookScreen() {
   const [loca, setLocation] = useState(location || '')
   const {bookId, bookTitle, ebook} = location.state || {}
   const {user} = useUser()
+  const [currentPage, setCurrentPage] = useState(3);
+  const [totalPages, setTotalPages] = useState(0);
   const { bookmarks, addBookmark, removeBookmark } = useBookmarks(
     user?.userId,
     bookId
@@ -68,11 +70,40 @@ function ReadBookScreen() {
   const [isActive, setIsActive] = useState(true)
   const [activeHighlights] = useState(new Set())
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [totalPages, setTotalPages] = useState(0);
 
   const startReadingSession = () => {
     setReadStartTime(Date.now())
   }
+
+  const handleLocationChanged = (loc) => {
+    setLocation(loc);
+    setCurrentLocation(loc);
+    
+    if (rendition && rendition.book && loc) {
+      try {
+        // Lấy location hiện tại
+        const currentLoc = rendition.book.locations.locationFromCfi(loc);
+        let currentPg = Math.floor((currentLoc / totalPages) * totalPages) + 1;
+        
+        if (settings.pageView === 'double') {
+          // Trong chế độ double page
+          if (currentPg === 1) {
+            currentPg = 3; // Trang đầu tiên trong chế độ double luôn là 3
+          } else {
+            currentPg = Math.ceil(currentPg / 2) * 2 - 1;
+          }
+          setCurrentPage(currentPg);
+        } else {
+          // Trong chế độ single page
+          setCurrentPage(currentPg);
+        }
+      } catch (error) {
+        console.error('Error calculating page:', error);
+      }
+    }
+  };
+  
+
 
   const updateReadingHistory = async () => {
     const currentTime = Date.now()
@@ -554,6 +585,26 @@ function ReadBookScreen() {
     },
   }
 
+  useEffect(() => {
+    if (rendition && rendition.book) {
+      // Cập nhật lại locations khi thay đổi chế độ xem
+      rendition.book.locations.generate(1024).then(() => {
+        const totalLocs = rendition.book.locations.total;
+        
+        if (settings.pageView === 'double') {
+          setTotalPages(Math.ceil(totalLocs / 2));
+          // Điều chỉnh trang hiện tại cho chế độ double
+          const adjustedPage = currentPage === 1 ? 3 : Math.ceil(currentPage / 2) * 2 - 1;
+          setCurrentPage(adjustedPage);
+        } else {
+          setTotalPages(totalLocs);
+          // Điều chỉnh trang hiện tại cho chế độ single
+          setCurrentPage(Math.floor(currentPage / 2) + 1);
+        }
+      });
+    }
+  }, [settings.pageView]);
+
   return (
     <div
       className='App'
@@ -567,6 +618,9 @@ function ReadBookScreen() {
         onToggleBookmark={handleToggleBookmark}
         bookmarks={bookmarks}
         currentLocation={currentLocation}
+        currentPage={currentPage}  // Thêm prop này
+        totalPages={totalPages}    // Thêm prop này
+        pageView={settings.pageView} // Thêm prop này
       />
 
       {loading && <p>Loading...</p>}
@@ -576,15 +630,22 @@ function ReadBookScreen() {
         epubUrl={epubUrl}
         location={loca}
         totalPages={totalPages}
-        onLocationChanged={loc => {setLocation(loc);
-          setCurrentLocation(loc)}
-        }
+        setTotalPages={setTotalPages}
+        onLocationChanged={handleLocationChanged}
         onGetRendition={_rendition => {
-          setRendition(_rendition)
-
+          setRendition(_rendition);
+        
           _rendition.book.ready.then(() => {
-            const totalPagesCount = _rendition.book.locations.length();
+            // Tính tổng số trang dựa trên spine items
+            const totalSpineItems = _rendition.book.spine.length;
+            // Thêm 2 trang cho phần front matter trong chế độ double
+            const totalPagesCount = settings.pageView === 'double' 
+              ? (totalSpineItems * 2) + 2
+              : totalSpineItems;
             setTotalPages(totalPagesCount);
+        
+            // Set trang hiện tại dựa trên chế độ xem
+            setCurrentPage(settings.pageView === 'double' ? 3 : 1);
           });
 
           // Apply default settings ngay khi rendition được tạo

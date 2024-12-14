@@ -21,6 +21,8 @@ const ReaderHeader = ({
   currentLocation,
   totalPages,
   title,
+  currentPage,
+  pageView,
 }) => {
   const [isBookmarking, setIsBookmarking] = useState(false);
   const currentBookmark = bookmarks.find(b => b.location === currentLocation);
@@ -120,14 +122,18 @@ const ReaderHeader = ({
 
       <div className="flex-1 flex justify-center items-center gap-2">
         <h1 className="text-gray-100 font-medium text-2xl">{title}</h1>
-
-      </div>
-      {totalPages > 0 && (
-          <h1 className="text-gray-100 text-xs">
-            Page {Math.ceil(currentLocation * totalPages)} of {totalPages}
-          </h1>
+        {totalPages > 0 && (
+          <span className="text-gray-400 text-2xl ml-2">
+            {pageView === 'double' && currentPage + 1 <= totalPages ? (
+              `Pages ${currentPage}-${currentPage + 1}`
+            ) : (
+              `Page ${currentPage}`
+            )}
+            {` of ${totalPages}`}
+          </span>
         )}
-
+      </div>
+  
       <div className="flex items-center gap-2">
       {user && currentLocation && (
         <IconButton
