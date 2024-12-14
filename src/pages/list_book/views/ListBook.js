@@ -48,11 +48,11 @@ const ListBook = ({
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/book/search/advanced`,
         {
-          subjects: criteria.subjects,
-          bookshelves: criteria.bookshelves,
-          languages: criteria.languages,
-          author: criteria.author,
-          title: criteria.title,
+          subjects: criteria?.subjects,
+          bookshelves: criteria?.bookshelves,
+          languages: criteria?.languages,
+          author: criteria?.author,
+          title: criteria?.title,
         },
         {
           headers: {'Content-Type': 'application/json'},
