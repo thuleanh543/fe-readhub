@@ -72,7 +72,7 @@ function App() {
         showSearch={true}
       />
       <div className='flex-1 overflow-y-auto mt-16'>
-        <div style={{display: searchTerm.title ? 'none' : 'block'}}>
+        <div style={{display: searchTerm?.title ? 'none' : 'block'}}>
           <Banner />
           {user && <BookRecommendations user={user} />}
           <div className='bg-white'>
