@@ -19,7 +19,13 @@ function App() {
     width: window.innerWidth,
     height: window.innerHeight,
   })
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState({
+    title: '',
+    author: null,
+    subjects: null,
+    bookshelves: null,
+    languages: null,
+  })
   const {user} = useUser()
   const {booksData, loading, error, bookshelves} = useBooks()
   const [topRated, setTopRated] = useState(null)
@@ -52,7 +58,10 @@ function App() {
   }, [])
 
   const handleSearchChange = useCallback(value => {
-    setSearchTerm(value)
+    setSearchTerm(prevSearchTerm => ({
+      ...prevSearchTerm,
+      title: value.title 
+    }))
   }, [])
 
   return (
@@ -63,7 +72,7 @@ function App() {
         showSearch={true}
       />
       <div className='flex-1 overflow-y-auto mt-16'>
-        <div style={{display: searchTerm ? 'none' : 'block'}}>
+        <div style={{display: searchTerm.title ? 'none' : 'block'}}>
           <Banner />
           {user && <BookRecommendations user={user} />}
           <div className='bg-white'>
