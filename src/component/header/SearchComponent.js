@@ -1,35 +1,72 @@
-// SearchComponent.jsx
-import React, {useState, useRef, useCallback} from 'react'
-import {Search, X} from 'lucide-react'
-import {useEffect} from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Search, X } from 'lucide-react'
+import debounce from 'lodash/debounce'
 
-const SearchComponent = ({onSearchChange, initialSearchTerm = ''}) => {
-  // Local state to handle immediate input changes
-  const [localSearchTerm, setLocalSearchTerm] = useState(initialSearchTerm)
+const SearchComponent = ({ onSearchChange, initialSearchTerm }) => {
+  const [localSearchTerm, setLocalSearchTerm] = useState(initialSearchTerm || {
+    title: '',
+    author: null,
+    subjects: null,
+    bookshelves: null,
+    languages: null,
+  })
+  
   const inputRef = useRef(null)
 
-  // A single useEffect that handles both search updates and focus management
+  // Tạo debounced function với useCallback để tránh tạo lại
+  const debouncedSearch = useRef(
+    debounce((searchValue) => {
+      requestAnimationFrame(() => {
+        onSearchChange(searchValue)
+        // Focus lại input sau khi search
+        if (inputRef.current) {
+          inputRef.current.focus()
+        }
+      })
+    }, 300)
+  ).current
+
+  // Giữ focus cho input
   useEffect(() => {
-    // Update the parent with the search term
-    onSearchChange?.(localSearchTerm)
-    // Immediately restore focus after the update
     if (inputRef.current) {
       inputRef.current.focus()
     }
+  }, [])
 
-    // Clean up the timer on component updates or unmount
-  }, [localSearchTerm, onSearchChange])
-
-  // Simple handlers that don't include debouncing logic
-  const handleChange = e => {
-    setLocalSearchTerm(e.target.value)
+  const handleChange = (e) => {
+    const newSearchTerm = {
+      ...localSearchTerm,
+      title: e.target.value
+    }
+    setLocalSearchTerm(newSearchTerm)
+    debouncedSearch(newSearchTerm)
   }
 
-  const clearSearch = () => {
-    setLocalSearchTerm('')
-    onSearchChange?.('')
-    inputRef.current?.focus()
+  const clearSearch = (e) => {
+    e.stopPropagation()
+    const emptySearchTerm = {
+      title: '',
+      author: null,
+      subjects: null,
+      bookshelves: null,
+      languages: null,
+    }
+    setLocalSearchTerm(emptySearchTerm)
+    debouncedSearch.cancel()
+    requestAnimationFrame(() => {
+      onSearchChange(emptySearchTerm)
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    })
   }
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel()
+    }
+  }, [debouncedSearch])
 
   return (
     <div className='relative'>
@@ -37,15 +74,18 @@ const SearchComponent = ({onSearchChange, initialSearchTerm = ''}) => {
       <input
         ref={inputRef}
         type='text'
+        autoFocus
         placeholder='Search books, authors, or keywords...'
-        value={localSearchTerm}
+        value={localSearchTerm?.title}
         onChange={handleChange}
         className='w-full pl-10 pr-10 py-2 border border-gray-300 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
       />
-      {localSearchTerm && (
+      {localSearchTerm?.title && (
         <button
+          type="button"
           onClick={clearSearch}
-          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'>
+          className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+        >
           <X className='h-5 w-5' />
         </button>
       )}
@@ -53,4 +93,4 @@ const SearchComponent = ({onSearchChange, initialSearchTerm = ''}) => {
   )
 }
 
-export default React.memo(SearchComponent)
+export default SearchComponent
