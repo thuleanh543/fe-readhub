@@ -30,12 +30,29 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
   }
 
   function stringAvatar(name) {
+    if (!name) return { sx: { bgcolor: '#757575' }, children: '?' };
+  
+    // Tách tên thành các phần
+    const nameParts = name.split(' ');
+    
+    // Xử lý các trường hợp khác nhau của tên
+    let initials;
+    if (nameParts.length === 1) {
+      // Nếu chỉ có một phần tên
+      initials = nameParts[0][0];
+    } else {
+      // Nếu có nhiều phần, lấy chữ cái đầu của phần đầu và phần cuối
+      initials = `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
+    }
+  
     return {
       sx: {
         bgcolor: stringToColor(name),
+        width: 32,
+        height: 32,
       },
-      children: `${name.split(' ')[0][0]}${name.split(' ')[1][0]}`,
-    }
+      children: initials.toUpperCase(),
+    };
   }
 
   const handleLike = async () => {
@@ -89,14 +106,14 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
       }}>
       <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1}}>
         <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-          {review.urlAvatar ? (
+        {review.urlAvatar ? (
             <Avatar
               src={review.urlAvatar}
               alt={review.fullname}
               sx={{width: 32, height: 32}}
             />
           ) : (
-            <Avatar {...stringAvatar(review.fullname)} />
+            <Avatar {...stringAvatar(review.fullname)} />   
           )}
           <Typography variant='subtitle1' fontWeight='bold'>
             {review.fullname}
@@ -155,18 +172,6 @@ const ReviewItem = ({review, index, isLast, currentUser}) => {
               {likeCount}
             </Typography>
           </Box>
-
-          {!isOwnReview && (
-            <Tooltip title={isReported ? 'Reported' : 'Report'}>
-              <IconButton
-                size='small'
-                onClick={handleReport}
-                color={isReported ? 'error' : 'default'}
-                disabled={isReported}>
-                <Flag size={18} className={isReported ? 'fill-current' : ''} />
-              </IconButton>
-            </Tooltip>
-          )}
         </Box>
       )}
     </Box>
